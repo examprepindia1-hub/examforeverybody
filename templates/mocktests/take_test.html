@@ -57,6 +57,18 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
     </style>
+    <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],  // Allow $...$ for inline math
+        displayMath: [['$$', '$$'], ['\\[', '\\]']] // Allow $$...$$ for block math
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body oncontextmenu="return false;">
 
@@ -162,23 +174,38 @@
                                 <img src="{{ question.question_image.url }}" class="img-fluid rounded border" style="max-height: 400px;">
                             </div>
                         {% endif %}
+                        {% if question.audio_clip %}
+    <div class="mb-4 text-center bg-light p-3 rounded border">
+        <p class="text-muted small mb-2"><i class="bi bi-headphones me-1"></i> Play Audio Clip</p>
+        <audio controls class="w-100">
+            <source src="{{ question.audio_clip.url }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+{% endif %}
 
-                        <div class="options-list">
-                            {% for option in question.options.all %}
-                            <div class="form-check mb-3 p-3 border rounded-3 bg-white position-relative" style="cursor: pointer; transition: 0.2s;" onclick="selectOption('{{ question.id }}', '{{ option.id }}')">
-                                <input class="form-check-input answer-input position-absolute" 
-                                       type="radio" 
-                                       name="question_{{ question.id }}" 
-                                       id="opt_{{ option.id }}" 
-                                       value="{{ option.id }}"
-                                       data-qid="{{ question.id }}"
-                                       style="top: 20px; left: 20px;">
-                                <label class="form-check-label w-100 ps-4 cursor-pointer" for="opt_{{ option.id }}" style="margin-left: 10px;">
-                                    {{ option.option_text }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
+                       <div class="options-list">
+    {% for option in question.options.all %}
+    <div class="form-check mb-3 p-3 border rounded-3 bg-white d-flex align-items-start" 
+         style="cursor: pointer; transition: 0.2s;" 
+         onclick="selectOption('{{ question.id }}', '{{ option.id }}')">
+        
+        <input class="form-check-input answer-input me-3 mt-1" 
+               type="radio" 
+               name="question_{{ question.id }}" 
+               id="opt_{{ option.id }}" 
+               value="{{ option.id }}"
+               data-qid="{{ question.id }}"
+               style="transform: scale(1.3); flex-shrink: 0; cursor: pointer;">
+
+        <label class="form-check-label w-100 cursor-pointer" 
+               for="opt_{{ option.id }}" 
+               style="line-height: 1.5;">
+            {{ option.option_text }}
+        </label>
+    </div>
+    {% endfor %}
+</div>
 
                         <div class="q-actions">
                             <div class="form-check form-switch">

@@ -50,12 +50,12 @@ def initiate_purchase(request, slug):
                 
             messages.success(request, f"Welcome aboard! You've enrolled in {item.title}.")
             # Redirect to dashboard or content page (Update 'home' to your actual dashboard URL later)
-            return  redirect('item_detail', slug=slug)
+            return  redirect('marketplace:item_detail', slug=slug)
 
         except Exception as e:
             messages.error(request, "Something went wrong during enrollment. Please try again.")
             print(f"Enrollment Error: {e}")
-            return redirect('item_detail', slug=slug)
+            return redirect('marketplace:item_detail', slug=slug)
 
     else:
         # ============================================================
