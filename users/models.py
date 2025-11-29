@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from core.constants import COUNTRY_CHOICES
+
 # 1. Users Table (users)
 class CustomUser(AbstractUser):
     # Django handles: username, password, email, first_name, last_name, is_staff, is_active
@@ -9,7 +11,12 @@ class CustomUser(AbstractUser):
         STUDENT = 'STUDENT', 'Student'
         INSTRUCTOR = 'INSTRUCTOR', 'Instructor'
         ADMIN = 'ADMIN', 'Admin'
-    
+    country = models.CharField(
+        max_length=2, 
+        choices=COUNTRY_CHOICES, 
+        default='IN',
+        verbose_name=("Country")
+    )
     # We use a default role for easy management
     role = models.CharField(
         max_length=15,

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam in Progress - {{ test.item.title }}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #f4f6f8; height: 100vh; overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; user-select: none; }
+        
+        /* --- Header --- */
+        .exam-header { height: 65px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; padding: 0 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        
+        /* Logo Style */
+        .exam-logo { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; color: #0056D2; text-decoration: none; }
+        
+        .timer-box { background: #fff; color: #dc3545; padding: 5px 12px; border-radius: 4px; font-weight: 700; font-family: monospace; font-size: 1.3rem; border: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px; }
+        
+        /* --- Main Container --- */
+        .exam-container { height: calc(100vh - 65px); display: flex; }
+        
+        /* --- Question Area (Left) --- */
+        .question-area { flex: 1; overflow-y: auto; padding: 30px 50px; scroll-behavior: smooth; background-color: #f4f6f8; }
+        .question-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #eaeaea; margin-bottom: 50px; }
+        .question-text { font-size: 1.2rem; color: #212529; line-height: 1.6; font-weight: 500; }
+        
+        /* --- Sidebar (Right) --- */
+        .sidebar { width: 320px; background: white; border-left: 1px solid #e0e0e0; display: flex; flex-direction: column; z-index: 10; box-shadow: -2px 0 5px rgba(0,0,0,0.01); }
+        .palette-legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 15px; background: #fcfcfc; border-bottom: 1px solid #eee; font-size: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 5px; color: #666; }
+        .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+        
+        .palette-grid { padding: 15px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; overflow-y: auto; flex: 1; align-content: start; }
+        .palette-btn { width: 40px; height: 40px; border-radius: 4px; border: 1px solid #e0e0e0; background: #f8f9fa; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; color: #495057; text-decoration: none; }
+        .palette-btn:hover { background-color: #e9ecef; }
+        
+        /* States */
+        .palette-btn.active { border-color: #0056D2; color: #0056D2; background: white; box-shadow: inset 0 0 0 1px #0056D2; }
+        .palette-btn.answered { background-color: #198754; color: white; border-color: #198754; }
+        .palette-btn.review { background-color: #6610f2; color: white; border-color: #6610f2; }
+        .palette-btn.review-answered { background-color: #6610f2; color: white; border-color: #6610f2; position: relative; }
+        .palette-btn.review-answered::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 8px; height: 8px; background: #0dcaf0; border-radius: 50%; border: 1px solid #6610f2; }
+
+        .section-header { grid-column: 1 / -1; margin-top: 15px; margin-bottom: 5px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #adb5bd; font-weight: 700; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+        /* --- Footer Actions --- */
+        .q-actions { border-top: 1px solid #f0f0f0; padding-top: 20px; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* --- Full Screen Overlay (Updated) --- */
+        #fullscreen-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div id="fullscreen-overlay">
+        <div class="container" style="max-width: 700px;">
+            <div class="text-center mb-4">
+                <h1 class="fw-bold">Ready to begin?</h1>
+                <p class="text-muted">Please read the instructions carefully before starting the test.</p>
+            </div>
+
+            <div class="card shadow-sm border-0 bg-light mb-4">
+                <div class="card-body p-4" style="max-height: 50vh; overflow-y: auto;">
+                    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-card-list me-2"></i>Instructions</h5>
+                    
+                    <h6 class="fw-bold text-dark mt-3">1. General Rules</h6>
+                    <ul class="small text-secondary mb-3">
+                        <li>Total duration: <strong>{{ test.duration_minutes }} minutes</strong>.</li>
+                        <li>The timer in the top-right corner shows the remaining time.</li>
+                        <li>The test will auto-submit when the timer reaches zero.</li>
+                    </ul>
+
+                    <h6 class="fw-bold text-dark mt-3">2. Navigation & Answering</h6>
+                    <ul class="small text-secondary mb-3">
+                        <li>Use the <strong>Question Palette</strong> on the right to jump to specific questions.</li>
+                        <li><span class="badge bg-success me-1">Green</span> indicates Answered.</li>
+                        <li><span class="badge me-1" style="background-color: #6610f2;">Purple</span> indicates Marked for Review.</li>
+                        <li>You can clear your answer using the "Clear Response" button.</li>
+                    </ul>
+
+                    <h6 class="fw-bold text-dark mt-3">3. Full Screen Policy</h6>
+                    <div class="alert alert-warning small mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        This exam is monitored. You must remain in <strong>Full Screen</strong> mode.
+                        Exiting full screen may be recorded as a malpractice attempt.
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button class="btn btn-primary btn-lg px-5 rounded-pill shadow" onclick="enableFullScreen()">
+                    <i class="bi bi-arrows-fullscreen me-2"></i> Enter Full Screen & Start Test
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="exam-header">
+        <div class="d-flex align-items-center">
+            <span class="exam-logo me-3">Exam4Everybody</span>
+            <div style="height: 25px; width: 1px; background: #e0e0e0; margin-right: 15px;"></div>
+            <h6 class="mb-0 text-secondary fw-semibold d-none d-md-block" style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                {{ test.item.title }}
+            </h6>
+        </div>
+        
+        <div class="d-flex align-items-center gap-3">
+            
+            <button class="btn btn-outline-secondary btn-sm border-0" data-bs-toggle="modal" data-bs-target="#instructionsModal">
+                <i class="bi bi-info-circle me-1"></i> Instructions
+            </button>
+
+            <div class="timer-box" id="timer">
+                <i class="bi bi-stopwatch"></i> <span>00:00:00</span>
+            </div>
+
+            <form action="{% url 'submit_test' attempt.id %}" method="post" onsubmit="return confirm('Are you sure you want to submit the test? You cannot undo this.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-dark btn-sm fw-bold px-3 py-2">
+                    Finish Exam
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="exam-container">
+        
+        <div class="question-area" id="question-container">
+            {% for section in sections %}
+                <div class="mb-5">
+                    <h5 class="text-uppercase text-muted small fw-bold mb-3">{{ section.title }}</h5>
+                    
+                    {% for question in section.questions.all %}
+                    <div class="question-card" id="q-card-{{ question.id }}">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border px-3 py-2 rounded-1">Q. {{ forloop.counter }}</span>
+                            <div class="d-flex gap-3 align-items-center">
+                                <span class="badge bg-light text-dark border">
+                                    {% if question.question_type == 'MCQ' %}Single Choice{% else %}Subjective{% endif %}
+                                </span>
+                                <span class="fw-bold text-primary small">+{{ question.marks }} Marks</span>
+                                <button class="btn btn-link text-muted p-0" onclick="reportQuestion({{ question.id }})" title="Report Issue">
+                                    <i class="bi bi-flag"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="question-text mb-4">
+                            {{ question.question_text|linebreaks }}
+                        </div>
+                        
+                        {% if question.question_image %}
+                            <div class="mb-4 text-center">
+                                <img src="{{ question.question_image.url }}" class="img-fluid rounded border" style="max-height: 400px;">
+                            </div>
+                        {% endif %}
+
+                        <div class="options-list">
+                            {% for option in question.options.all %}
+                            <div class="form-check mb-3 p-3 border rounded-3 bg-white position-relative" style="cursor: pointer; transition: 0.2s;" onclick="selectOption('{{ question.id }}', '{{ option.id }}')">
+                                <input class="form-check-input answer-input position-absolute" 
+                                       type="radio" 
+                                       name="question_{{ question.id }}" 
+                                       id="opt_{{ option.id }}" 
+                                       value="{{ option.id }}"
+                                       data-qid="{{ question.id }}"
+                                       style="top: 20px; left: 20px;">
+                                <label class="form-check-label w-100 ps-4 cursor-pointer" for="opt_{{ option.id }}" style="margin-left: 10px;">
+                                    {{ option.option_text }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="q-actions">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input review-checkbox" type="checkbox" id="review_{{ question.id }}" data-qid="{{ question.id }}" style="cursor: pointer;">
+                                <label class="form-check-label text-muted small fw-bold cursor-pointer" for="review_{{ question.id }}">Mark for Review</label>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger border-0" onclick="clearSelection({{ question.id }})">
+                                Clear Response
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            
+            <div style="height: 100px;"></div>
+        </div>
+
+        <div class="sidebar">
+            <div class="palette-legend">
+                <div class="legend-item"><span class="dot" style="background:#f8f9fa; border:1px solid #dee2e6;"></span> Unseen</div>
+                <div class="legend-item"><span class="dot" style="background:#198754;"></span> Answered</div>
+                <div class="legend-item"><span class="dot" style="background:#6610f2;"></span> Review</div>
+            </div>
+            
+            <div class="palette-grid" id="palette-area">
+                {% for section in sections %}
+                    <div class="section-header">{{ section.title }}</div>
+                    {% for question in section.questions.all %}
+                        <a href="#q-card-{{ question.id }}" class="palette-btn" id="palette-btn-{{ question.id }}">
+                            {{ forloop.counter }}
+                        </a>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="instructionsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Exam Instructions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>General Rules:</h6>
+                    <ul class="small text-muted">
+                        <li>Total duration: <strong>{{ test.duration_minutes }} minutes</strong>.</li>
+                        <li>The clock in the top right server time. The countdown indicates time remaining.</li>
+                        <li>You can navigate to any question using the palette on the right.</li>
+                        <li>Green indicates answered. Purple indicates marked for review.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Return to Exam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Report Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="report-qid">
+                    <textarea class="form-control" id="report-reason" rows="3" placeholder="Describe the issue..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="submitReport()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const csrfToken = "{{ csrf_token }}";
+        const savedAnswers = {{ answers_json|safe }};
+        let isFullScreen = false;
+
+        // --- Full Screen Logic ---
+        function enableFullScreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().then(() => {
+                    document.getElementById('fullscreen-overlay').style.display = 'none';
+                    isFullScreen = true;
+                }).catch(err => {
+                    alert("Error enabling full screen: " + err.message);
+                });
+            } else {
+                // Fallback if browser blocks it or doesn't support it
+                document.getElementById('fullscreen-overlay').style.display = 'none';
+                isFullScreen = true; 
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.getElementById('fullscreen-overlay').style.display = 'flex';
+                isFullScreen = false;
+            }
+        });
+
+        // --- Improved Interaction Logic ---
+        function selectOption(qid, oid) {
+            const radio = document.getElementById('opt_' + oid);
+            radio.checked = true;
+            
+            // Visual feedback for the container
+            document.querySelectorAll(`input[name="question_${qid}"]`).forEach(el => {
+                el.closest('.form-check').classList.remove('border-primary', 'bg-light');
+            });
+            radio.closest('.form-check').classList.add('border-primary', 'bg-light');
+
+            saveData(qid);
+        }
+
+        // --- Initialization ---
+        document.addEventListener("DOMContentLoaded", function() {
+            for (const [qid, data] of Object.entries(savedAnswers)) {
+                if (data.selected_option_id) {
+                    selectOption(qid, data.selected_option_id);
+                }
+                if (data.is_marked_for_review) {
+                    const chk = document.getElementById(`review_${qid}`);
+                    if(chk) {
+                        chk.checked = true;
+                        saveData(qid); // Update palette color
+                    }
+                }
+            }
+        });
+
+        // --- Palette Updater ---
+        function updatePalette(qid) {
+            const btn = document.getElementById(`palette-btn-${qid}`);
+            const isAnswered = document.querySelector(`input[name="question_${qid}"]:checked`);
+            const isReviewed = document.getElementById(`review_${qid}`).checked;
+
+            btn.className = 'palette-btn';
+            if (isReviewed && isAnswered) btn.classList.add('review-answered');
+            else if (isReviewed) btn.classList.add('review');
+            else if (isAnswered) btn.classList.add('answered');
+        }
+
+        // --- Save Logic ---
+        function saveData(qid) {
+            const selectedOption = document.querySelector(`input[name="question_${qid}"]:checked`);
+            const isReviewed = document.getElementById(`review_${qid}`).checked;
+            
+            updatePalette(qid);
+
+            fetch("{% url 'save_answer' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+                body: JSON.stringify({
+                    attempt_id: {{ attempt.id }},
+                    question_id: qid,
+                    option_id: selectedOption ? selectedOption.value : null,
+                    is_reviewed: isReviewed
+                })
+            }).then(res => {});
+        }
+
+        // Review Checkbox Listener
+        document.querySelectorAll('.review-checkbox').forEach(chk => {
+            chk.addEventListener('change', function() {
+                saveData(this.dataset.qid);
+            });
+        });
+
+        // Clear Selection
+        window.clearSelection = function(qid) {
+            document.querySelectorAll(`input[name="question_${qid}"]`).forEach(r => {
+                r.checked = false;
+                r.closest('.form-check').classList.remove('border-primary', 'bg-light');
+            });
+            saveData(qid);
+        };
+
+        // Report Logic
+        const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+        window.reportQuestion = function(qid) {
+            document.getElementById('report-qid').value = qid;
+            reportModal.show();
+        };
+        window.submitReport = function() {
+            const qid = document.getElementById('report-qid').value;
+            const reason = document.getElementById('report-reason').value;
+            fetch("{% url 'report_question' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+                body: JSON.stringify({ question_id: qid, reason: reason })
+            }).then(res => { alert("Report submitted"); reportModal.hide(); });
+        };
+
+        // Timer
+        let timeRemaining = {{ test.duration_minutes }} * 60;
+        const timerSpan = document.querySelector('#timer span');
+        setInterval(() => {
+            if(!isFullScreen) return; // Pause timer if not full screen
+            if (timeRemaining <= 0) return;
+            timeRemaining--;
+            let h = Math.floor(timeRemaining / 3600);
+            let m = Math.floor((timeRemaining % 3600) / 60);
+            let s = timeRemaining % 60;
+            timerSpan.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            if (timeRemaining === 0) document.querySelector('form').submit();
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -31,6 +31,7 @@
 
 <div class="container mb-5">
     <div class="row">
+        
         <div class="col-lg-8 order-2 order-lg-1">
              
              <h3 class="mb-3 fw-bold" style="color: var(--brand-dark);">{% trans "About this" %} {{ item.get_item_type_display }}</h3>
@@ -63,52 +64,12 @@
                 </div>
              {% endif %}
 
-        </div>
-
-
-        <div class="col-lg-4 order-1 order-lg-2 mb-4 position-relative">
-            <div class="card shadow-sm sticky-lg-top" style="top: 2rem; z-index: 100;">
-                {% if item.thumbnail_image %}
-                <img src="{{ item.thumbnail_image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
-                {% else %}
-                <div class="bg-secondary" style="height: 200px;"></div>
-                {% endif %}
-                
-                <div class="card-body p-4">
-                    <h2 class="fw-bold mb-4" style="color: var(--brand-dark);">${{ item.price }}</h2>
-                    
-                    <div class="d-grid gap-2">
-                        <a href="#" class="btn btn-primary-ud btn-lg fw-bold">
-                            {% if item.price > 0 %}
-                                {% trans "Buy Now" %}
-                            {% else %}
-                                {% trans "Enroll for Free" %}
-                            {% endif %}
-                        </a>
-                    </div>
-                    
-                    <p class="text-center small text-muted mt-3 mb-0">{% trans "30-Day Money-Back Guarantee" %}</p>
-                    
-                    <hr>
-                    <h6 class="fw-bold">{% trans "This includes:" %}</h6>
-                    <ul class="list-unstyled small">
-                        <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Full lifetime access" %}</li>
-                        <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Access on mobile and TV" %}</li>
-                        {% if item.item_type == 'MOCK_TEST' %}
-                             <li><i class="bi bi-check-lg text-success me-2"></i> {% trans "Detailed performance analytics" %}</li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-   <hr class="my-5">
-
-             <h3 class="mb-4 fw-bold" style="color: var(--brand-dark);">
+            <hr class="my-5">
+            <h3 class="mb-4 fw-bold" style="color: var(--brand-dark);">
                  {% trans "Student Reviews" %}
-             </h3>
+            </h3>
 
-             <div class="d-flex align-items-center mb-4">
+            <div class="d-flex align-items-center mb-4">
                  <h1 class="fw-bold mb-0 me-3" style="color: var(--brand-dark);">
                      {{ avg_rating|default:"0.0"|floatformat:1 }}
                  </h1>
@@ -128,9 +89,9 @@
                          {{ review_count }} {% trans "ratings" %}
                      </p>
                  </div>
-             </div>
+            </div>
 
-             <div class="reviews-list">
+            <div class="reviews-list">
                  {% for review in reviews %}
                  <div class="review-card">
                      <div class="d-flex mb-3">
@@ -168,7 +129,87 @@
                      {% trans "No reviews yet. Be the first to review this item!" %}
                  </p>
                  {% endfor %}
-             </div>
-             </div> </div>
+            </div>
 
-{% endblock %}
+        </div>
+
+        <div class="col-lg-4 order-1 order-lg-2 mb-4 position-relative">
+            <div class="card shadow-sm sticky-lg-top hero-card-floating" style="top: 2rem; z-index: 100;">
+                
+                {% if item.thumbnail_image %}
+                    <img src="{{ item.thumbnail_image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary" style="height: 200px;"></div>
+                {% endif %}
+                
+                <div class="card-body p-4">
+                    
+                    {% if is_enrolled %}
+                        <div class="text-center mb-4">
+                            <span class="badge bg-success-subtle text-success border border-success mb-3 px-3 py-2 rounded-pill">
+                                <i class="bi bi-check-circle-fill me-1"></i> {% trans "Enrolled" %}
+                            </span>
+                            <h3 class="fw-bold text-success">{% trans "You own this." %}</h3>
+                            <p class="text-muted small">{% trans "Ready to continue your learning?" %}</p>
+                        </div>
+
+                        <div class="d-grid">
+                            {% if item.item_type == 'MOCK_TEST' %}
+    <a href="{% url 'start_test' item.slug %}" class="btn btn-success btn-lg w-100 shadow-sm">
+        <i class="bi bi-play-circle-fill me-2"></i> {% trans "Start Test" %}
+    </a>
+{% elif item.item_type == 'WORKSHOP' %}
+    <a href="#" class="btn btn-primary btn-lg w-100 shadow-sm">
+        <i class="bi bi-camera-video-fill me-2"></i> {% trans "Join Session" %}
+    </a>
+{% endif %}
+                        </div>
+
+                    {% else %}
+                        <div class="mb-4">
+                            {% if PAYMENTS_ACTIVE %}
+                                <h2 class="fw-bold text-primary">₹{{ item.price }}</h2>
+                            {% else %}
+                                <h2 class="fw-bold text-success">
+                                    FREE
+                                    <small class="text-muted text-decoration-line-through fs-6 ms-2">₹{{ item.price }}</small>
+                                </h2>
+                                <span class="badge bg-warning text-dark mb-2">Beta Access</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {% if user.is_authenticated %}
+                                <form action="{% url 'initiate_purchase' item.slug %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary-ud btn-lg w-100">
+                                        {% if PAYMENTS_ACTIVE %}
+                                            {% trans "Buy Now" %}
+                                        {% else %}
+                                            {% trans "Enroll for Free" %}
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-primary btn-lg">
+                                    {% trans "Log in to Enroll" %}
+                                </a>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="text-center small text-muted mt-3 mb-0">{% trans "30-Day Money-Back Guarantee" %}</p>
+                    {% endif %}
+                    <hr>
+                    <h6 class="fw-bold">{% trans "This includes:" %}</h6>
+                    <ul class="list-unstyled small text-muted">
+                        <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Full lifetime access" %}</li>
+                        <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Access on mobile and TV" %}</li>
+                        {% if item.item_type == 'MOCK_TEST' %}
+                             <li><i class="bi bi-check-lg text-success me-2"></i> {% trans "Detailed performance analytics" %}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div> </div> {% endblock %}

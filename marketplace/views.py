@@ -1,8 +1,11 @@
 # marketplace/views.py
 from django.views.generic import DetailView
-from django.db.models import Avg # Import Avg to calculate average rating
+from django.db.models import Avg 
 from .models import MarketplaceItem, Testimonial
 
+# --- Add this import ---
+from enrollments.models import UserEnrollment
+# -----------------------
 
 class ItemDetailView(DetailView):
     model = MarketplaceItem
@@ -14,19 +17,30 @@ class ItemDetailView(DetailView):
         return MarketplaceItem.objects.filter(is_active=True)
 
     def get_context_data(self, **kwargs):
-        # Get default context (which contains 'item')
         context = super().get_context_data(**kwargs)
         item = self.get_object()
         
-        # Fetch reviews for THIS specific item, newest first
+        # 1. Fetch reviews
         reviews = Testimonial.objects.filter(item=item).order_by('-created')
         
-        # Calculate average rating
+        # 2. Calculate average rating
         avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
 
-        # Add to context so the template can use them
+        # 3. --- CHECK ENROLLMENT STATUS ---
+        is_enrolled = False
+        if self.request.user.is_authenticated:
+            is_enrolled = UserEnrollment.objects.filter(
+                user=self.request.user, 
+                item=item
+            ).exists()
+        # ----------------------------------
+
+        # Add to context
         context['reviews'] = reviews
         context['avg_rating'] = avg_rating if avg_rating else 0
         context['review_count'] = reviews.count()
+        
+        # Pass this new flag to the template so the button changes!
+        context['is_enrolled'] = is_enrolled
         
         return context

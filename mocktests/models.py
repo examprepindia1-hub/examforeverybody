@@ -168,3 +168,12 @@ class UserRankMetric(TimeStampedModel):
     
     def __str__(self):
         return f"{self.user} - XP: {self.total_xp}"
+    
+class QuestionReport(TimeStampedModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    question = models.ForeignKey(TestQuestion, on_delete=models.CASCADE)
+    report_text = models.TextField()
+    is_resolved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Report by {self.user} on Q{self.question.id}"

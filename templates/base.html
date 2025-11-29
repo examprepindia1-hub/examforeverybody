@@ -83,22 +83,29 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link" href="#" data-bs-toggle="dropdown">
                                 <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                    {{ user.email|first|upper }}
+                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
                                 </div>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end animate slideIn">
                                 <li><a class="dropdown-item" href="#">{% trans "Profile" %}</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">{% trans "Logout" %}</a></li>
+                                <li>
+    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
+    <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        {% trans "Logout" %}
+    </a>
+</li>
                             </ul>
                         </li>
                     {% else %}
-                        <li class="nav-item me-2">
-                            <a href="#" class="nav-link fw-semibold" style="color: var(--brand-dark);">{% trans "Log in" %}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="btn btn-primary-ud">{% trans "Sign up" %}</a>
-                        </li>
+                       <li class="nav-item me-2">
+        <a href="{% url 'login' %}" class="nav-link fw-semibold" style="color: var(--brand-dark);">{% trans "Log in" %}</a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'student_signup' %}" class="btn btn-primary-ud">{% trans "Sign up" %}</a>
+    </li>
                     {% endif %}
                 </ul>
             </div>

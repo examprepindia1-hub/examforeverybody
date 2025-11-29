@@ -37,14 +37,14 @@ LANGUAGES = (
     ('fr', 'French'),
     ('zh-hans', 'Mandarin (Simplified Chinese)'), 
 )
-
+PAYMENTS_ACTIVE = False
 # 2. Where Django should look for translation files
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 USE_I18N = True
 USE_L10N = True
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # 3. Model Translation settings (for django-modeltranslation)
 MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 MODELTRANSLATION_FALLBACK_LANGUAGES = ('en',)
