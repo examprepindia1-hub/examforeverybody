@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ item.title }} - ExamForEverybody{% endblock %}
+
+{% block content %}
+
+<div style="background-color: var(--brand-dark); color: white;" class="py-5 mb-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="fw-bold">{{ item.title }}</h1>
+                 <p class="lead mb-3">{{ item.description|truncatewords:30 }}</p>
+                 <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-warning text-dark me-2">
+                        {% if item.item_type == 'MOCK_TEST' %}
+                            {% trans "Mock Test" %}
+                        {% elif item.item_type == 'WORKSHOP' %}
+                            {% trans "Live Workshop" %}
+                        {% endif %}
+                    </span>
+                     {% if item.categories.first %}
+                        <span class="badge border border-light text-light">{{ item.categories.first.display_name }}</span>
+                     {% endif %}
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-lg-8 order-2 order-lg-1">
+             
+             <h3 class="mb-3 fw-bold" style="color: var(--brand-dark);">{% trans "About this" %} {{ item.get_item_type_display }}</h3>
+             <div class="mb-5">
+                 {{ item.description|linebreaks }}
+             </div>
+
+             {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
+                <div class="card mb-4 border-0 bg-light">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3">{% trans "Test Details" %}</h4>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-bar-chart-fill text-primary me-2"></i> <strong>{% trans "Level:" %}</strong> {{ item.mock_test_details.get_level_display }}</li>
+                            <li class="mb-2"><i class="bi bi-clock-fill text-primary me-2"></i> <strong>{% trans "Duration:" %}</strong> {{ item.mock_test_details.duration_minutes }} {% trans "minutes" %}</li>
+                        </ul>
+                    </div>
+                </div>
+
+             {% elif item.item_type == 'WORKSHOP' and item.workshop_details %}
+                <div class="card mb-4 border-0 bg-light">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-3">{% trans "Workshop Details" %}</h4>
+                         <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-person-video3 text-primary me-2"></i> <strong>{% trans "Instructor:" %}</strong> {{ item.workshop_details.instructor.get_full_name }}</li>
+                            <li class="mb-2"><i class="bi bi-hourglass-split text-primary me-2"></i> <strong>{% trans "Total Duration:" %}</strong> {{ item.workshop_details.total_duration_hours }} {% trans "hours" %}</li>
+                        </ul>
+                        <h5 class="mt-4 fw-bold">{% trans "Agenda / Description" %}</h5>
+                        <p>{{ item.workshop_details.description_long|linebreaks }}</p>
+                    </div>
+                </div>
+             {% endif %}
+
+        </div>
+
+
+        <div class="col-lg-4 order-1 order-lg-2 mb-4 position-relative">
+            <div class="card shadow-sm sticky-lg-top" style="top: 2rem; z-index: 100;">
+                {% if item.thumbnail_image %}
+                <img src="{{ item.thumbnail_image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="bg-secondary" style="height: 200px;"></div>
+                {% endif %}
+                
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-4" style="color: var(--brand-dark);">${{ item.price }}</h2>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-primary-ud btn-lg fw-bold">
+                            {% if item.price > 0 %}
+                                {% trans "Buy Now" %}
+                            {% else %}
+                                {% trans "Enroll for Free" %}
+                            {% endif %}
+                        </a>
+                    </div>
+                    
+                    <p class="text-center small text-muted mt-3 mb-0">{% trans "30-Day Money-Back Guarantee" %}</p>
+                    
+                    <hr>
+                    <h6 class="fw-bold">{% trans "This includes:" %}</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Full lifetime access" %}</li>
+                        <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Access on mobile and TV" %}</li>
+                        {% if item.item_type == 'MOCK_TEST' %}
+                             <li><i class="bi bi-check-lg text-success me-2"></i> {% trans "Detailed performance analytics" %}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+   <hr class="my-5">
+
+             <h3 class="mb-4 fw-bold" style="color: var(--brand-dark);">
+                 {% trans "Student Reviews" %}
+             </h3>
+
+             <div class="d-flex align-items-center mb-4">
+                 <h1 class="fw-bold mb-0 me-3" style="color: var(--brand-dark);">
+                     {{ avg_rating|default:"0.0"|floatformat:1 }}
+                 </h1>
+                 <div>
+                     <div class="star-rating-static mb-1">
+                        {% with rating_int=avg_rating|default:0|floatformat:0|add:0 %}
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= rating_int %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        {% endwith %}
+                     </div>
+                     <p class="text-muted small mb-0">
+                         {{ review_count }} {% trans "ratings" %}
+                     </p>
+                 </div>
+             </div>
+
+             <div class="reviews-list">
+                 {% for review in reviews %}
+                 <div class="review-card">
+                     <div class="d-flex mb-3">
+                         <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 review-avatar">
+                             {{ review.user.email|first|upper }}
+                         </div>
+                         <div>
+                             <h6 class="fw-bold mb-1">
+                                 {% if review.user.get_full_name %}
+                                     {{ review.user.get_full_name }}
+                                 {% else %}
+                                     {{ review.user.email|truncatechars:10 }}
+                                 {% endif %}
+                             </h6>
+                             <div class="d-flex align-items-center">
+                                 <div class="star-rating-static me-2 small">
+                                     {% for i in "12345" %}
+                                         {% if forloop.counter <= review.rating %}
+                                             <i class="bi bi-star-fill"></i>
+                                         {% else %}
+                                             <i class="bi bi-star"></i>
+                                         {% endif %}
+                                     {% endfor %}
+                                 </div>
+                                 <span class="review-date">
+                                     {{ review.created|date:"M d, Y" }}
+                                 </span>
+                             </div>
+                         </div>
+                     </div>
+                     <p class="mb-0 text-secondary">{{ review.text|linebreaksbr }}</p>
+                 </div>
+                 {% empty %}
+                 <p class="text-muted py-3">
+                     {% trans "No reviews yet. Be the first to review this item!" %}
+                 </p>
+                 {% endfor %}
+             </div>
+             </div> </div>
+
+{% endblock %}

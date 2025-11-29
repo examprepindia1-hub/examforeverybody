@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Log In" %} - ExamForEverybody{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm p-4">
+                <h2 class="fw-bold text-center mb-4" style="color: var(--brand-dark);">{% trans "Welcome Back" %}</h2>
+                <p class="text-center text-muted mb-4">{% trans "Please enter your email and password to log in." %}</p>
+
+                <form class="login" method="POST" action="{% url 'account_login' %}">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    {% if redirect_field_value %}
+                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-end mb-3">
+                        <a class="small text-muted text-decoration-none" href="{% url 'account_reset_password' %}">
+                            {% trans "Forgot Password?" %}
+                        </a>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button class="btn btn-primary-ud btn-lg fw-bold" type="submit">{% trans "Log In" %}</button>
+                    </div>
+                </form>
+                
+            </div>
+            <div class="text-center mt-4">
+                {% trans "Don't have an account?" %} <a href="{% url 'account_signup' %}" class="fw-bold text-decoration-none" style="color: var(--brand-primary);">{% trans "Sign Up for Free" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

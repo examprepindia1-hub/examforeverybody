@@ -1,0 +1,396 @@
+/* static/css/style.css */
+
+/* --- 1. GLOBAL & TYPOGRAPHY --- */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+
+:root {
+    /* --- BRAND PALETTE (Academic Blue) --- */
+    --brand-dark: #112938;      /* Deep Midnight Blue (Headers, Footer, Hero BG) */
+    --brand-primary: #0056D2;   /* Bright Action Blue (Buttons, Accents) */
+    --brand-bg-light: #F5F7F8;  /* Very Light Gray (Alternate Sections) */
+    --brand-border: #e5e7eb;    /* Subtle light gray borders */
+    
+    /* --- TEXT COLORS --- */
+    --text-main: #1F1F1F;       /* Body text */
+    --text-secondary: #636363;  /* Metadata/subtext */
+    
+    /* --- CONFIG --- */
+    --font-stack: 'Source Sans Pro', sans-serif;
+    /* The specific soft shadow defined in the spec using brand dark color */
+    --shadow-soft: 0 4px 12px rgba(17, 41, 56, 0.08);
+    --shadow-hover: 0 8px 24px rgba(17, 41, 56, 0.12);
+}
+
+body {
+    font-family: var(--font-stack);
+    color: var(--text-main);
+    background-color: #fff;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .navbar-brand {
+    font-family: var(--font-stack);
+    font-weight: 700;
+    color: var(--brand-dark);
+}
+
+/* Utility Classes for Section Backgrounds */
+.bg-white-section { background-color: #fff; }
+.bg-light-section { background-color: var(--brand-bg-light); border-top: 1px solid var(--brand-border); border-bottom: 1px solid var(--brand-border); }
+.section-pad { padding-top: 60px; padding-bottom: 60px; }
+
+
+/* --- 2. NAVBAR (Header) --- */
+.navbar {
+    background-color: #fff;
+    border-bottom: 1px solid var(--brand-border);
+    padding: 0.8rem 1rem;
+    box-shadow: none; /* Flat, clean look per spec */
+}
+
+/* Search Input in Navbar */
+.navbar .search-input {
+    border: 1px solid var(--brand-border);
+    background-color: var(--brand-bg-light);
+    border-radius: 4px 0 0 4px; 
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+.navbar .search-input:focus {
+    background-color: #fff;
+    border-color: var(--brand-primary);
+    outline: none;
+}
+
+/* --- 3. BUTTONS & SEARCH --- */
+.btn-search {
+    background-color: var(--brand-primary);
+    color: #fff;
+    border: 1px solid var(--brand-primary);
+    border-radius: 0 4px 4px 0;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.btn-search:hover { background-color: #00419e; color: #fff; }
+
+/* Primary Action Button (e.g., Sign Up, Buy Now) */
+.btn-primary-ud {
+    background-color: var(--brand-primary);
+    border: 1px solid var(--brand-primary);
+    color: #fff;
+    font-weight: 700; /* Bold per spec */
+    padding: 10px 24px;
+    border-radius: 4px;
+    transition: all 0.2s ease-in-out;
+}
+.btn-primary-ud:hover {
+    background-color: #00419e;
+    border-color: #00419e;
+    color: #fff;
+}
+
+/* --- 4. HERO SECTION (Udemy Structure) --- */
+.hero-banner-ud {
+    position: relative;
+    height: 480px; /* Per spec approx 450-500px */
+    display: flex;
+    align-items: center;
+    background-color: var(--brand-dark);
+    background-size: cover;
+    background-position: center;
+    /* Optional subtle overlay mentioned in spec to ensure text contrast if bg image loads */
+    box-shadow: inset 0 0 0 1000px rgba(17, 41, 56, 0.6); 
+}
+
+/* Floating White Card */
+.hero-card-floating {
+    background-color: #fff;
+    padding: 32px;
+    max-width: 440px;
+    box-shadow: var(--shadow-soft); /* Soft diffused shadow */
+    border-top: 4px solid var(--brand-primary); /* Action Blue Accent */
+    border-radius: 4px;
+}
+
+.hero-card-floating h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--brand-dark);
+}
+
+/* Inner search bar in hero card */
+.hero-card-floating .search-input {
+    border: 1px solid var(--brand-border);
+    border-radius: 4px 0 0 4px;
+    padding: 12px;
+}
+.hero-card-floating .btn-search {
+    padding: 0 20px;
+}
+
+
+/* --- 5. COURSE CARDS (Coursera Vibe) --- */
+.course-card {
+    background: #fff;
+    border: 1px solid var(--brand-border); /* Subtle light gray border */
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+    height: 100%;
+}
+
+.course-card:hover {
+    box-shadow: var(--shadow-soft); /* Soft shadow on hover only */
+    border-color: #d1d7dc;
+}
+
+.course-card img {
+    height: 160px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--brand-border);
+}
+
+.card-body { padding: 1.2rem; }
+
+.card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--brand-dark);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    /* Limit to 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.instructor {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.rating-badge { color: #E59819; /* Gold/Yellow for stars */ font-weight: 700; font-size: 0.9rem; }
+.rating-count { color: var(--text-secondary); font-size: 0.85rem; }
+
+.price-tag {
+    color: var(--brand-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* Live Indicator for Workshops */
+.live-indicator {
+    color: #D32F2F; /* Distinct red for 'LIVE' */
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+}
+.live-dot {
+    height: 8px; width: 8px;
+    background-color: #D32F2F;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+/* --- 6. FOOTER --- */
+footer {
+    background-color: var(--brand-dark) !important; /* Deep Midnight Blue */
+    color: #fff !important;
+    padding-top: 3rem;
+    padding-bottom: 1.5rem;
+}
+footer h5 { color: #fff; font-weight: 700; }
+footer a { color: #e0e0e0 !important; text-decoration: none; transition: color 0.2s;}
+footer a:hover { color: var(--brand-primary) !important; }
+footer p, footer li, footer span { color: #b0b0b0 !important; } /* Lighter gray for readable footer text */
+
+
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-menu.animate.slideIn {
+    animation: slideIn 0.2s ease-out;
+    border: 1px solid var(--brand-border); /* Ensure it has a subtle border */
+    box-shadow: var(--shadow-soft);
+}
+
+.review-card {
+    border-bottom: 1px solid var(--brand-border);
+    padding: 1.5rem 0;
+}
+.review-card:last-child {
+    border-bottom: none;
+}
+.review-avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+.review-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.star-rating-static i {
+    color: #E59819; /* Gold color for stars */
+    font-size: 1rem;
+}
+site-footer {
+    background-color: #1a1a2e; /* Dark blue/black background */
+    color: #b3b3b3; /* Light grey text for readability */
+    padding: 60px 0 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+  }
+
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 Columns on desktop */
+    gap: 40px;
+  }
+
+  /* Headings */
+  .footer-col h3 {
+    color: #ffffff;
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+
+  /* The "About" Column */
+  .footer-about-text {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  /* Links ListStyles */
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer-links li {
+    margin-bottom: 12px;
+  }
+
+  .footer-links a {
+    color: #b3b3b3;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 15px;
+  }
+
+  .footer-links a:hover {
+    color: #4CAF50; /* Use your brand green color on hover */
+  }
+
+  /* Address Styles */
+  .footer-address {
+    font-style: normal;
+    font-size: 14px;
+  }
+  .footer-address p {
+      margin: 5px 0;
+  }
+  .footer-address i {
+      margin-right: 10px;
+      color: #4CAF50;
+      width: 20px;
+  }
+
+  /* Social Media Icons */
+  .social-icons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+  }
+
+  .social-icons a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: rgba(255,255,255,0.1);
+    color: #ffffff;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .social-icons a:hover {
+    background-color: #4CAF50;
+    transform: translateY(-3px);
+  }
+
+  /* Bottom Bar */
+  .footer-bottom {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .footer-bottom-links a {
+      color: #b3b3b3;
+      text-decoration: none;
+      margin-left: 20px;
+  }
+   .footer-bottom-links a:hover {
+       color: #fff;
+   }
+
+  /* Responsive Design */
+  @media (max-width: 900px) {
+    .footer-container {
+      grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
+    }
+  }
+
+  @media (max-width: 600px) {
+    .footer-container {
+      grid-template-columns: 1fr; /* 1 column on mobile */
+      text-align: center;
+    }
+    .social-icons {
+        justify-content: center;
+    }
+    .footer-address i {
+        display: block;
+        margin: 0 auto 10px auto;
+    }
+    .footer-bottom {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .footer-bottom-links a {
+      margin: 0 10px;
+    }
+  }

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<section class="hero-banner-ud" style="background-image: url('{{ MEDIA_URL }}banners/home_hero.jpg');">
+    <div class="container">
+        <div class="hero-card-floating ms-lg-5">
+            <h1 class="mb-3">{% trans "Master Your Critical Exam." %}</h1>
+            <p class="lead mb-4 text-secondary fs-6">
+                {% trans "Trusted mock tests and live workshops for SAT, JEE, IELTS, and more." %}
+            </p>
+            <form class="d-flex position-relative">
+                <input class="form-control search-input w-100" type="search" placeholder="{% trans 'Search for exams, skills...' %}">
+                <button class="btn-search" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="section-pad bg-white-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <h2 class="fw-bold m-0">{% trans "Popular Mock Tests" %}</h2>
+            <a href="#" class="text-decoration-none fw-bold" style="color: var(--brand-primary);">{% trans "View all" %} <i class="bi bi-chevron-right small"></i></a>
+        </div>
+
+        <div class="row g-4">
+            {% for item in featured_tests %}
+            <div class="col-12 col-md-6 col-lg-3 d-flex align-items-stretch">
+                <div class="course-card w-100">
+                    <a href="{% url 'marketplace:item_detail' slug=item.slug %}" class="text-decoration-none text-reset d-flex flex-column h-100">
+                        {% if item.thumbnail_image %}
+                            <img src="{{ item.thumbnail_image.url }}" class="card-img-top" alt="{{ item.title }}">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Exam Prep">
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column flex-grow-1">
+                            <h3 class="card-title">{{ item.title }}</h3>
+                            <p class="instructor mb-1">
+                                {% if item.categories.first %}{{ item.categories.first.display_name }}{% else %}{% trans "Expert Instructor" %}{% endif %}
+                            </p>
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="rating-badge me-1">4.8</span>
+                                <div class="text-warning small me-1">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                                </div>
+                                <span class="rating-count">(1.2k)</span>
+                            </div>
+
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <span class="price-tag">${{ item.price }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">{% trans "No mock tests available at the moment." %}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section-pad bg-light-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <h2 class="fw-bold m-0">{% trans "Upcoming Live Workshops" %}</h2>
+             <a href="#" class="text-decoration-none fw-bold" style="color: var(--brand-primary);">{% trans "View schedule" %} <i class="bi bi-chevron-right small"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for item in upcoming_workshops %}
+            <div class="col-12 col-md-6 col-lg-3 d-flex align-items-stretch">
+                <div class="course-card w-100">
+                    <a href="{% url 'marketplace:item_detail' slug=item.slug %}" class="text-decoration-none text-reset d-flex flex-column h-100">
+                         {% if item.thumbnail_image %}
+                            <img src="{{ item.thumbnail_image.url }}" class="card-img-top" alt="{{ item.title }}">
+                         {% else %}
+                            <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="Live Workshop">
+                         {% endif %}
+
+                         <div class="card-body d-flex flex-column flex-grow-1">
+                            <h3 class="card-title">{{ item.title }}</h3>
+                            
+                            <div class="live-indicator mb-2">
+                                <span class="live-dot"></span> {% trans "LIVE SESSION" %}
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <span class="price-tag">${{ item.price }}</span>
+                            </div>
+                         </div>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">{% trans "No workshops scheduled right now." %}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}

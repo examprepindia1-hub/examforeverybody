@@ -1,0 +1,209 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}Master SAT, GRE, NEET, and more with ExamForEverybody. Premium mock tests and workshops.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Mock Tests, Online Exams, SAT, GRE, JEE, NEET{% endblock %}">
+    
+    <title>{% block title %}ExamForEverybody - Learn & Succeed{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center p-0 me-4" href="{% url 'home' %}">
+                 <text x="70" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#0056D2">Exam4Everybody</text> </svg>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-3">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-semibold" href="#" data-bs-toggle="dropdown" style="color: var(--brand-dark);">
+                            {% trans "Categories" %}
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% for cat in navbar_categories %}
+                                <li><a class="dropdown-item" href="#">{{ cat.display_name }}</a></li>
+                            {% empty %}
+                                <li><span class="dropdown-item text-muted">{% trans "No categories yet" %}</span></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+
+                <form class="d-flex flex-grow-1 mx-lg-4 my-2 my-lg-0 position-relative" role="search">
+                    <input class="form-control search-input w-100" type="search" placeholder="{% trans 'Search for exams, skills...' %}">
+                    <button class="btn-search" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+
+                <ul class="navbar-nav ms-auto align-items-center">
+                    
+                    <li class="nav-item dropdown me-3 d-none d-lg-block">
+    <a class="nav-link dropdown-toggle d-flex align-items-center p-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--brand-dark);" title="{% trans 'Select Language' %}">
+        <i class="bi bi-globe fs-5"></i>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end animate slideIn">
+        <li><h6 class="dropdown-header text-uppercase small">{% trans "Language" %}</h6></li>
+        
+        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'en' %}active{% endif %}" href="#" onclick="changeLanguage('en'); return false;">English</a></li>
+        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'es' %}active{% endif %}" href="#" onclick="changeLanguage('es'); return false;">Español</a></li>
+        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'fr' %}active{% endif %}" href="#" onclick="changeLanguage('fr'); return false;">Français</a></li>
+        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'de' %}active{% endif %}" href="#" onclick="changeLanguage('de'); return false;">Deutsch</a></li>
+        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'zh-hans' %}active{% endif %}" href="#" onclick="changeLanguage('zh-hans'); return false;">中文 (Simplified)</a></li>
+    </ul>
+</li>
+
+                    {% if user.is_authenticated %}
+                        <li class="nav-item me-3">
+                            <a href="#" class="nav-link" style="color: var(--brand-dark);">{% trans "My Learning" %}</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link" href="#" data-bs-toggle="dropdown">
+                                <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    {{ user.email|first|upper }}
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end animate slideIn">
+                                <li><a class="dropdown-item" href="#">{% trans "Profile" %}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">{% trans "Logout" %}</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item me-2">
+                            <a href="#" class="nav-link fw-semibold" style="color: var(--brand-dark);">{% trans "Log in" %}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="btn btn-primary-ud">{% trans "Sign up" %}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow-1">
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    
+
+<footer class="site-footer">
+  <div class="footer-container">
+
+    <div class="footer-col">
+      <h3>ExamForEverybody</h3>
+      <p class="footer-about-text">
+        We are Democratizing education by providing accessible, high-quality exam preparation tools and resources for students of all levels. Our mission is to help everyone achieve their academic goals.
+      </p>
+      <div class="social-icons">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h3>Platform</h3>
+      <ul class="footer-links">
+        <li><a href="#">All Exams</a></li>
+        <li><a href="#">Study Materials</a></li>
+        <li><a href="#">Mock Tests</a></li>
+        <li><a href="#">Live Classes</a></li>
+        <li><a href="#">Pricing Plans</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h3>Company & Support</h3>
+      <ul class="footer-links">
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Careers / Hiring</a></li>
+        <li><a href="#">Blog & News</a></li>
+        <li><a href="#">Help Center / FAQs</a></li>
+        <li><a href="#">Contact Support</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h3>Contact Us</h3>
+      <address class="footer-address">
+        <p><i class="fas fa-map-marker-alt"></i> 
+           20, BLOCK:H-1/A, Sector-63,<br>
+           Noida-201301, UP, India
+        </p>
+        <p><i class="fas fa-envelope"></i> support@examforeverybody.com</p>
+        <p><i class="fas fa-phone-alt"></i> +91 12345 67890</p>
+      </address>
+    </div>
+
+  </div>
+
+  <div class="footer-container">
+      <div class="footer-bottom">
+        <p>&copy; 2023 ExamForEverybody. All rights reserved.</p>
+        <div class="footer-bottom-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Cookie Policy</a>
+        </div>
+      </div>
+  </div>
+</footer>
+
+
+
+   <form action="{% url 'set_language' %}" method="post" id="language-form" class="d-none">
+    {% csrf_token %}
+    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+    <input name="language" type="hidden" value="" id="language-input">
+</form>
+
+<script>
+    function changeLanguage(langCode) {
+        // Set the language code in the hidden input
+        document.getElementById('language-input').value = langCode;
+        // Submit the form
+        document.getElementById('language-form').submit();
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

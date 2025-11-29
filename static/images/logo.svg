@@ -1,0 +1,19 @@
+<svg width="260" height="50" viewBox="0 0 260 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        /* We use the fonts we already loaded in base.html */
+        .logo-text {
+            font-family: 'Playfair Display', serif; /* Serif font for the "academic" part */
+            font-weight: 700;
+            font-size: 28px;
+        }
+        .text-dark { fill: #2d2f31; } /* Charcoal */
+        .text-brand { fill: #a435f0; } /* Udemy Purple */
+    </style>
+    
+    <circle cx="12" cy="22" r="6" fill="#a435f0"/>
+    <path d="M12 22L12 38" stroke="#2d2f31" stroke-width="3" stroke-linecap="round"/>
+    
+    <text x="30" y="32" class="logo-text">
+        <tspan class="text-dark">Exam</tspan><tspan class="text-brand">ForEverybody</tspan>
+    </text>
+</svg>

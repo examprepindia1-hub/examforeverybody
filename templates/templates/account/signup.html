@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Sign Up" %} - ExamForEverybody{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm p-4">
+                <h2 class="fw-bold text-center mb-4" style="color: var(--brand-dark);">{% trans "Create an Account" %}</h2>
+                <p class="text-center text-muted mb-4">{% trans "Join us to start mastering your exams today." %}</p>
+
+                <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                    {% endif %}
+                    <div class="d-grid mt-4">
+                        <button class="btn btn-primary-ud btn-lg fw-bold" type="submit">{% trans "Sign Up" %}</button>
+                    </div>
+                </form>
+                
+            </div>
+            <div class="text-center mt-4">
+                 {% trans "Already have an account?" %} <a href="{% url 'account_login' %}" class="fw-bold text-decoration-none" style="color: var(--brand-primary);">{% trans "Log In" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
