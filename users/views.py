@@ -4,6 +4,9 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from .forms import StudentSignUpForm, UserLoginForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import UserUpdateForm
 
 def student_signup(request):
     if request.method == 'POST':
@@ -24,3 +27,16 @@ class CustomLoginView(LoginView):
     
     def get_success_url(self):
         return reverse_lazy('home')
+    
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated!')
+            return redirect('profile')
+    else:
+        form = UserUpdateForm(instance=request.user)
+    
+    return render(request, 'users/profile.html', {'form': form})

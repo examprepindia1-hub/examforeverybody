@@ -102,8 +102,7 @@ h1, h2, h3, h4, .navbar-brand {
     background-color: var(--brand-dark);
     background-size: cover;
     background-position: center;
-    /* Optional subtle overlay mentioned in spec to ensure text contrast if bg image loads */
-    box-shadow: inset 0 0 0 1000px rgba(17, 41, 56, 0.6); 
+    
 }
 
 /* Floating White Card */

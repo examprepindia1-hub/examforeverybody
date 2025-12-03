@@ -76,3 +76,11 @@ def initiate_purchase(request, slug):
             'key_id': settings.RAZORPAY_KEY_ID
         }
         return render(request, 'billing/payment_page.html', context)
+    
+
+@login_required
+def order_history(request):
+    # Fetch orders, newest first
+    orders = Order.objects.filter(user=request.user).order_by('-created').prefetch_related('items__item')
+    
+    return render(request, 'billing/order_history.html', {'orders': orders})

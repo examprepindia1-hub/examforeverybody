@@ -37,20 +37,18 @@
             </button>
 
             <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav me-3">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle fw-semibold" href="#" data-bs-toggle="dropdown" style="color: var(--brand-dark);">
-                            {% trans "Categories" %}
-                        </a>
-                        <ul class="dropdown-menu">
-                            {% for cat in navbar_categories %}
-                                <li><a class="dropdown-item" href="#">{{ cat.display_name }}</a></li>
-                            {% empty %}
-                                <li><span class="dropdown-item text-muted">{% trans "No categories yet" %}</span></li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                </ul>
+               <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+    <li class="nav-item">
+        <a class="nav-link fw-semibold" href="{% url 'explore' %}">Browse Courses</a>
+    </li>
+
+    {% if user.is_authenticated %}
+        <li class="nav-item">
+            <a class="nav-link fw-semibold" href="{% url 'dashboard' %}">My Dashboard</a>
+        </li>
+        {% else %}
+        {% endif %}
+</ul>
 
                 <form class="d-flex flex-grow-1 mx-lg-4 my-2 my-lg-0 position-relative" role="search">
                     <input class="form-control search-input w-100" type="search" placeholder="{% trans 'Search for exams, skills...' %}">
@@ -78,7 +76,7 @@
 
                     {% if user.is_authenticated %}
                         <li class="nav-item me-3">
-                            <a href="#" class="nav-link" style="color: var(--brand-dark);">{% trans "My Learning" %}</a>
+                            <a href="{% url 'home' %}" class="nav-link" style="color: var(--brand-dark);">{% trans "My Learning" %}</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link" href="#" data-bs-toggle="dropdown">
@@ -86,18 +84,19 @@
                                     {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
                                 </div>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end animate slideIn">
-                                <li><a class="dropdown-item" href="#">{% trans "Profile" %}</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
-        {% csrf_token %}
-    </form>
-    <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-        {% trans "Logout" %}
-    </a>
-</li>
-                            </ul>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                <li><div class="dropdown-header text-muted small">Account</div></li>
+                
+                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                <li><a class="dropdown-item" href="{% url 'order_history' %}"><i class="bi bi-receipt me-2"></i>Order History</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Log Out</button>
+                    </form>
+                </li>
+            </ul>
                         </li>
                     {% else %}
                        <li class="nav-item me-2">

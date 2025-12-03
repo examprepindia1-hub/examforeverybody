@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     MockTestAttributes, TestSection, TestQuestion, 
-    QuestionOption, UserTestAttempt, QuestionReport
+    QuestionOption, UserTestAttempt, QuestionReport,QuestionAudio,QuestionMedia
 )
 
 # --- 1. Content Management ---
@@ -10,12 +10,24 @@ class QuestionOptionInline(admin.TabularInline):
     model = QuestionOption
     extra = 4  # Show 4 empty slots for options by default
 
+class QuestionImageInline(admin.TabularInline):
+    model = QuestionMedia
+    extra = 1  # Show 1 empty slot by default
+
+class QuestionAudioInline(admin.TabularInline):
+    model = QuestionAudio
+    extra = 1
+
+class QuestionOptionInline(admin.TabularInline):
+    model = QuestionOption
+    extra = 4
+
 @admin.register(TestQuestion)
 class TestQuestionAdmin(admin.ModelAdmin):
-    list_display = ('short_text', 'section', 'question_type', 'marks', 'sort_order')
-    list_filter = ('section__test', 'question_type')
+    list_display = ('short_text', 'section', 'question_type', 'marks')
     search_fields = ('question_text',)
-    inlines = [QuestionOptionInline]
+    # Add the new inlines here
+    inlines = [QuestionImageInline, QuestionAudioInline, QuestionOptionInline]
     
     def short_text(self, obj):
         return obj.question_text[:50] + "..."

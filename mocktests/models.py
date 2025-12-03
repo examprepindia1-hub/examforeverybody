@@ -25,7 +25,18 @@ class MockTestAttributes(TimeStampedModel):
     pass_percentage = models.PositiveIntegerField(default=50, help_text=_("Minimum % to pass"))
     has_negative_marking = models.BooleanField(default=False)
     negative_marking_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, help_text=_("e.g. 0.25 for 25% deduction"))
-    
+    instructions = models.TextField(
+        _("Instructions"), 
+        blank=True, 
+        help_text=_("Specific rules for this exam (e.g., Marking scheme, allowed items)."),
+        default="""<ol>
+        <li>Total duration of this examination is defined in the timer.</li>
+        <li>The clock will be set at the server. The countdown timer in the top right corner of screen will display the remaining time available for you to complete the examination.</li>
+        <li>The question palette displayed on the right side of screen will show the status of each question.</li>
+        <li>You can mark a question for review to revisit it later.</li>
+        <li><strong>Marking Scheme:</strong> Correct Answer: +1, Incorrect Answer: 0.</li>
+        </ol>"""
+            )
     # Leaderboard Logic
     ranking_weight = models.DecimalField(max_digits=4, decimal_places=2, default=1.0, help_text=_("Multiplier for the global ranking (e.g., 1.5 for final exams)"))
 
@@ -78,10 +89,7 @@ class TestQuestion(models.Model):
     question_text = models.TextField(_("Question Text"))
     explanation = models.TextField(_("Explanation"), blank=True)
     
-    # NEW: Media Support for NEET/IELTS
-    question_image = models.ImageField(upload_to='questions/images/', null=True, blank=True, help_text=_("Diagrams for JEE/NEET"))
-    audio_clip = models.FileField(upload_to='questions/audio/', null=True, blank=True, help_text=_("For IELTS/TOEFL Listening"))
-
+  
     question_type = models.CharField(max_length=20, choices=QuestionType.choices, default=QuestionType.MCQ)
     marks = models.PositiveIntegerField(default=1)
     sort_order = models.PositiveIntegerField(default=0)
@@ -91,6 +99,29 @@ class TestQuestion(models.Model):
 
     def __str__(self):
         return f"Q: {self.question_text[:50]}..."
+    
+class QuestionMedia(models.Model):
+    """
+    Supports multiple images per question.
+    """
+    question = models.ForeignKey(TestQuestion, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='questions/images/')
+    caption = models.CharField(max_length=255, blank=True, help_text=_("Optional description"))
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['sort_order']
+
+class QuestionAudio(models.Model):
+    """
+    Supports multiple audio clips per question.
+    """
+    question = models.ForeignKey(TestQuestion, on_delete=models.CASCADE, related_name='audios')
+    audio_file = models.FileField(upload_to='questions/audio/')
+    label = models.CharField(max_length=100, blank=True, help_text=_("e.g., 'Speaker 1', 'Conversation A'"))
+
+    def __str__(self):
+        return self.label or "Audio Clip"
 
 class QuestionOption(models.Model):
     """
@@ -99,6 +130,7 @@ class QuestionOption(models.Model):
     question = models.ForeignKey(TestQuestion, on_delete=models.CASCADE, related_name='options')
     option_text = models.CharField(_("Option Text"), max_length=500)
     is_correct = models.BooleanField(default=False)
+    option_image = models.ImageField(upload_to='options/images/', null=True, blank=True)
 
     def __str__(self):
         return self.option_text
@@ -147,6 +179,7 @@ class UserAnswer(TimeStampedModel):
     
     # Score awarded for this specific answer (useful for partial marking in CBSE)
     score_awarded = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    is_marked_for_review = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('attempt', 'question')
