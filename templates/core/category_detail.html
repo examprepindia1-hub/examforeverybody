@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.display_name }} - ExamForEverybody{% endblock %}
+
+{% block content %}
+<div class="bg-primary py-5 text-white position-relative overflow-hidden"
+     {% if category.image %}
+        style="background-image: url('{{ category.image.url }}'); background-size: cover; background-position: center;"
+    {% endif %}>
+    <div class="container position-relative z-2">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-3">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'explore' %}" class="text-white-50 text-decoration-none">Categories</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">{{ category.display_name }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-4 fw-bold mb-3 text-white">{{ category.display_name }}</h1>
+                <p class="lead opacity-75 mb-0" style="max-width: 600px;">
+                    {{ category.description|default:"Comprehensive resources including mock tests, live classes, and study notes designed to help you ace this subject." }}
+                </p>
+            </div>
+            <div class="col-md-4 text-center d-none d-md-block">
+                <i class="bi {{ category.icon_class|default:'bi-mortarboard' }}" style="font-size: 8rem; opacity: 0.2;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    
+    <ul class="nav nav-pills mb-4 border-bottom pb-3" id="catTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active rounded-pill px-4 fw-bold" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button">
+                All Content
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill px-4 fw-bold" id="tests-tab" data-bs-toggle="tab" data-bs-target="#tests" type="button">
+                Mock Tests <span class="badge bg-secondary ms-1">{{ mock_tests.count }}</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill px-4 fw-bold" id="workshops-tab" data-bs-toggle="tab" data-bs-target="#workshops" type="button">
+                Live Workshops <span class="badge bg-secondary ms-1">{{ workshops.count }}</span>
+            </button>
+        </li>
+        </ul>
+
+    <div class="tab-content" id="catTabContent">
+        
+        <div class="tab-pane fade show active" id="all" role="tabpanel">
+            <div class="row g-4">
+                {% for item in mock_tests|slice:":4" %}
+                    {% include 'includes/item_card.html' with item=item %}
+                {% endfor %}
+                {% for item in workshops|slice:":4" %}
+                    {% include 'includes/item_card.html' with item=item %}
+                {% endfor %}
+                
+                {% if not mock_tests and not workshops %}
+                    <div class="col-12 text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                        No content available in this category yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tests" role="tabpanel">
+            <div class="row g-4">
+                {% for item in mock_tests %}
+                    {% include 'includes/item_card.html' with item=item %}
+                {% empty %}
+                    <div class="col-12 py-5 text-muted text-center">No mock tests found.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="workshops" role="tabpanel">
+            <div class="row g-4">
+                {% for item in workshops %}
+                    {% include 'includes/item_card.html' with item=item %}
+                {% empty %}
+                    <div class="col-12 py-5 text-muted text-center">No workshops found.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

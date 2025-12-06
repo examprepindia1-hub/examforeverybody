@@ -24,9 +24,20 @@ class Category(TimeStampedModel):
         related_name='children'
     )
 
+    slug = models.SlugField(unique=True, blank=True)
+    image = models.ImageField(upload_to='categories/', null=True, blank=True, help_text="Upload a 400x300px image for the card.")
+    description = models.TextField(blank=True, help_text="Short summary for the card.")
+    icon_class = models.CharField(max_length=50, default="bi-book", help_text="Bootstrap icon class (e.g., bi-laptop)")
+
     class Meta:
         verbose_name_plural = "Categories"
         ordering = ['display_name']
 
     def __str__(self):
         return self.display_name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.display_name)
+        super().save(*args, **kwargs)
