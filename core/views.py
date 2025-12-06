@@ -6,6 +6,52 @@ from marketplace.models import MarketplaceItem
 from enrollments.models import UserEnrollment
 from mocktests.models import UserTestAttempt
 from .models import Category
+from django.db.models import Q
+from django.core.paginator import Paginator
+
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from marketplace.models import MarketplaceItem
+from blog.models import Post  # <--- Import this
+
+def search(request):
+    query = request.GET.get('q', '')
+    
+    # Initialize empty querysets
+    all_items = MarketplaceItem.objects.none()
+    blog_results = Post.objects.none()
+
+    if query:
+        # 1. Search Marketplace (Tests/Workshops)
+        all_items = MarketplaceItem.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query),
+            is_active=True
+        ).select_related('mock_test_details').order_by('-created')
+
+        # 2. Search Blogs (Title or Content)
+        blog_results = Post.objects.filter(
+            Q(title__icontains=query) | Q(content__icontains=query),
+            status='published'
+        ).order_by('-created_at')
+
+    # Segregate Marketplace Items
+    mock_tests = all_items.filter(item_type='MOCK_TEST')
+    workshops = all_items.filter(item_type='WORKSHOP')
+    
+    # Pagination (Mainly for the 'All Items' tab if you wish, or just list them)
+    # For simplicity, we are just passing the full lists to tabs for now.
+    
+    total_count = all_items.count() + blog_results.count()
+
+    context = {
+        'query': query,
+        'total_count': total_count,
+        'mock_tests': mock_tests,
+        'workshops': workshops,
+        'blogs': blog_results, # <--- Pass blogs to template
+    }
+    return render(request, 'core/search_results.html', context)
 
 def home(request):
     """

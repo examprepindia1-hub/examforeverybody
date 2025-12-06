@@ -10,5 +10,6 @@ urlpatterns = [
     path('billing/', include('billing.urls')),
     path('test/', include('mocktests.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
+    path('blog/', include('blog.urls', namespace='blog')),
     path('', include('core.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

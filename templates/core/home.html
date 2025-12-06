@@ -12,12 +12,12 @@
                 <p class="lead mb-4 text-muted">
                     {% trans "Trusted mock tests and live workshops for SAT, JEE, IELTS, and more. Start your journey to success today." %}
                 </p>
-                <form class="d-flex position-relative shadow-sm rounded-pill overflow-hidden border">
-                    <input class="form-control border-0 ps-4 py-3" type="search" placeholder="{% trans 'What do you want to learn?' %}">
-                    <button class="btn btn-primary px-4 fw-bold" type="submit">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </form>
+               <form class="d-flex position-relative shadow-sm rounded-pill overflow-hidden border" action="{% url 'search' %}" method="get">
+    <input class="form-control border-0 ps-4 py-3" type="search" name="q" placeholder="What do you want to learn?" required>
+    <button class="btn btn-primary px-4 fw-bold" type="submit">
+        <i class="bi bi-search"></i>
+    </button>
+</form>
             </div>
         </div>
     </div>

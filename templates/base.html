@@ -50,19 +50,20 @@
         {% endif %}
 </ul>
 
-                <form class="d-flex flex-grow-1 mx-lg-4 my-2 my-lg-0 position-relative" role="search">
-                    <input class="form-control search-input w-100" type="search" placeholder="{% trans 'Search for exams, skills...' %}">
-                    <button class="btn-search" type="submit">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </form>
+                <form class="d-flex flex-grow-1 mx-lg-4 my-2 my-lg-0 position-relative" action="{% url 'search' %}" method="get">
+    <input class="form-control search-input w-100" type="search" name="q" placeholder="Search for exams, skills..." required>
+    <button class="btn-search" type="submit">
+        <i class="bi bi-search"></i>
+    </button>
+</form>
 
                 <ul class="navbar-nav ms-auto align-items-center">
-                    
+                    <li><a class="nav-link" href="{% url 'blog:post_list' %}">Blog & News</a></li>
                     <li class="nav-item dropdown me-3 d-none d-lg-block">
-    <a class="nav-link dropdown-toggle d-flex align-items-center p-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--brand-dark);" title="{% trans 'Select Language' %}">
+                        
+    <!-- <a class="nav-link dropdown-toggle d-flex align-items-center p-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--brand-dark);" title="{% trans 'Select Language' %}">
         <i class="bi bi-globe fs-5"></i>
-    </a>
+    </a> -->
     <ul class="dropdown-menu dropdown-menu-end animate slideIn">
         <li><h6 class="dropdown-header text-uppercase small">{% trans "Language" %}</h6></li>
         
@@ -160,7 +161,7 @@
       <ul class="footer-links">
         <li><a href="#">About Us</a></li>
         <li><a href="#">Careers / Hiring</a></li>
-        <li><a href="#">Blog & News</a></li>
+        <li><a href="{% url 'blog:post_list' %}">Blog & News</a></li>
         <li><a href="#">Help Center / FAQs</a></li>
         <li><a href="#">Contact Support</a></li>
       </ul>

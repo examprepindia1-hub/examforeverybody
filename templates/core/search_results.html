@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search: {{ query }}{% endblock %}
+
+{% block content %}
+<div class="bg-light py-5" style="min-height: 80vh;">
+    <div class="container">
+        
+        <div class="mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item active">Search Results</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold">
+                {% if query %}
+                    Found {{ total_count }} results for "{{ query }}"
+                {% else %}
+                    Search our catalog
+                {% endif %}
+            </h2>
+        </div>
+
+        {% if total_count == 0 %}
+             <div class="col-12 text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-search text-muted opacity-25" style="font-size: 5rem;"></i>
+                </div>
+                <h4 class="text-muted">We couldn't find anything matching your search.</h4>
+                <p class="text-muted mb-4">Try checking your spelling or use more general keywords.</p>
+                <a href="{% url 'explore' %}" class="btn btn-primary rounded-pill px-5 fw-bold">
+                    Browse All Courses
+                </a>
+            </div>
+        {% else %}
+
+            <ul class="nav nav-pills mb-4 border-bottom pb-3" id="searchTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active rounded-pill px-4 fw-bold" id="tests-tab" data-bs-toggle="tab" data-bs-target="#tests" type="button">
+                        Mock Tests <span class="badge bg-secondary ms-1">{{ mock_tests.count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4 fw-bold" id="workshops-tab" data-bs-toggle="tab" data-bs-target="#workshops" type="button">
+                        Workshops <span class="badge bg-secondary ms-1">{{ workshops.count }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link rounded-pill px-4 fw-bold" id="blogs-tab" data-bs-toggle="tab" data-bs-target="#blogs" type="button">
+                        Blogs & Articles <span class="badge bg-secondary ms-1">{{ blogs.count }}</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="searchTabsContent">
+                
+                <div class="tab-pane fade show active" id="tests" role="tabpanel">
+                    <div class="row g-4">
+                        {% for item in mock_tests %}
+                            {% include 'includes/item_card.html' with item=item %}
+                        {% empty %}
+                            <div class="col-12 py-5 text-muted text-center">No mock tests found matching "{{ query }}".</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="workshops" role="tabpanel">
+                    <div class="row g-4">
+                        {% for item in workshops %}
+                            {% include 'includes/item_card.html' with item=item %}
+                        {% empty %}
+                            <div class="col-12 py-5 text-muted text-center">No workshops found matching "{{ query }}".</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="blogs" role="tabpanel">
+                    <div class="row g-4">
+                        {% for post in blogs %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm hover-lift">
+                                <a href="{{ post.get_absolute_url }}" class="text-decoration-none text-dark">
+                                    <div style="height: 200px; overflow: hidden; border-radius: 0.5rem 0.5rem 0 0;">
+                                        {% if post.image %}
+                                            <img src="{{ post.image.url }}" class="w-100 h-100 object-fit-cover">
+                                        {% else %}
+                                            <div class="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center text-white">
+                                                <i class="bi bi-file-text fs-1"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body p-4">
+                                        <small class="text-muted text-uppercase" style="font-size: 0.75rem;">Article</small>
+                                        <h5 class="fw-bold mt-2 mb-2 line-clamp-2">{{ post.title }}</h5>
+                                        <p class="text-muted small line-clamp-3">{{ post.content|striptags }}</p>
+                                        <span class="text-primary fw-bold small">Read More <i class="bi bi-arrow-right"></i></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        {% empty %}
+                            <div class="col-12 py-5 text-muted text-center">No articles found matching "{{ query }}".</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+        {% endif %} 
+    </div>
+</div>
+
+<style>
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .hover-lift { transition: transform 0.2s; }
+    .hover-lift:hover { transform: translateY(-5px); }
+</style>
+{% endblock %}

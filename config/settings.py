@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'workshops.apps.WorkshopsConfig',
     'billing.apps.BillingConfig',
     'enrollments.apps.EnrollmentsConfig',
+    'blog.apps.BlogConfig',
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
