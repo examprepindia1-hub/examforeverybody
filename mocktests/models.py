@@ -50,6 +50,8 @@ class TestSection(models.Model):
     test = models.ForeignKey(MockTestAttributes, on_delete=models.CASCADE, related_name='sections')
     title = models.CharField(_("Section Title"), max_length=255)
     sort_order = models.PositiveIntegerField(default=0)
+    section_duration = models.IntegerField(null=True, help_text="Time limit for this section in minutes")
+    is_mandatory = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['sort_order']
@@ -82,7 +84,8 @@ class TestQuestion(models.Model):
         ESSAY = 'ESSAY', _('Essay / Long Answer') # Added for IELTS/TOEFL/CBSE
 
     section = models.ForeignKey(TestSection, on_delete=models.CASCADE, related_name='questions')
-    
+    DIFFICULTY_CHOICES = [('EASY', 'Easy'), ('MEDIUM', 'Medium'), ('HARD', 'Hard')]
+    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='MEDIUM')
     # NEW: Link to a passage (Optional, because not all questions have passages)
     passage = models.ForeignKey(ComprehensionPassage, on_delete=models.SET_NULL, null=True, blank=True, related_name='questions')
 
@@ -168,7 +171,7 @@ class UserAnswer(TimeStampedModel):
     
     # 1. MCQ Answer
     selected_option = models.ForeignKey(QuestionOption, on_delete=models.SET_NULL, null=True, blank=True)
-    
+    audio_answer = models.FileField(upload_to='answers/audio/', null=True, blank=True)
     # 2. Numeric Answer (JEE)
     numeric_answer = models.CharField(max_length=255, null=True, blank=True)
     

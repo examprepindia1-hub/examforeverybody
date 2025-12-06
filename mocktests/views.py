@@ -46,29 +46,47 @@ def start_test(request, slug):
 @login_required
 @require_POST
 def save_answer(request):
-    data = json.loads(request.body)
-    attempt_id = data.get('attempt_id')
-    question_id = data.get('question_id')
-    option_id = data.get('option_id')
-    text_input = data.get('text_input')
-    
-    # New field from frontend
-    is_reviewed = data.get('is_reviewed', False) 
+    # 1. Check if it is a File Upload (Multipart)
+    if request.content_type.startswith('multipart/form-data'):
+        attempt_id = request.POST.get('attempt_id')
+        question_id = request.POST.get('question_id')
+        audio_file = request.FILES.get('audio_data')
+        
+        attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
+        question = get_object_or_404(TestQuestion, id=question_id)
+        
+        answer, created = UserAnswer.objects.update_or_create(
+            attempt=attempt,
+            question=question,
+            defaults={'audio_answer': audio_file}
+        )
+        return JsonResponse({'status': 'uploaded', 'url': answer.audio_answer.url})
 
-    attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
-    question = get_object_or_404(TestQuestion, id=question_id)
+    # 2. Handle Standard JSON (MCQ / Text)
+    else:
+        data = json.loads(request.body)
+        attempt_id = data.get('attempt_id')
+        question_id = data.get('question_id')
+        option_id = data.get('option_id')
+        text_input = data.get('text_input')
+        
+        # New field from frontend
+        is_reviewed = data.get('is_reviewed', False) 
 
-    answer, created = UserAnswer.objects.update_or_create(
-        attempt=attempt,
-        question=question,
-        defaults={
-            'selected_option_id': option_id if option_id else None,
-            'text_answer': text_input if text_input else '',
-            'is_marked_for_review': is_reviewed  # Save the status
-        }
-    )
-    
-    return JsonResponse({'status': 'saved', 'answer_id': answer.id})
+        attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
+        question = get_object_or_404(TestQuestion, id=question_id)
+
+        answer, created = UserAnswer.objects.update_or_create(
+            attempt=attempt,
+            question=question,
+            defaults={
+                'selected_option_id': option_id if option_id else None,
+                'text_answer': text_input if text_input else '',
+                'is_marked_for_review': is_reviewed  # Save the status
+            }
+        )
+        
+        return JsonResponse({'status': 'saved', 'answer_id': answer.id})
 
 
 @login_required
