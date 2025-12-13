@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div>
+    <h2>Import Questions</h2>
+    <p>Upload an Excel (.xlsx) or CSV (.csv) file to bulk upload questions.</p>
+    
+    <form action="." method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="padding: 20px 0;">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="button" style="padding:10px 20px;">Upload and Import</button>
+    </form>
+</div>
+{% endblock %}

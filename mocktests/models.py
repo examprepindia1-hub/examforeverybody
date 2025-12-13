@@ -17,7 +17,8 @@ class MockTestAttributes(TimeStampedModel):
     """
     EXAM_TYPES=[
         ('GENERAL', 'General Mock Test'),
-        ('SAT', 'Digital SAT (Adaptive)'),
+        ('SAT_ADAPTIVE', 'Digital SAT (Adaptive)'),
+        ('SAT_NON_ADAPTIVE', 'Digital SAT (Non-Adaptive)'),
         ('IELTS', 'IELTS Academic/General'),
         ('JEE_MAINS', 'JEE Mains'),
         ('JEE_ADVANCED', 'JEE Advanced'),
