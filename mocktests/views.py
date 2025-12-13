@@ -8,45 +8,107 @@ import json
 
 from marketplace.models import MarketplaceItem
 from enrollments.models import UserEnrollment
-from .models import QuestionReport,MockTestAttributes, UserTestAttempt, TestSection, TestQuestion, UserAnswer, QuestionOption
+from .models import (
+    QuestionReport, MockTestAttributes, UserTestAttempt, 
+    TestSection, TestQuestion, UserAnswer, QuestionOption
+)
+from .services import get_exam_strategy  # <--- The Strategy Factory
 
 @login_required
 def start_test(request, slug):
     """
-    Initializes the test. If an unfinished attempt exists, resume it.
-    Otherwise, start a new one.
+    Initializes the test. Handles enrollment checks and resuming.
     """
     item = get_object_or_404(MarketplaceItem, slug=slug)
     
-    # 1. Security: Check Enrollment
+    # 1. Enrollment Check
     if not UserEnrollment.objects.filter(user=request.user, item=item).exists():
         return redirect('item_detail', slug=slug)
 
     test_details = get_object_or_404(MockTestAttributes, item=item)
 
-    # 2. Check for existing incomplete attempt
-    existing_attempt = UserTestAttempt.objects.filter(
-        user=request.user, 
-        test=test_details, 
-        status=UserTestAttempt.Status.IN_PROGRESS
-    ).first()
-
-    if existing_attempt:
-        return redirect('take_test', attempt_id=existing_attempt.id)
-
-    # 3. Create new attempt
-    attempt = UserTestAttempt.objects.create(
+    # 2. Get or Create Attempt
+    attempt, created = UserTestAttempt.objects.get_or_create(
         user=request.user,
         test=test_details,
         status=UserTestAttempt.Status.IN_PROGRESS
     )
-    return redirect('take_test', attempt_id=attempt.id)
+
+    # 3. Strategy Hook (Optional)
+    # If SAT, we might need to assign the initial "Routing Module" here.
+    # strategy = get_exam_strategy(test_details.exam_type)
+    # strategy.initialize_attempt(attempt) 
+
+    has_started = attempt.answers.exists()
+
+    context = {
+        'attempt': attempt,
+        'test': test_details,
+        'item': item,
+        'has_started': has_started, 
+    }
+    return render(request, 'mocktests/test_intro.html', context)
+
+
+@login_required
+def take_test(request, attempt_id):
+    """
+    The main Exam Engine. Loads the correct UI based on Exam Type.
+    """
+    attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
+    
+    if attempt.status == UserTestAttempt.Status.SUBMITTED:
+        return redirect('test_result', attempt_id=attempt.id)
+
+    test = attempt.test
+    
+    # 1. Get the correct Strategy (SAT, IELTS, or GENERAL)
+    strategy = get_exam_strategy(test.exam_type)
+
+    # 2. Timer Logic (Server-Side Calculation)
+    now = timezone.now()
+    if not attempt.started_at:
+        attempt.started_at = now
+        attempt.save()
+
+    elapsed = (now - attempt.started_at).total_seconds()
+    total_duration_seconds = test.duration_minutes * 60
+    remaining_seconds = max(0, int(total_duration_seconds - elapsed))
+
+    if remaining_seconds <= 0:
+        return submit_test(request, attempt.id)
+
+    # 3. Fetch Data (Optimized)
+    # For Adaptive tests, we might filter sections differently here later.
+    sections = TestSection.objects.filter(test=test).prefetch_related(
+        Prefetch('questions', queryset=TestQuestion.objects.order_by('sort_order').prefetch_related('options', 'images', 'audios'))
+    ).order_by('sort_order')
+
+    existing_answers = UserAnswer.objects.filter(attempt=attempt).values(
+        'question_id', 'selected_option_id', 'text_answer', 'is_marked_for_review'
+    )
+    answers_dict = {str(a['question_id']): a for a in existing_answers}
+
+    context = {
+        'attempt': attempt,
+        'test': test,
+        'sections': sections,
+        'answers_json': json.dumps(answers_dict),
+        'remaining_seconds': remaining_seconds,
+    }
+    
+    # 4. Render the specific template for this exam type
+    template_name = strategy.get_take_test_template()
+    return render(request, template_name, context)
 
 
 @login_required
 @require_POST
 def save_answer(request):
-    # 1. Check if it is a File Upload (Multipart)
+    """
+    AJAX Endpoint: Saves answers (Text, Radio, Audio)
+    """
+    # A. Handle File Upload (Audio/Speaking)
     if request.content_type.startswith('multipart/form-data'):
         attempt_id = request.POST.get('attempt_id')
         question_id = request.POST.get('question_id')
@@ -62,16 +124,14 @@ def save_answer(request):
         )
         return JsonResponse({'status': 'uploaded', 'url': answer.audio_answer.url})
 
-    # 2. Handle Standard JSON (MCQ / Text)
+    # B. Handle JSON (MCQ / Text)
     else:
         data = json.loads(request.body)
         attempt_id = data.get('attempt_id')
         question_id = data.get('question_id')
         option_id = data.get('option_id')
         text_input = data.get('text_input')
-        
-        # New field from frontend
-        is_reviewed = data.get('is_reviewed', False) 
+        is_reviewed = data.get('is_reviewed', False)
 
         attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
         question = get_object_or_404(TestQuestion, id=question_id)
@@ -82,7 +142,7 @@ def save_answer(request):
             defaults={
                 'selected_option_id': option_id if option_id else None,
                 'text_answer': text_input if text_input else '',
-                'is_marked_for_review': is_reviewed  # Save the status
+                'is_marked_for_review': is_reviewed
             }
         )
         
@@ -90,215 +150,91 @@ def save_answer(request):
 
 
 @login_required
-@require_POST
-def report_question(request):
-    """
-    AJAX View to handle question reporting
-    """
-    data = json.loads(request.body)
-    question_id = data.get('question_id')
-    reason = data.get('reason')
-
-    if not reason:
-        return JsonResponse({'status': 'error', 'message': 'Reason is required'}, status=400)
-
-    question = get_object_or_404(TestQuestion, id=question_id)
-    
-    QuestionReport.objects.create(
-        user=request.user,
-        question=question,
-        report_text=reason
-    )
-    
-    return JsonResponse({'status': 'success', 'message': 'Report submitted. Thank you!'})
-
-@login_required
 def submit_test(request, attempt_id):
     """
-    Final submission logic.
+    Calculates score based on strategy and marks attempt as SUBMITTED.
     """
     attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
-    
-    if request.method == 'POST':
+    test = attempt.test
+
+    if request.method == 'POST' or attempt.status != UserTestAttempt.Status.SUBMITTED:
+        # 1. Get Strategy
+        strategy = get_exam_strategy(test.exam_type)
+        
+        # 2. Calculate Score (Delegated to Strategy)
+        # This handles SAT scaling, IELTS bands, or simple percentage
+        result_data = strategy.calculate_score(attempt)
+        
+        # 3. Update Attempt
         attempt.status = UserTestAttempt.Status.SUBMITTED
         attempt.completed_at = timezone.now()
+        attempt.score = result_data['score']
         
+        # Determine Pass/Fail (Strategy can also handle this if logic is complex)
+        # Simple default logic:
+        attempt.is_passed = attempt.score >= test.pass_percentage
         
-        # Calculate Score (Basic Logic)
-        # You can move this to a separate service or Celery task later
-        calculate_score(attempt)
         attempt.save()
 
         return redirect('test_result', attempt_id=attempt.id)
 
     return redirect('take_test', attempt_id=attempt_id)
 
-@login_required
-def start_test(request, slug):
-    item = get_object_or_404(MarketplaceItem, slug=slug)
-    if not UserEnrollment.objects.filter(user=request.user, item=item).exists():
-        return redirect('item_detail', slug=slug)
-
-    test_details = get_object_or_404(MockTestAttributes, item=item)
-
-    # Get or Create Attempt
-    attempt, created = UserTestAttempt.objects.get_or_create(
-        user=request.user,
-        test=test_details,
-        status=UserTestAttempt.Status.IN_PROGRESS
-    )
-
-    # Logic: It is "Resume" only if they have answered at least 1 question
-    has_started = attempt.answers.exists()
-
-    context = {
-        'attempt': attempt,
-        'test': test_details,
-        'item': item,
-        'has_started': has_started, # Pass this to template
-    }
-    return render(request, 'mocktests/test_intro.html', context)
-
-@login_required
-def take_test(request, attempt_id):
-    attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
-    
-    if attempt.status == UserTestAttempt.Status.SUBMITTED:
-        return redirect('test_result', attempt_id=attempt.id)
-
-    test = attempt.test
-    
-    # --- FIX: Calculate Server-Side Remaining Time ---
-    now = timezone.now()
-    # Assuming started_at is set when created. 
-    # If you want the timer to start ONLY when they enter this view, 
-    # you would update started_at here if it's None/Old. 
-    # For strict exams, we use Creation Time.
-    
-    elapsed = (now - attempt.started_at).total_seconds()
-    total_duration_seconds = test.duration_minutes * 60
-    remaining_seconds = max(0, int(total_duration_seconds - elapsed))
-
-    # Auto-submit if time is up
-    if remaining_seconds <= 0:
-        return submit_test(request, attempt.id) # Reuse submit logic
-    # -------------------------------------------------
-
-    sections = TestSection.objects.filter(test=test).prefetch_related(
-        Prefetch('questions', queryset=TestQuestion.objects.order_by('sort_order').prefetch_related('options', 'images', 'audios'))
-    ).order_by('sort_order')
-
-    existing_answers = UserAnswer.objects.filter(attempt=attempt).values(
-        'question_id', 'selected_option_id', 'text_answer', 'is_marked_for_review'
-    )
-    answers_dict = {str(a['question_id']): a for a in existing_answers}
-
-    context = {
-        'attempt': attempt,
-        'test': test,
-        'sections': sections,
-        'answers_json': json.dumps(answers_dict),
-        'remaining_seconds': remaining_seconds, # Pass calculated time
-    }
-    return render(request, 'mocktests/take_test.html', context)
-
-
-def calculate_score(attempt):
-    """
-    Grades the attempt by comparing UserAnswer with QuestionOption is_correct.
-    """
-    total_score = 0
-    
-    # Loop through all answers provided by the user
-    for user_answer in attempt.answers.all():
-        question = user_answer.question
-        
-        # Logic for Multiple Choice Questions
-        if question.question_type == 'MCQ' and user_answer.selected_option:
-            if user_answer.selected_option.is_correct:
-                # Correct! Add marks
-                total_score += question.marks
-                user_answer.is_correct = True
-                user_answer.score_awarded = question.marks
-            else:
-                # Wrong
-                user_answer.is_correct = False
-                user_answer.score_awarded = 0
-            
-            user_answer.save()
-            
-    # Update the attempt record
-    attempt.score = total_score
-    # Pass if score > 40% (or whatever logic you prefer)
-    total_marks = sum(q.marks for q in TestQuestion.objects.filter(section__test=attempt.test))
-    if total_marks > 0:
-        percentage = (total_score / total_marks) * 100
-        attempt.is_passed = percentage >= attempt.test.pass_percentage
-    
-    attempt.save()
 
 @login_required
 def test_result(request, attempt_id):
+    """
+    Displays the result using the strategy-specific template.
+    """
     attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
     
     if attempt.status != UserTestAttempt.Status.SUBMITTED:
         return redirect('take_test', attempt_id=attempt.id)
 
-    # 1. Calculate Stats
+    # 1. Get Strategy
+    strategy = get_exam_strategy(attempt.test.exam_type)
+
+    # 2. Common Stats (Useful for all templates)
     total_questions = TestQuestion.objects.filter(section__test=attempt.test).count()
     correct_answers = attempt.answers.filter(is_correct=True).count()
     incorrect_answers = attempt.answers.filter(is_correct=False).exclude(selected_option=None, text_answer__exact='').count()
     skipped_answers = total_questions - (correct_answers + incorrect_answers)
-    
     accuracy = (correct_answers / total_questions * 100) if total_questions > 0 else 0
     
-    # Time formatting
     time_taken = "N/A"
-    if attempt.completed_at and attempt.created:
-        duration = attempt.completed_at - attempt.created
+    if attempt.completed_at and attempt.started_at:
+        duration = attempt.completed_at - attempt.started_at
         total_seconds = int(duration.total_seconds())
         hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         time_taken = f"{hours:02}:{minutes:02}:{seconds:02}"
 
-    # --- FIX: Build a complete list of ALL questions (Answered + Skipped) ---
-    
-    # A. Get all questions for this test
+    # 3. Detailed Analysis (List building)
     all_questions = TestQuestion.objects.filter(
         section__test=attempt.test
     ).select_related('section').prefetch_related('options', 'images').order_by('section__sort_order', 'sort_order')
 
-    # B. Get existing user answers and map them by Question ID for fast lookup
-    user_answers_map = {
-        a.question_id: a 
-        for a in attempt.answers.select_related('selected_option').all()
-    }
-
-    # C. Construct the final analysis list
+    user_answers_map = {a.question_id: a for a in attempt.answers.select_related('selected_option').all()}
+    
     analysis_list = []
     for question in all_questions:
         user_answer = user_answers_map.get(question.id)
-        
-        # Determine status
         selected_option = None
+        status = 'SKIPPED'
+        
         if user_answer:
             selected_option = user_answer.selected_option
             if user_answer.is_correct:
                 status = 'CORRECT'
-            elif selected_option or user_answer.text_answer:
+            elif selected_option or (user_answer.text_answer and user_answer.text_answer.strip()):
                 status = 'WRONG'
-            else:
-                status = 'SKIPPED'
-        else:
-            status = 'SKIPPED'
-
+        
         analysis_list.append({
             'question': question,
             'user_answer': user_answer,
             'selected_option': selected_option,
             'status': status
         })
-    # -----------------------------------------------------------------------
 
     context = {
         'attempt': attempt,
@@ -308,7 +244,26 @@ def test_result(request, attempt_id):
         'skipped_answers': skipped_answers,
         'accuracy': round(accuracy, 1),
         'time_taken': time_taken,
-        'analysis_list': analysis_list,  # Pass the new combined list
+        'analysis_list': analysis_list,
     }
     
-    return render(request, 'mocktests/test_result.html', context)
+    # 4. Render Strategy Specific Template
+    # (e.g. mocktests/exams/sat/result.html)
+    template_name = strategy.get_result_template()
+    
+    return render(request, template_name, context)
+
+@login_required
+@require_POST
+def report_question(request):
+    data = json.loads(request.body)
+    question_id = data.get('question_id')
+    reason = data.get('reason')
+
+    if not reason:
+        return JsonResponse({'status': 'error', 'message': 'Reason is required'}, status=400)
+
+    question = get_object_or_404(TestQuestion, id=question_id)
+    QuestionReport.objects.create(user=request.user, question=question, report_text=reason)
+    
+    return JsonResponse({'status': 'success', 'message': 'Report submitted.'})

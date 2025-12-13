@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <h5 class="text-uppercase text-muted fw-bold ls-1 mb-4">Your Score Report</h5>
+            
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-dark text-white mb-5 shadow-lg" style="width: 220px; height: 220px; border: 8px solid #f8f9fa;">
+                <div>
+                    <div class="display-2 fw-bold">{{ attempt.score|floatformat:0 }}</div>
+                    <div class="text-white-50 small">TOTAL SCORE</div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm p-4">
+                        <h6 class="text-primary fw-bold">Reading & Writing</h6>
+                        <h2 class="fw-bold">{% widthratio attempt.score 2 1 %} <span class="text-muted fs-6 fw-normal">/ 800</span></h2>
+                        <div class="progress mt-2" style="height: 6px;">
+                            <div class="progress-bar bg-primary" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm p-4">
+                        <h6 class="text-success fw-bold">Math</h6>
+                        <h2 class="fw-bold">{% widthratio attempt.score 2 1 %} <span class="text-muted fs-6 fw-normal">/ 800</span></h2>
+                        <div class="progress mt-2" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-dark rounded-pill px-5 fw-bold">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

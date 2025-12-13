@@ -15,6 +15,14 @@ class MockTestAttributes(TimeStampedModel):
     Specific details for a Mock Test product.
     Linked One-to-One with the generic MarketplaceItem.
     """
+    EXAM_TYPES=[
+        ('GENERAL', 'General Mock Test'),
+        ('SAT', 'Digital SAT (Adaptive)'),
+        ('IELTS', 'IELTS Academic/General'),
+        ('JEE_MAINS', 'JEE Mains'),
+        ('JEE_ADVANCED', 'JEE Advanced'),
+    ]
+    exam_type = models.CharField(max_length=20, choices=EXAM_TYPES, default='GENERAL')
     item = models.OneToOneField(MarketplaceItem, on_delete=models.CASCADE, primary_key=True, related_name='mock_test_details')
     
     # Difficulty & Time

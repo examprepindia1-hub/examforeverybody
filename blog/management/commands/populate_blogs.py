@@ -1,150 +1,199 @@
-import random
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 from blog.models import Post
 from marketplace.models import MarketplaceItem
+from mocktests.models import MockTestAttributes
 
 User = get_user_model()
 
 class Command(BaseCommand):
-    help = 'Populates the blog with 20 initial posts about the product and exams.'
+    help = 'Clears old blogs and adds 5 high-quality SAT specific posts.'
 
     def handle(self, *args, **kwargs):
-        self.stdout.write("Starting blog population...")
+        self.stdout.write("--- Starting SAT Content Update ---")
 
-        # 1. Get an Author (Admin)
+        # 1. DELETE OLD BLOGS
+        count = Post.objects.count()
+        Post.objects.all().delete()
+        self.stdout.write(self.style.WARNING(f"Deleted {count} existing blog posts."))
+
+        # 2. GET AUTHOR
         author = User.objects.filter(is_superuser=True).first()
         if not author:
-            self.stdout.write(self.style.ERROR("No superuser found. Please create one first using 'createsuperuser'."))
+            self.stdout.write(self.style.ERROR("No superuser found. Please create one."))
             return
 
-        # 2. Get some Marketplace Items for Shortcodes
-        # We try to find existing items to inject into the blog posts
-        items = list(MarketplaceItem.objects.filter(is_active=True))
-        item_slug = items[0].slug if items else "sample-item-slug"
+        # 3. ENSURE A PRODUCT EXISTS (For the Rich Cards to work)
+        # We create a specific SAT product so the shortcodes [[item:sat-digital-bundle]] work.
+        sat_item, _ = MarketplaceItem.objects.get_or_create(
+            slug='sat-digital-bundle',
+            defaults={
+                'title': 'Digital SAT Prep Bundle 2025',
+                'description': 'Full-length adaptive mock tests, 500+ practice questions, and video solutions.',
+                'price': 49.00,
+                'item_type': 'MOCK_TEST',
+                'is_active': True
+            }
+        )
+        # Add attributes to it just in case
+        MockTestAttributes.objects.get_or_create(item=sat_item, defaults={'level': 'INTERMEDIATE', 'duration_minutes': 134})
+        
+        self.stdout.write(self.style.SUCCESS(f"Ensured product '{sat_item.title}' exists for blog linking."))
 
-        # 3. Define the 20 Blog Data Points
+        # 4. DEFINE THE 5 BLOG POSTS
         blogs_data = [
             {
-                "title": "5 Strategies to Ace Your SAT Math Section",
-                "content": f"""The SAT Math section can be daunting, but with the right approach, you can master it. Here are five proven strategies to boost your score.
-                
-1. **Master the Basics:** Ensure your algebra and geometry foundations are solid.
-2. **Time Management:** Don't get stuck on one hard question. Move on and come back.
-3. **Practice Tests:** There is no substitute for real practice.
+                "title": "What is the Digital SAT? Why take it? And How to Prepare?",
+                "content": f"""The SAT (Scholastic Assessment Test) has undergone a massive transformation. It is no longer the pen-and-paper giant of the past; welcome to the **Digital SAT**.
 
-Speaking of practice, have you tried our dedicated SAT Math Pack? It covers all these topics in depth.
+### What is the Digital SAT?
+The Digital SAT is a standardized test widely used for college admissions in the United States and other countries. It measures literacy, numeracy, and writing skills needed for academic success in college.
+* **Duration:** Shorter! Now only 2 hours and 14 minutes.
+* **Format:** Adaptive. If you do well in the first module, the second module becomes harder (and worth more points).
+* **Tools:** You get a built-in graphing calculator (Desmos) for the entire math section.
 
-[[item:{item_slug}]]
+### Why take the SAT?
+Even though some colleges are "test-optional," submitting a strong SAT score gives you a massive edge.
+1.  **Scholarships:** Many merit-based scholarships require an SAT score.
+2.  **Placement:** High scores can exempt you from introductory college courses.
+3.  **Differentiation:** In a pool of straight-A students, a 1500+ SAT score makes you stand out.
 
-4. **Calculator Strategy:** Know when to use it and when mental math is faster.
-5. **Review Mistakes:** Don't just check your score; analyze *why* you got a question wrong."""
-            },
-            {
-                "title": "Why Mock Tests Are Critical for JEE Advanced Success",
-                "content": """Many students focus solely on theory, but JEE Advanced is a test of application and temperament. Taking full-length mock tests helps you build the stamina required for the actual exam day. 
+### How to Prepare (3-Step Strategy)
+1.  **Diagnostic Test:** Take a full-length mock test blindly to see where you stand.
+2.  **Concept Building:** Don't just practice; learn the grammar rules and math formulas first.
+3.  **Adaptive Practice:** Since the real test is adaptive, practicing on paper books is no longer enough. You need a digital engine.
 
-Our platform offers a distraction-free, full-screen environment that simulates the real test exactly. This helps reduce anxiety and improves time management."""
+**Start your preparation with our Adaptive Mock Test series:**
+[[item:sat-digital-bundle]]
+"""
             },
             {
-                "title": "Top 10 Vocabulary Words Frequent in GRE",
-                "content": "Improving your vocabulary is the fastest way to boost your GRE Verbal score. Words like 'Aberration', 'Capricious', and 'Equivocate' appear frequently. We have compiled a list of 500 must-know words in our study notes section."
-            },
-            {
-                "title": "How to Analyze Your Test Performance on ExamForEverybody",
-                "content": "Did you know our dashboard offers a Radar Chart analysis? After submitting a test, go to the 'Detailed Analysis' tab. You will see a breakdown of your strengths and weaknesses by topic. Use this to focus your revision on the areas that need it most, rather than wasting time on what you already know."
-            },
-            {
-                "title": "IELTS Writing Task 2: A Complete Guide",
-                "content": f"""Achieving a Band 8.0 in writing requires structure. You need a clear introduction, body paragraphs with examples, and a concise conclusion.
-                
-If you need specific practice on this, check out our IELTS Academic Workshop:
+                "title": "SAT Syllabus 2025: Exam Pattern & Result Analysis",
+                "content": f"""Understanding the battlefield is half the victory. The Digital SAT is divided into two main sections: **Reading & Writing** and **Math**.
 
-[[item:{item_slug}]]
+### 1. Reading & Writing (RW) Section
+* **Structure:** Two modules (32 mins each).
+* **Question Count:** 54 questions total.
+* **Syllabus:**
+    * *Craft & Structure:* Vocabulary in context, text structure.
+    * *Information & Ideas:* Central ideas, command of evidence.
+    * *Standard English Conventions:* Grammar, punctuation, sentence structure.
+    * *Expression of Ideas:* Rhetorical synthesis, transitions.
 
-It includes live feedback from certified trainers."""
-            },
-            {
-                "title": "The Science of Spaced Repetition",
-                "content": "Cramming doesn't work long-term. Spaced repetition is a learning technique that incorporates increasing intervals of time between subsequent review of previously learned material in order to exploit the psychological spacing effect."
-            },
-            {
-                "title": "Introducing Dark Mode for Late Night Studies",
-                "content": "We listened to your feedback! ExamForEverybody now supports a system-based Dark Mode theme (coming soon). This reduces eye strain during those late-night revision sessions before the big exam."
-            },
-            {
-                "title": "NEET Physics: Formula Sheet for Mechanics",
-                "content": "Mechanics carries a huge weightage in NEET. We have uploaded a free downloadable PDF containing all essential formulas for Newton's Laws, Kinematics, and Rotational Motion. Log in to your dashboard to download it."
-            },
-            {
-                "title": "Success Story: How Anjali Cracked CAT with 99.8 Percentile",
-                "content": "Anjali was a working professional with only 2 hours a day to study. By using our 'Weekend Workshop' series and taking consistent micro-tests, she managed to clear IIM-A. Read her full interview here."
-            },
-            {
-                "title": "3 Common Mistakes to Avoid in Online Exams",
-                "content": "1. **Not checking internet connectivity:** Always ensure you have a backup connection.\n2. **Exiting Full Screen:** Our system flags this as a violation. Stay focused.\n3. **Ignoring the Timer:** Keep an eye on the clock, but don't let it panic you."
-            },
-            {
-                "title": "Python for Data Science: Where to Start?",
-                "content": f"""Data Science is the hottest career of the decade. Start with Python basics: Variables, Loops, and Functions. Once you are comfortable, move to Pandas and NumPy.
+### 2. Math Section
+* **Structure:** Two modules (35 mins each).
+* **Question Count:** 44 questions total.
+* **Syllabus:**
+    * *Algebra:* Linear equations, systems.
+    * *Advanced Math:* Quadratics, polynomials, non-linear equations.
+    * *Problem Solving:* Ratios, percentages, probability.
+    * *Geometry & Trigonometry:* Area, volume, angles, sin/cos/tan.
 
-We have a beginner-friendly course just for this:
-[[item:{item_slug}]]"""
+### Result Analysis: How is it scored?
+The SAT is scored on a scale of **400 to 1600**.
+* **RW:** 200–800 points.
+* **Math:** 200–800 points.
+
+**What is a "Good" Score?**
+* **1200+:** Good (Top 25%) - Gets you into solid state universities.
+* **1400+:** Excellent (Top 5%) - Competitive for top-tier schools.
+* **1500+:** Elite (Top 1%) - Required for Ivies (MIT, Stanford, Harvard).
+
+Want to know your predicted score? Take our diagnostic test now:
+[[item:sat-digital-bundle]]
+"""
             },
             {
-                "title": "Understanding Negative Marking",
-                "content": "Guessing can be dangerous. In exams like JEE and NEET, every wrong answer deducts marks. Our platform's 'Guessing Analysis' feature tells you if your guesses are usually lucky or costly. Check your test report today."
+                "title": "Top Books for SAT Preparation (And Why You Need More)",
+                "content": """While digital tools are essential for the new format, good old-fashioned books are still great for building concepts. Here are the top 4 recommendations from our experts.
+
+### 1. The Official Digital SAT Study Guide (College Board)
+* **Why:** It is from the makers of the test.
+* **Best For:** Understanding the official question types and format.
+
+### 2. SAT Prep Black Book (Mike Barrett)
+* **Why:** It teaches you *how* to take the test, focusing on strategies and "hacks" rather than just pure content.
+* **Best For:** Strategy and mindset.
+
+### 3. Barron's Digital SAT Premium
+* **Why:** Known for being harder than the actual test. If you can crack Barron's, the real SAT will feel easy.
+* **Best For:** High achievers aiming for 1500+.
+
+### 4. Princeton Review Digital SAT Prep
+* **Why:** Comprehensive content review and plenty of drills.
+* **Best For:** Students starting from scratch.
+
+### ⚠️ Important Warning
+The new SAT is **Adaptive**. Books are static—they cannot simulate the experience of the second module getting harder based on your performance in the first. 
+To truly be ready, you **must** practice on a digital platform that mimics the Bluebook app.
+
+**Get the real Digital SAT experience here:**
+[[item:sat-digital-bundle]]
+"""
             },
             {
-                "title": "The Benefits of Peer Learning",
-                "content": "Learning alone can be isolating. Use the 'Discussion' tab under every question to ask doubts and answer queries from fellow aspirants. Teaching others is the best way to reinforce your own learning."
+                "title": "Top Universities Accepting SAT Scores",
+                "content": """The SAT opens doors to the most prestigious institutions in the world. Here is a breakdown of top universities where a high SAT score is a golden ticket.
+
+### The Ivy League (USA)
+1.  **Harvard University:** Recently reinstated the standardized testing requirement. Aim for 1520+.
+2.  **Princeton University:** Highly competitive. Average SAT: 1510-1570.
+3.  **Yale University:** Requires test scores again. Focus on a balanced score.
+
+### Top Tech Schools (USA)
+1.  **MIT (Massachusetts Institute of Technology):** One of the first to bring back the SAT requirement. Math score matters most (Aim for 800/800).
+2.  **CalTech:** extremely rigorous selection.
+3.  **Stanford:** Test-optional but strongly recommended for engineering applicants.
+
+### Best Public Universities (USA)
+1.  **UC Berkeley & UCLA:** (Note: The UC system is currently test-blind, meaning they *don't* look at SAT scores).
+2.  **University of Michigan:** Strongly considers SAT.
+3.  **Georgia Tech:** Requires SAT/ACT for all applicants.
+
+### Universities Outside the US
+* **National University of Singapore (NUS):** Accepts SAT for international students.
+* **University of Toronto (Canada):** Highly values SAT scores for US/International curriculum students.
+"""
             },
             {
-                "title": "Time Management Hacks for Slow Readers",
-                "content": "Struggling to finish the Reading Comprehension section? Try skimming the first and last sentences of each paragraph before diving in. This gives you a mental map of the passage structure."
-            },
-            {
-                "title": "ExamForEverybody vs. Traditional Coaching",
-                "content": "Why pay thousands for a crowded classroom when you can get personalized attention online? Our AI-driven recommendations adapt to YOUR learning pace, not the class average."
-            },
-            {
-                "title": "Updates: New Payment Gateways Added",
-                "content": "We have now integrated Stripe and Razorpay to make enrolling in courses easier for international and Indian students. Secure, fast, and reliable transactions are our priority."
-            },
-            {
-                "title": "How to Stay Motivated During Exam Prep",
-                "content": "Burnout is real. Take regular breaks using the Pomodoro technique (25 mins work, 5 mins break). Make sure to exercise and sleep well. Your brain needs rest to consolidate memory."
-            },
-            {
-                "title": "Feature Spotlight: The Question Palette",
-                "content": "Our exam interface features a smart palette. Blue means 'Marked for Review'. Use this feature! If you are 50% sure, mark it and move on. Come back only if time permits. This strategy saves minutes that add up to marks."
-            },
-            {
-                "title": "Best Books for UPSC Preparation 2025",
-                "content": "While our mock tests are great, standard textbooks like Laxmikanth for Polity and Spectrum for History are indispensable. Combine these books with our daily current affairs quiz for the best results."
-            },
-            {
-                "title": "Welcome to the ExamForEverybody Community",
-                "content": "We are thrilled to have you here. Our mission is to democratize education. Whether you are in New York or New Delhi, you deserve the best tools to succeed. Happy learning!"
+                "title": "Top Countries Accepting SAT Scores",
+                "content": """Think the SAT is just for the USA? Think again. Your score is a global currency recognized by universities in over 80 countries.
+
+### 1. United States 🇺🇸
+The home of the SAT. Over 4,000 universities accept it. It is essential for scholarships and admissions to top-tier private and public colleges.
+
+### 2. Canada 🇨🇦
+Most major Canadian universities (U of Toronto, UBC, McGill) accept the SAT as a substitute for other entrance exams or as a way to strengthen an application from an international student.
+
+### 3. Singapore 🇸🇬
+Top Asian universities like **NUS** and **NTU** require SAT scores from students who do not hold A-Levels or IB diplomas. The cut-offs are high (usually 1450+).
+
+### 4. Australia 🇦🇺
+Universities like the **University of Melbourne** and **University of Sydney** allow American curriculum students (and many internationals) to use SAT scores for direct entry, bypassing foundation years.
+
+### 5. United Kingdom 🇬🇧 & Europe 🇪🇺
+* **UK:** While A-Levels are standard, top UK unis (Oxford, Cambridge, LSE) accept SAT + AP scores from US-system students.
+* **Italy:** Bocconi University accepts SAT in lieu of their internal entrance test.
+* **Finland & Netherlands:** Several English-taught programs accept the SAT for international admissions.
+
+**Ready to take your SAT prep global?**
+[[item:sat-digital-bundle]]
+"""
             }
         ]
 
-        # 4. Loop and Create
-        created_count = 0
+        # 5. CREATE BLOGS
         for data in blogs_data:
-            # Check if title exists to avoid duplicates on re-run
-            if not Post.objects.filter(title=data["title"]).exists():
-                Post.objects.create(
-                    title=data["title"],
-                    author=author,
-                    content=data["content"],
-                    status='published',
-                    is_featured=(created_count == 0) # Make the first one featured
-                )
-                created_count += 1
-                self.stdout.write(self.style.SUCCESS(f"Created: {data['title']}"))
-            else:
-                self.stdout.write(f"Skipped (Exists): {data['title']}")
+            post = Post.objects.create(
+                title=data["title"],
+                author=author,
+                content=data["content"],
+                status='published',
+                # Set the first one (Intro) as featured
+                is_featured=(data["title"].startswith("What is"))
+            )
+            # Add a default image if you have one, or handle it in the loop
+            self.stdout.write(self.style.SUCCESS(f"Created Blog: {post.title}"))
 
-        self.stdout.write(self.style.SUCCESS(f"Successfully created {created_count} blog posts."))
+        self.stdout.write(self.style.SUCCESS("--- Done! SAT Content Loaded. ---"))
