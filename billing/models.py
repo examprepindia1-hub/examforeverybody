@@ -20,7 +20,13 @@ class Order(TimeStampedModel):
     
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING)
-    
+    payer_upi_id = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        help_text="Customer's VPA used for verification"
+    )
+    qr_code = models.ImageField(upload_to='upi_qr/', blank=True, null=True)
     # Payment Gateway Info
     payment_method = models.CharField(max_length=50, default='STRIPE', help_text="STRIPE, PAYPAL, etc.")
     transaction_id = models.CharField(max_length=100, blank=True, help_text="ID from Stripe/PayPal")

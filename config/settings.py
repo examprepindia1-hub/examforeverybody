@@ -39,14 +39,27 @@ LANGUAGES = (
     ('fr', 'French'),
     ('zh-hans', 'Mandarin (Simplified Chinese)'), 
 )
-PAYMENTS_ACTIVE = False
+PAYPAL_CLIENT_ID = env('PAYPAL_CLIENT_ID', default='your_dummy_client_id')
+PAYPAL_SECRET = env('PAYPAL_SECRET', default='your_dummy_secret')
+PAYPAL_MODE = env('PAYPAL_MODE', default='sandbox') # 'sandbox' or 'live'
+PAYMENTS_ACTIVE = True
 # 2. Where Django should look for translation files
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 USE_I18N = True
 USE_L10N = True
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = env('EMAIL_PORT', cast=int, default=587)
+EMAIL_USE_TLS = env('EMAIL_USE_TLS', cast=bool, default=True)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+UPI_MERCHANT_VPA=env('UPI_MERCHANT_VPA')
+UPI_MERCHANT_NAME=env('UPI_MERCHANT_NAME')
 # 3. Model Translation settings (for django-modeltranslation)
 MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 MODELTRANSLATION_FALLBACK_LANGUAGES = ('en',)
