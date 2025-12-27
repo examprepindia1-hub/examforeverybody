@@ -20,9 +20,8 @@ class Command(BaseCommand):
         
         try:
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
-            mail.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            mail.login(settings.UPI_VERIFICATION_EMAIL_HOST_USER, settings.UPI_VERIFICATION_EMAIL_HOST_PASSWORD)
             mail.select('inbox')
-
             # Search for HDFC Alerts
             # Using 'ALL' temporarily to ensure we see the emails you listed in the logs
             # Change back to 'UNSEEN' after testing

@@ -17,6 +17,16 @@ class MarketplaceItem(TimeStampedModel):
         VIDEO_COURSE = 'VIDEO_COURSE', _('Video Course')
         NOTE = 'NOTE', _('Note')
 
+    base_enrollment_count = models.IntegerField(
+        default=0, 
+        help_text="Starting number to show for social proof (e.g. 1500)"
+    )
+
+    def get_total_enrollments(self):
+        # Real enrollments + Base padding
+        real_count = self.enrollments.count() # Assuming related_name='enrollments' in UserEnrollment
+        return self.base_enrollment_count + real_count
+    
     # Translatable Fields (Will be handled by translation.py)
     title = models.CharField(_("Title"), max_length=255)
     description = models.TextField(_("Description"), blank=True)
@@ -42,7 +52,7 @@ class Testimonial(TimeStampedModel):
     """
     item = models.ForeignKey(MarketplaceItem, on_delete=models.CASCADE, related_name='testimonials')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
+    country = models.CharField(max_length=100, default="India", help_text=_("Reviewer's Country"))
     rating = models.PositiveSmallIntegerField(help_text=_("Rating from 1 to 5"))
     text = models.TextField(_("Review Text"))
 

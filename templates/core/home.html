@@ -81,7 +81,7 @@
                                 </span>
                                 <span>
                                     <i class="bi bi-people-fill me-1 text-primary"></i>
-                                    {{ exam.student_count }} {% trans "Enrolled" %}
+                                    {{ exam.get_total_enrollments }} {% trans "Enrolled" %}
                                 </span>
                             </div>
 
@@ -274,7 +274,18 @@
             </div>
             {% empty %}
             <div class="col-12 text-center py-5">
-                <p class="text-muted">{% trans "No workshops scheduled right now." %}</p>
+                <div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            
+            <h3 class="fw-bold text-dark mb-2">No Workshops Scheduled</h3>
+                    <p class="text-muted mb-4 mx-auto" style="max-width: 400px;">
+                        We are currently curating our next series of expert-led sessions. Check back soon for updates!
+                    </p>
+
+        </div>
+    </div>
+</div>
             </div>
             {% endfor %}
         </div>
@@ -282,63 +293,244 @@
 </section>
 
 <section class="py-5 border-top bg-light overflow-hidden">
-    <div class="container-fluid px-0">
-        <div class="text-center mb-5 container">
-            <span class="badge bg-warning text-dark mb-2 px-3 py-2 rounded-pill fw-bold ls-1">
-                <i class="bi bi-heart-fill me-1 text-danger"></i> STUDENT STORIES
-            </span>
-            <h2 class="fw-bold display-6 text-dark">Trusted by 15,000+ Learners</h2>
-        </div>
+<style>
+    /* MASONRY LAYOUT LOGIC - PURE CSS */
+    .masonry-container {
+        column-count: 1; /* Mobile: 1 column flow */
+        column-gap: 1.5rem; /* Gap between columns */
+        orphans: 1;
+        widows: 1;
+    }
 
-        <div class="marquee-wrapper mb-4">
-            <div class="marquee-content scroll-left">
-                {% for i in "123456" %} <div class="review-card card border-0 shadow-sm p-3 me-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 40px; height: 40px;">A</div>
-                        <div>
-                            <h6 class="fw-bold mb-0 text-dark">Anjali P.</h6>
-                            <small class="text-muted" style="font-size: 0.75rem;">JEE Mains</small>
-                        </div>
-                        <i class="bi bi-twitter text-primary ms-auto"></i>
-                    </div>
-                    <p class="small text-muted mb-0">"The mock tests are harder than the real exam, which made the actual paper feel easy! Highly recommend."</p>
-                </div>
-                
-                <div class="review-card card border-0 shadow-sm p-3 me-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="https://randomuser.me/api/portraits/men/{{ forloop.counter }}.jpg" class="rounded-circle me-3" style="width: 40px; height: 40px;">
-                        <div>
-                            <h6 class="fw-bold mb-0 text-dark">David R.</h6>
-                            <small class="text-muted" style="font-size: 0.75rem;">SAT Prep</small>
-                        </div>
-                        <div class="text-warning ms-auto small"><i class="bi bi-star-fill"></i> 5.0</div>
-                    </div>
-                    <p class="small text-muted mb-0">"Got a 1540 on my first attempt. The video solutions for the math section are a lifesaver."</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+    /* Tablet: 2 Columns */
+    @media (min-width: 768px) {
+        .masonry-container {
+            column-count: 2;
+        }
+    }
 
-        <div class="marquee-wrapper">
-            <div class="marquee-content scroll-right">
-                {% for i in "123456" %}
-                <div class="review-card card border-0 shadow-sm p-3 me-4">
-                    <div class="d-flex align-items-center mb-3">
-                         <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 40px; height: 40px;">S</div>
-                        <div>
-                            <h6 class="fw-bold mb-0 text-dark">Sarah K.</h6>
-                            <small class="text-muted" style="font-size: 0.75rem;">IELTS Academic</small>
-                        </div>
-                        <span class="badge bg-success-subtle text-success ms-auto">Band 8.0</span>
-                    </div>
-                    <p class="small text-muted mb-0">"The live workshops for speaking practice gave me the confidence I needed. Worth every penny."</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+    /* Desktop: 3 Columns */
+    @media (min-width: 1200px) {
+        .masonry-container {
+            column-count: 3;
+        }
+    }
+
+    /* CARD STYLING */
+    .testimonial-brick {
+        /* CRITICAL: Prevents card from splitting across columns */
+        break-inside: avoid-column; 
+        -webkit-column-break-inside: avoid;
+        page-break-inside: avoid;
         
-      
+        margin-bottom: 1.5rem; /* Vertical spacing between bricks within a column */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        /* Ensure background is white by default */
+        background-color: #fff; 
+    }
+
+    .testimonial-brick:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
+        border-color: transparent;
+    }
+
+    .quote-icon {
+        font-size: 1.5rem;
+        opacity: 0.2;
+    }
+</style>
+
+<div class="container py-5" style="background-color: #f8f9fa;"> <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark">Loved by Students Globally</h2>
+        <p class="text-muted col-lg-6 mx-auto">See how our adaptive learning platform is helping students smash their target scores across different exams.</p>
     </div>
+
+    <div class="masonry-container">
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="Liam">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Liam Thompson</h6>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill">SAT 1540</span>
+                    </div>
+                </div>
+                <i class="bi bi-quote quote-icon text-primary"></i>
+            </div>
+            <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+            </div>
+            <p class="text-muted small mb-0">"I've used Khan Academy and Princeton Review, but this platform's UI is the closest thing to the actual Digital SAT Bluebook app. I used to panic about the on-screen timer, but practicing here fixed my pacing issues completely. The 'Hard' module simulations are brutal but necessary."</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                     <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px;">R</div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Rajesh K.</h6>
+                        <span class="badge bg-dark-subtle text-dark rounded-pill">GMAT Focus</span>
+                    </div>
+                </div>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+            </div>
+            <p class="text-muted small mb-0">"The Data Insights drills are exactly what I needed. Hit my target score of 715."</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px;">P</div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Priya Sharma</h6>
+                        <span class="badge bg-danger-subtle text-danger rounded-pill">JEE 99.4%ile</span>
+                    </div>
+                </div>
+                <i class="bi bi-quote quote-icon text-danger"></i>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+            </div>
+            <p class="text-muted small mb-0">"Physics questions here are slightly harder than the actual JEE Mains, which is perfect. If you can solve these, the real paper feels like a breeze. The error analysis dashboard showed me I was losing marks in Optics, which I fixed in a week."</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                     <img src="https://randomuser.me/api/portraits/women/91.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="User">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Anika Weber</h6>
+                        <span class="badge bg-info-subtle text-info rounded-pill">GRE Germany</span>
+                    </div>
+                </div>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+            </div>
+            <p class="text-muted small mb-0">"As a non-native English speaker applying for Masters in Germany, the GRE Verbal section terrified me. Rote memorization flashcards weren't working. The contextual vocabulary builder tool on this platform is vastly superior—it actually teaches you how sophisticated words are used in dense, academic passages. Managed a 162V and 168Q!"</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4"> <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                    <img src="https://randomuser.me/api/portraits/women/12.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="Sarah">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Sarah Jenkins</h6>
+                        <span class="badge bg-secondary-subtle text-secondary rounded-pill">Parent</span>
+                    </div>
+                </div>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+            </div>
+            <p class="text-muted small mb-0">"Bought this for my daughter. The dashboard helps me track her progress without nagging her. Worth every penny."</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-purple text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px; background-color: #6f42c1;">D</div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Dev Patel</h6>
+                        <span class="badge bg-purple-subtle text-purple rounded-pill" style="color: #6f42c1; background-color: #e2d9f3;">SDE Prep</span>
+                    </div>
+                </div>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+            </div>
+            <p class="text-muted small mb-0">"The DSA patterns course is gold. Cleared the Amazon OA last week. Thanks!"</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                    <img src="https://randomuser.me/api/portraits/women/65.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="Wei">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Wei Chen</h6>
+                        <span class="badge bg-info-subtle text-info rounded-pill">TOEFL 112</span>
+                    </div>
+                </div>
+                <i class="bi bi-quote quote-icon text-info"></i>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+            </div>
+            <p class="text-muted small mb-0">"The listening section covers various accents (British, Australian) just like the real test. Great for exposure!"</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                     <img src="https://randomuser.me/api/portraits/men/55.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="User">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Dr. Omar F.</h6>
+                        <span class="badge bg-success-subtle text-success rounded-pill">PLAB Part 1 (UK)</span>
+                    </div>
+                </div>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+            </div>
+            <p class="text-muted small mb-0">"Preparing for the PLAB was daunting. The vast question bank here, especially the ethics scenarios, is unparalleled. The best part is that the explanations don't just give the right answer, they explain precisely *why* the other options are wrong, which is critical for clinical reasoning questions. Passed on my first attempt."</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="Elena">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Elena Rossi</h6>
+                        <span class="badge bg-success-subtle text-success rounded-pill">IELTS Band 8.0</span>
+                    </div>
+                </div>
+                <i class="bi bi-quote quote-icon text-success"></i>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+            </div>
+            <p class="text-muted small mb-0">"The AI grading for the writing section is magic. It corrected my grammar instantly. I needed a 7.5 for Canada PR but got an 8.0!"</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px;">A</div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Arjun V.</h6>
+                        <span class="badge bg-success-subtle text-success rounded-pill">NEET UG</span>
+                    </div>
+                </div>
+                <i class="bi bi-quote quote-icon text-success"></i>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+            </div>
+            <p class="text-muted small mb-0">"I was struggling with Biology memorization. The NCERT-based drills here are strictly within syllabus and highly repetitive in a good way. It helped me revise the entire Botany section in the last 2 weeks before the exam."</p>
+        </div>
+
+        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="d-flex align-items-center">
+                     <img src="https://randomuser.me/api/portraits/men/22.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="User">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Kenji T.</h6>
+                        <span class="badge bg-secondary-subtle text-secondary rounded-pill">O-Level Math</span>
+                    </div>
+                </div>
+            </div>
+             <div class="mb-3 text-warning small">
+                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+            </div>
+            <p class="text-muted small mb-0">"The step-by-step video solutions helped me finally understand trigonometry concepts I struggled with in class for months. My grades improved from a C to an A."</p>
+        </div>
+
+    </div>
+</div>
 </section>
 
 

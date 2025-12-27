@@ -1,19 +1,24 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
-from .forms import  CustomPasswordResetForm, CustomSetPasswordForm
+from .forms import CustomPasswordResetForm, CustomSetPasswordForm
 
 urlpatterns = [
+    # --- Authentication ---
     path('signup/student/', views.student_signup, name='student_signup'),
+    
+    # NEW: Email Activation Link
+    path('activate/<uidb64>/<token>/', views.activate, name='activate'),
+
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('profile/', views.profile, name='profile'),
 
     # --- Password Reset Links ---
     path('password-reset/', 
          auth_views.PasswordResetView.as_view(
              template_name='users/password_reset.html',
              form_class=CustomPasswordResetForm,
-             # This line is CRITICAL for the HTML email to work:
              html_email_template_name='users/password_reset_email.html'
          ), 
          name='password_reset'),
@@ -36,5 +41,4 @@ urlpatterns = [
              template_name='users/password_reset_complete.html'
          ), 
          name='password_reset_complete'),
-         path('profile/', views.profile, name='profile'),
 ]
