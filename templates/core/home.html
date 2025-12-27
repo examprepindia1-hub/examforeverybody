@@ -88,8 +88,9 @@
                             <div class="mt-auto d-flex align-items-center justify-content-between border-top pt-3">
                                 <div>
                                     {% if exam.price > 0 %}
-                                        <span class="fw-bold text-dark fs-5">${{ exam.price }}</span>
+                                        <span class="fw-bold text-dark fs-5">₹{{ exam.price }}</span>
                                     {% else %}
+                                       <span class="fw text-dark fs-5 text-decoration-line-through">₹{{ exam.price }}</span>  
                                         <span class="fw-bold text-success fs-5">FREE</span>
                                     {% endif %}
                                 </div>
@@ -215,7 +216,7 @@
                             </div>
 
                             <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-primary">${{ item.price }}</span>
+                                <span class="fw-bold text-primary">₹{{ item.price }}</span>
                             </div>
                         </div>
                     </a>
@@ -265,7 +266,7 @@
                             </div>
                             
                             <div class="mt-auto pt-2 border-top">
-                                <span class="fw-bold">${{ item.price }}</span>
+                                <span class="fw-bold">₹{{ item.price }}</span>
                             </div>
                          </div>
                     </a>
