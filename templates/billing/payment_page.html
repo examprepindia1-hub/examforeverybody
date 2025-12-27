@@ -12,6 +12,12 @@
     .payment-option-card:hover { border-color: #dee2e6; }
     .payment-option-card.active { border-color: #198754; background-color: #f8fffb; }
     .timer-badge { font-family: monospace; font-size: 1.1rem; background: #e9ecef; padding: 5px 10px; border-radius: 5px; color: #495057; }
+    
+    /* PayPal Button Styling override if needed */
+    #section-paypal input[type="image"] {
+        max-width: 200px;
+        width: 100%;
+    }
 </style>
 
 <div class="container py-5">
@@ -66,9 +72,26 @@
                                 </div>
                             </div>
 
-                            <div id="section-paypal">
-                                <div id="paypal-button-container"></div>
-                            </div>
+                            <div id="section-paypal" class="text-center py-4">
+    <p class="text-muted mb-3">You will be redirected to PayPal to complete your purchase securely.</p>
+    
+    <form action="{{ paypal_form.get_login_url }}" method="post">
+        {{ paypal_form.as_p }}
+        
+        <button type="submit" class="btn btn-warning btn-lg px-5 fw-bold shadow-sm rounded-pill">
+            <i class="bi bi-paypal me-2"></i> Pay with PayPal
+        </button>
+        
+        <style>
+            #section-paypal form input[type="image"] {
+                display: none;
+            }
+            #section-paypal form p {
+                display: none; /* Hides the extra spacing django-paypal adds */
+            }
+        </style>
+    </form>
+</div>
 
                             <div id="section-upi" class="d-none">
                                 
@@ -148,12 +171,11 @@
     </div>
 </div>
 
-<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency={{ paypal_currency }}"></script>
 <script>
     const csrftoken = "{{ csrf_token }}";
     let pollInterval = null;
     let countdownInterval = null;
-    let timeLeft = 240; // 4 minutes
+    let timeLeft = 240; 
 
     function toggleGenerateBtn() {
         const isChecked = document.getElementById('upi-consent').checked;
@@ -169,13 +191,14 @@
         if(method === 'paypal') {
             document.getElementById('section-paypal').classList.remove('d-none');
             document.getElementById('section-upi').classList.add('d-none');
-            stopPolling();
+            stopPolling(); // IMPORTANT: Stop polling if they leave UPI tab
         } else {
             document.getElementById('section-paypal').classList.add('d-none');
             document.getElementById('section-upi').classList.remove('d-none');
         }
     }
 
+    // --- UPI LOGIC (Unchanged) ---
     function generateQR() {
         const vpaInput = document.getElementById('customer-vpa');
         const vpa = vpaInput.value.trim();
@@ -210,7 +233,7 @@
             } else {
                 document.getElementById('qr-image').src = data.qr_url;
                 document.getElementById('order-ref').textContent = data.order_ref;
-                document.getElementById('timeout-ref').textContent = data.order_ref; // Set for timeout screen
+                document.getElementById('timeout-ref').textContent = data.order_ref;
                 document.getElementById('upi-step-2').classList.remove('d-none');
                 startPolling(data.order_ref);
             }
@@ -224,15 +247,14 @@
     }
 
     function startPolling(orderId) {
-        timeLeft = 180; 
+        timeLeft = 240; 
         updateTimerDisplay();
-        document.getElementById('delay-warning').classList.add('d-none'); // Reset warning
+        document.getElementById('delay-warning').classList.add('d-none'); 
         
         countdownInterval = setInterval(() => {
             timeLeft--;
             updateTimerDisplay();
 
-            // SHOW WARNING if time is running low (e.g., less than 1 min left)
             if (timeLeft === 60) {
                 document.getElementById('delay-warning').classList.remove('d-none');
             }
@@ -269,11 +291,8 @@
             headers: { "X-CSRFToken": csrftoken }
         })
         .then(() => {
-            // Hide Status Messages
             document.getElementById('poll-status-msg').classList.add('d-none');
             document.getElementById('delay-warning').classList.add('d-none');
-            
-            // Show "Rest Assured" Overlay
             document.getElementById('qr-timeout-overlay').classList.remove('d-none');
             document.getElementById('qr-timeout-overlay').classList.add('d-flex');
         });
@@ -295,29 +314,6 @@
         const errDiv = document.getElementById('error-message');
         errDiv.textContent = msg;
         errDiv.classList.remove('d-none');
-    }
-
-    // PayPal Init
-    if(window.paypal) {
-        paypal.Buttons({
-            style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'pay' },
-            createOrder: function(data, actions) {
-                return fetch("{% url 'create_paypal_order' %}", {
-                    method: "post",
-                    headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
-                    body: JSON.stringify({ slug: "{{ item.slug }}" })
-                }).then(res => res.json()).then(order => order.id);
-            },
-            onApprove: function(data, actions) {
-                return fetch("{% url 'capture_paypal_order' %}", {
-                    method: "post",
-                    headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
-                    body: JSON.stringify({ orderID: data.orderID })
-                }).then(res => res.json()).then(data => {
-                    if (data.status === 'COMPLETED') window.location.href = "{% url 'marketplace:item_detail' slug=item.slug %}";
-                });
-            }
-        }).render('#paypal-button-container');
     }
 </script>
 {% endblock %}

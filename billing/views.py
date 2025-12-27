@@ -8,23 +8,23 @@ from django.contrib import messages
 from django.conf import settings
 from django.db import transaction
 from django.core.files.base import ContentFile
+from django.urls import reverse
+
+# Django-PayPal Imports
+from paypal.standard.forms import PayPalPaymentsForm
 
 from marketplace.models import MarketplaceItem
 from enrollments.models import UserEnrollment
 from billing.models import Order, OrderItem
-from billing.paypal_client import PayPalClient 
 from billing.utils import generate_upi_qr_image
-from django.utils import timezone
 
 @csrf_exempt
 @login_required
 def check_payment_status(request, order_id):
     """
     Called periodically by JS to check if Order.status has changed to PAID.
-    Uses transaction_id to find the order.
     """
     try:
-        # Use transaction_id because that's what we expose to the frontend
         order = Order.objects.get(transaction_id=order_id, user=request.user)
         return JsonResponse({'status': order.status})
     except Order.DoesNotExist:
@@ -34,8 +34,7 @@ def check_payment_status(request, order_id):
 @login_required
 def expire_order(request, order_id):
     """
-    Called by JS after 4 minutes timeout.
-    Marks the order as FAILED if it is still PENDING.
+    Called by JS after timeout.
     """
     if request.method == "POST":
         try:
@@ -44,7 +43,7 @@ def expire_order(request, order_id):
                 order.status = Order.OrderStatus.FAILED
                 order.save()
                 return JsonResponse({'status': 'FAILED'})
-            return JsonResponse({'status': order.status}) # Return actual status if not pending
+            return JsonResponse({'status': order.status})
         except Order.DoesNotExist:
             return JsonResponse({'error': 'Order not found'}, status=404)
     return JsonResponse({'error': 'Invalid method'}, status=400)
@@ -59,7 +58,7 @@ def initiate_purchase(request, slug):
         return redirect('marketplace:item_detail', slug=slug)
 
     # 2. Beta / Dev Mode (Bypasses Payment if configured)
-    if not settings.PAYMENTS_ACTIVE:
+    if not getattr(settings, 'PAYMENTS_ACTIVE', True):
         try:
             with transaction.atomic():
                 order = Order.objects.create(
@@ -67,7 +66,7 @@ def initiate_purchase(request, slug):
                     total_amount=0,
                     status=Order.OrderStatus.PAID,
                     payment_method='BETA_WAIVER',
-                    transaction_id='beta_access'
+                    transaction_id=f"BETA-{uuid.uuid4().hex[:8]}"
                 )
                 OrderItem.objects.create(order=order, item=item, price_at_purchase=item.price)
                 UserEnrollment.objects.create(user=request.user, item=item, source_order=order)
@@ -81,103 +80,50 @@ def initiate_purchase(request, slug):
             return redirect('marketplace:item_detail', slug=slug)
 
     else:
-        # 3. REAL PAYMENT MODE (PayPal + UPI)
+        # 3. REAL PAYMENT MODE (PayPal Standard + UPI)
+        
+        # A. Create a Pending Order Reference for PayPal
+        # We need this ID to put in the 'invoice' field so we know who paid later
+        order, created = Order.objects.get_or_create(
+            user=request.user,
+            items__item=item,
+            status=Order.OrderStatus.PENDING,
+            defaults={
+                'total_amount': item.price,
+                'transaction_id': f"PP-{uuid.uuid4().hex[:12].upper()}"
+            }
+        )
+        
+        # Ensure OrderItem exists
+        if created:
+            OrderItem.objects.create(order=order, item=item, price_at_purchase=item.price)
+
+        # B. Configure PayPal Form
+        host = request.get_host()
+        protocol = 'https' if request.is_secure() else 'http'
+        
+        paypal_dict = {
+            "business": settings.PAYPAL_RECEIVER_EMAIL,
+            "amount": str(item.price),
+            "item_name": item.title,
+            "invoice": order.transaction_id, # Crucial: Links payment to this order
+            "currency_code": getattr(settings, 'PAYPAL_CURRENCY', 'USD'),
+            "notify_url": f"{protocol}://{host}{reverse('paypal-ipn')}",
+            "return": f"{protocol}://{host}{reverse('marketplace:item_detail', args=[item.slug])}",
+            "cancel_return": f"{protocol}://{host}{reverse('marketplace:item_detail', args=[item.slug])}",
+        }
+
+        # Create the form instance
+        paypal_form = PayPalPaymentsForm(initial=paypal_dict)
+
         context = {
             'item': item,
-            'paypal_client_id': settings.PAYPAL_CLIENT_ID,
-            # CRITICAL FIX: Pass currency to template so buttons render correctly
+            'paypal_form': paypal_form, # Pass the form to template
             'paypal_currency': getattr(settings, 'PAYPAL_CURRENCY', 'USD') 
         }
         return render(request, 'billing/payment_page.html', context)
 
-@csrf_exempt
-@login_required
-def create_paypal_order(request):
-    """
-    Called by JS when user clicks 'PayPal' button.
-    """
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            slug = data.get('slug')
-            item = get_object_or_404(MarketplaceItem, slug=slug)
-            
-            # Initialize Client
-            paypal = PayPalClient()
-            
-            # CRITICAL FIX: Use the currency from settings, do not hardcode USD
-            currency_code = getattr(settings, 'PAYPAL_CURRENCY', 'USD')
-            
-            pp_response = paypal.create_order(amount=item.price, currency=currency_code) 
-            
-            if 'id' not in pp_response:
-                return JsonResponse({'error': f"PayPal API Error: {pp_response}"}, status=400)
-
-            pp_order_id = pp_response['id']
-            
-            # Create Local Pending Order
-            order = Order.objects.create(
-                user=request.user,
-                total_amount=item.price,
-                status=Order.OrderStatus.PENDING,
-                payment_method='PAYPAL',
-                transaction_id=pp_order_id
-            )
-            
-            OrderItem.objects.create(order=order, item=item, price_at_purchase=item.price)
-            
-            return JsonResponse({'id': pp_order_id})
-            
-        except Exception as e:
-            print(f"Create PayPal Order Error: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
-    
-    return JsonResponse({'error': 'Invalid method'}, status=400)
-
-@csrf_exempt
-@login_required
-def capture_paypal_order(request):
-    """
-    Called by JS after user approves payment on PayPal popup.
-    """
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            pp_order_id = data.get('orderID')
-            
-            paypal = PayPalClient()
-            
-            # 1. Verify with PayPal
-            capture_data = paypal.capture_order(pp_order_id)
-            
-            if capture_data.get('status') == 'COMPLETED':
-                # 2. Find local order
-                order = Order.objects.get(transaction_id=pp_order_id)
-                
-                with transaction.atomic():
-                    # 3. Update Order Status
-                    order.status = Order.OrderStatus.PAID
-                    order.save()
-                    
-                    # 4. Enroll the User
-                    order_item = order.items.first() 
-                    if not UserEnrollment.objects.filter(user=order.user, item=order_item.item).exists():
-                        UserEnrollment.objects.create(
-                            user=order.user,
-                            item=order_item.item,
-                            source_order=order
-                        )
-                
-                return JsonResponse({'status': 'COMPLETED'})
-            
-            else:
-                return JsonResponse({'error': 'Payment not completed'}, status=400)
-
-        except Exception as e:
-            print(f"Capture PayPal Error: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
-    
-    return JsonResponse({'error': 'Invalid method'}, status=400)
+# --- Removed create_paypal_order and capture_paypal_order (Not needed for Standard IPN) ---
 
 @csrf_exempt
 @login_required
@@ -201,7 +147,7 @@ def create_upi_order(request):
                     status=Order.OrderStatus.PENDING,
                     payment_method='UPI',
                     payer_upi_id=customer_vpa,
-                    transaction_id=f"ORD-{uuid.uuid4().hex[:8].upper()}"
+                    transaction_id=f"UPI-{uuid.uuid4().hex[:12].upper()}"
                 )
                 
                 OrderItem.objects.create(order=order, item=item, price_at_purchase=item.price)
