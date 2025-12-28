@@ -22,13 +22,13 @@ class Command(BaseCommand):
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
             mail.login(settings.UPI_VERIFICATION_EMAIL_HOST_USER, settings.UPI_VERIFICATION_EMAIL_HOST_PASSWORD)
             mail.select('inbox')
+            
             # Search for HDFC Alerts
-            # Using 'ALL' temporarily to ensure we see the emails you listed in the logs
-            # Change back to 'UNSEEN' after testing
+            # Change 'ALL' to 'UNSEEN' in production to avoid re-reading old emails
             status, data = mail.search(None, '(FROM "alerts@hdfcbank.net")')
             
             email_ids = data[0].split()
-            # Process last 10 emails only to prevent freezing on large inboxes
+            # Process last 10 emails only
             latest_email_ids = email_ids[-10:] 
             
             self.stdout.write(f"🔍 Checking last {len(latest_email_ids)} emails from HDFC...")
@@ -83,31 +83,44 @@ class Command(BaseCommand):
                     self.stdout.write(f"   Checking: {subject}")
 
                     # Regex 1: Amount (Handles "Rs. 1,000.00" or "Rs 1.00")
-                    # Looks for Rs, followed by optional dot/space, then digits/commas/dots
                     amount_match = re.search(r"(?:Rs\.?|INR)\s*([\d,]+\.?\d{0,2})", body, re.IGNORECASE)
                     
                     # Regex 2: VPA (Handles "by VPA user@bank" or "from VPA user@bank")
                     vpa_match = re.search(r"(?:by|from)\s+VPA\s+([a-zA-Z0-9\.\-_]+@[a-zA-Z0-9\.\-_]+)", body, re.IGNORECASE)
 
+                    # Regex 3: UTR / Reference Number (Based on HDFC format)
+                    # Pattern: "reference number is 536100250991"
+                    utr_match = re.search(r"reference number is\s+(?P<utr>\d+)", body, re.IGNORECASE)
+
                     if vpa_match and amount_match:
                         raw_amount = amount_match.group(1).replace(',', '') # Remove commas
                         extracted_amount = float(raw_amount)
                         extracted_vpa = vpa_match.group(1)
+                        
+                        # Extract UTR if found, else None
+                        extracted_utr = utr_match.group('utr') if utr_match else None
 
-                        self.stdout.write(self.style.SUCCESS(f"   💰 FOUND: ₹{extracted_amount} from {extracted_vpa}"))
+                        self.stdout.write(self.style.SUCCESS(f"   💰 FOUND: ₹{extracted_amount} from {extracted_vpa} (UTR: {extracted_utr})"))
 
                         # Verify against Database
                         try:
+                            # We look for a PENDING order with matching VPA and Amount
                             order = Order.objects.get(
                                 payer_upi_id__iexact=extracted_vpa,
                                 total_amount=extracted_amount,
                                 status=Order.OrderStatus.PENDING
                             )
                             
+                            # 1. Mark as PAID
                             order.status = Order.OrderStatus.PAID
+                            
+                            # 2. Save External ID (UTR)
+                            if extracted_utr:
+                                order.external_transaction_id = extracted_utr
+                                
                             order.save()
                             
-                            # Enroll User
+                            # 3. Enroll User
                             order_item = order.items.first()
                             if order_item:
                                 UserEnrollment.objects.get_or_create(
@@ -120,8 +133,6 @@ class Command(BaseCommand):
                             self.stdout.write(f"      (No matching pending order in DB)")
                     else:
                         self.stdout.write(f"      (Regex failed to extract Data)")
-                        # Uncomment to debug specific emails:
-                        # self.stdout.write(f"      Body sample: {body[:150]}")
 
             mail.close()
             mail.logout()

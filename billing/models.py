@@ -28,9 +28,10 @@ class Order(TimeStampedModel):
     )
     qr_code = models.ImageField(upload_to='upi_qr/', blank=True, null=True)
     # Payment Gateway Info
-    payment_method = models.CharField(max_length=50, default='STRIPE', help_text="STRIPE, PAYPAL, etc.")
+    payment_method = models.CharField(max_length=50, default='PAYPAL', help_text="STRIPE, PAYPAL, etc.")
     transaction_id = models.CharField(max_length=100, blank=True, help_text="ID from Stripe/PayPal")
-
+    external_transaction_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Provider Ref / UTR")
+    currency = models.CharField(max_length=10, default='INR')
     def __str__(self):
         return f"Order #{self.id} - {self.user} ({self.status})"
 

@@ -2,10 +2,17 @@
 from django.views.generic import DetailView
 from django.db.models import Avg 
 from .models import MarketplaceItem, Testimonial
+from django.views.generic import ListView
+from .models import MarketplaceItem
 
 # --- Add this import ---
 from enrollments.models import UserEnrollment
 # -----------------------
+
+class ItemListView(ListView):
+    model = MarketplaceItem
+    template_name = 'marketplace/item_list.html' # Make sure this template exists
+    context_object_name = 'items'
 
 class ItemDetailView(DetailView):
     model = MarketplaceItem

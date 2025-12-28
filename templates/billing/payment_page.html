@@ -275,11 +275,21 @@
         .then(data => {
             if (data.status === 'PAID') {
                 stopPolling();
-                document.getElementById('success-message').classList.remove('d-none');
-                window.location.href = "{% url 'marketplace:item_detail' slug=item.slug %}";
+                
+                // --- UPDATE 1: Match PayPal Success Behavior ---
+                // Redirect to the Success Page with 'next' parameter
+                const finalUrl = "{% url 'marketplace:item_detail' slug=item.slug %}";
+                const successPageUrl = "{% url 'payment_success' %}";
+                
+                // Redirects to: /payment-success/?next=/marketplace/item-slug/
+                window.location.href = `${successPageUrl}?next=${encodeURIComponent(finalUrl)}`;
+                
             } else if (data.status === 'FAILED') {
                 stopPolling();
-                showError("Payment Failed or Declined.");
+                
+                // --- UPDATE 2: Match PayPal Failure Behavior ---
+                // Redirect to the dedicated Failure Page
+                window.location.href = "{% url 'payment_cancel' %}";
             }
         });
     }
@@ -291,10 +301,9 @@
             headers: { "X-CSRFToken": csrftoken }
         })
         .then(() => {
-            document.getElementById('poll-status-msg').classList.add('d-none');
-            document.getElementById('delay-warning').classList.add('d-none');
-            document.getElementById('qr-timeout-overlay').classList.remove('d-none');
-            document.getElementById('qr-timeout-overlay').classList.add('d-flex');
+            // --- UPDATE 3: Treat Timeout as Cancellation/Failure ---
+            // Redirect to the dedicated Failure Page
+            window.location.href = "{% url 'payment_cancel' %}";
         });
     }
 

@@ -4,11 +4,13 @@ from . import views
 urlpatterns = [
     # ... existing paths ...
     path('history/', views.order_history, name='order_history'),
-    path('buy/<slug:slug>/', views.initiate_purchase, name='initiate_purchase'),
-    
+    # path('buy/<slug:slug>/', views.initiate_purchase, name='initiate_purchase'),
+    path('initiate/<slug:slug>/', views.initiate_purchase, name='initiate_purchase'),
     path('api/create-upi-order/', views.create_upi_order, name='create_upi_order'),
     
     # NEW: Status Polling & Timeout
     path('api/check-status/<str:order_id>/', views.check_payment_status, name='check_payment_status'),
     path('api/expire-order/<str:order_id>/', views.expire_order, name='expire_order'),
+    path('payment-success/', views.payment_success, name='payment_success'),
+    path('payment-cancel/', views.payment_cancel, name='payment_cancel'),
 ]

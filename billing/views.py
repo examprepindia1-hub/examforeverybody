@@ -17,6 +17,25 @@ from marketplace.models import MarketplaceItem
 from enrollments.models import UserEnrollment
 from billing.models import Order, OrderItem
 from billing.utils import generate_upi_qr_image
+import json
+import uuid
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.contrib import messages
+from django.conf import settings
+from django.db import transaction
+from django.core.files.base import ContentFile
+from django.urls import reverse
+
+# Django-PayPal Imports
+from paypal.standard.forms import PayPalPaymentsForm
+
+from marketplace.models import MarketplaceItem
+from enrollments.models import UserEnrollment
+from billing.models import Order, OrderItem
+from billing.utils import generate_upi_qr_image
 
 @csrf_exempt
 @login_required
@@ -48,6 +67,21 @@ def expire_order(request, order_id):
             return JsonResponse({'error': 'Order not found'}, status=404)
     return JsonResponse({'error': 'Invalid method'}, status=400)
 
+
+
+# --- NEW: Success/Cancel Views ---
+@login_required
+def payment_success(request):
+   
+    # Get the 'next' URL from parameters, or default to dashboard
+    next_url = request.GET.get('next', reverse('dashboard'))
+    return render(request, 'billing/payment_success.html', {'next_url': next_url})
+    
+
+@login_required
+def payment_cancel(request):
+    return render(request, 'billing/payment_failed.html')
+
 @login_required
 def initiate_purchase(request, slug):
     item = get_object_or_404(MarketplaceItem, slug=slug)
@@ -57,72 +91,59 @@ def initiate_purchase(request, slug):
         messages.info(request, "You are already enrolled in this content.")
         return redirect('marketplace:item_detail', slug=slug)
 
-    # 2. Beta / Dev Mode (Bypasses Payment if configured)
-    if not getattr(settings, 'PAYMENTS_ACTIVE', True):
-        try:
-            with transaction.atomic():
+    usd_price = round(item.price / 86, 2)  # Assuming ~86 INR = 1 USD
+    if usd_price < 1: usd_price = 1.00 # Minimum $1
+
+    # B. Create Pending Order
+    # Note: We save the USD price in total_amount so it matches PayPal's return signal
+    with transaction.atomic():
+                # 1. Create Order
                 order = Order.objects.create(
                     user=request.user,
-                    total_amount=0,
-                    status=Order.OrderStatus.PAID,
-                    payment_method='BETA_WAIVER',
-                    transaction_id=f"BETA-{uuid.uuid4().hex[:8]}"
+                    total_amount=usd_price,
+                    currency='USD',
+                    status=Order.OrderStatus.PENDING,
+                    payment_method='PAYPAL',
+                    payer_upi_id=None,
+                    transaction_id=f"PAYPAL-{uuid.uuid4().hex[:12].upper()}"
                 )
-                OrderItem.objects.create(order=order, item=item, price_at_purchase=item.price)
-                UserEnrollment.objects.create(user=request.user, item=item, source_order=order)
                 
-            messages.success(request, f"Welcome aboard! You've enrolled in {item.title}.")
-            return redirect('marketplace:item_detail', slug=slug)
+                OrderItem.objects.create(order=order, item=item, price_at_purchase=usd_price)
 
-        except Exception as e:
-            messages.error(request, "Enrollment failed.")
-            print(f"Beta Enrollment Error: {e}")
-            return redirect('marketplace:item_detail', slug=slug)
-
-    else:
-        # 3. REAL PAYMENT MODE (PayPal Standard + UPI)
+    # C. Configure PayPal Form
+    host = request.get_host()
+    protocol = 'https' if request.is_secure() else 'http'
+    final_destination = reverse('marketplace:item_detail', args=[item.slug])
+    success_page = reverse('payment_success')
+    paypal_dict = {
+        "business": settings.PAYPAL_RECEIVER_EMAIL,
+        "amount": str(usd_price), # Sending USD amount
+        "item_name": item.title,
+        "invoice": order.transaction_id,
+        "currency_code": "USD", # Force USD
         
-        # A. Create a Pending Order Reference for PayPal
-        # We need this ID to put in the 'invoice' field so we know who paid later
-        order, created = Order.objects.get_or_create(
-            user=request.user,
-            items__item=item,
-            status=Order.OrderStatus.PENDING,
-            defaults={
-                'total_amount': item.price,
-                'transaction_id': f"PP-{uuid.uuid4().hex[:12].upper()}"
-            }
-        )
+        # Where PayPal sends the invisible success signal (Must be public internet URL)
+        "notify_url": f"{protocol}://{host}{reverse('paypal-ipn')}",
         
-        # Ensure OrderItem exists
-        if created:
-            OrderItem.objects.create(order=order, item=item, price_at_purchase=item.price)
-
-        # B. Configure PayPal Form
-        host = request.get_host()
-        protocol = 'https' if request.is_secure() else 'http'
+        # Where User is redirected after payment
+       "return": f"{protocol}://{host}{success_page}?next={final_destination}",
         
-        paypal_dict = {
-            "business": settings.PAYPAL_RECEIVER_EMAIL,
-            "amount": str(item.price),
-            "item_name": item.title,
-            "invoice": order.transaction_id, # Crucial: Links payment to this order
-            "currency_code": getattr(settings, 'PAYPAL_CURRENCY', 'USD'),
-            "notify_url": f"{protocol}://{host}{reverse('paypal-ipn')}",
-            "return": f"{protocol}://{host}{reverse('marketplace:item_detail', args=[item.slug])}",
-            "cancel_return": f"{protocol}://{host}{reverse('marketplace:item_detail', args=[item.slug])}",
-        }
+        # Where User is redirected if they cancel
+        "cancel_return": f"{protocol}://{host}{reverse('payment_cancel')}",
+    }
 
-        # Create the form instance
-        paypal_form = PayPalPaymentsForm(initial=paypal_dict)
+    # Create the form instance
+    paypal_form = PayPalPaymentsForm(initial=paypal_dict)
 
-        context = {
-            'item': item,
-            'paypal_form': paypal_form, # Pass the form to template
-            'paypal_currency': getattr(settings, 'PAYPAL_CURRENCY', 'USD') 
-        }
-        return render(request, 'billing/payment_page.html', context)
+    context = {
+        'item': item,
+        'paypal_form': paypal_form,
+        'usd_price': usd_price # Pass this to show user approx USD cost
+    }
+    return render(request, 'billing/payment_page.html', context)
 
+# ... (Keep your existing create_upi_order, check_payment_status, order_history views) ...
+# Ensure to copy your existing UPI/Polling views here.
 # --- Removed create_paypal_order and capture_paypal_order (Not needed for Standard IPN) ---
 
 @csrf_exempt
@@ -144,6 +165,7 @@ def create_upi_order(request):
                 order = Order.objects.create(
                     user=request.user,
                     total_amount=item.price,
+                    currency='INR',
                     status=Order.OrderStatus.PENDING,
                     payment_method='UPI',
                     payer_upi_id=customer_vpa,
