@@ -72,15 +72,44 @@ def expire_order(request, order_id):
 # --- NEW: Success/Cancel Views ---
 @login_required
 def payment_success(request):
-   
-    # Get the 'next' URL from parameters, or default to dashboard
-    next_url = request.GET.get('next', reverse('dashboard'))
-    return render(request, 'billing/payment_success.html', {'next_url': next_url})
+    """
+    Displays a professional success receipt and redirects user.
+    """
+    txn_id = request.GET.get('order_id')
+    
+    # Security: Ensure the order exists and belongs to this user
+    order = get_object_or_404(Order, transaction_id=txn_id, user=request.user)
+    
+    # Get the item for the redirect button
+    item = order.items.first().item
+    next_url = reverse('marketplace:item_detail', args=[item.slug])
+
+    context = {
+        'order': order,
+        'item': item,
+        'next_url': next_url
+    }
+    return render(request, 'billing/payment_success.html', context)
     
 
 @login_required
 def payment_cancel(request):
-    return render(request, 'billing/payment_failed.html')
+    """
+    Displays a professional failure/cancellation receipt.
+    """
+    txn_id = request.GET.get('order_id')
+    
+    # Try to find the order to show details (Amount, Title)
+    # Using filter().first() instead of 404 so we can show a generic error if ID is missing
+    order = Order.objects.filter(transaction_id=txn_id, user=request.user).first()
+    
+    context = {'order': order}
+    
+    if order:
+        # Pass the item so the 'Try Again' button knows where to go
+        context['item'] = order.items.first().item
+        
+    return render(request, 'billing/payment_failed.html', context)
 
 @login_required
 def initiate_purchase(request, slug):
@@ -113,8 +142,9 @@ def initiate_purchase(request, slug):
     # C. Configure PayPal Form
     host = request.get_host()
     protocol = 'https' if request.is_secure() else 'http'
-    final_destination = reverse('marketplace:item_detail', args=[item.slug])
-    success_page = reverse('payment_success')
+    
+    success_url = f"{protocol}://{host}{reverse('payment_success')}?order_id={order.transaction_id}"
+    cancel_url = f"{protocol}://{host}{reverse('payment_cancel')}?order_id={order.transaction_id}"
     paypal_dict = {
         "business": settings.PAYPAL_RECEIVER_EMAIL,
         "amount": str(usd_price), # Sending USD amount
@@ -126,10 +156,10 @@ def initiate_purchase(request, slug):
         "notify_url": f"{protocol}://{host}{reverse('paypal-ipn')}",
         
         # Where User is redirected after payment
-       "return": f"{protocol}://{host}{success_page}?next={final_destination}",
+       "return": success_url,
         
         # Where User is redirected if they cancel
-        "cancel_return": f"{protocol}://{host}{reverse('payment_cancel')}",
+        "cancel_return": cancel_url,
     }
 
     # Create the form instance

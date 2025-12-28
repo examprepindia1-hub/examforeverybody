@@ -1,43 +1,78 @@
 {% extends "base.html" %}
 
-{% block content %}
-<div class="container py-5 text-center">
-    <div class="card shadow-sm mx-auto border-success" style="max-width: 500px;">
-        <div class="card-body p-5">
-            <div class="mb-4">
-                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-            </div>
-            
-            <h2 class="mb-3 text-success">Payment Successful!</h2>
-            <p class="text-muted mb-4">
-                Thank you for your purchase. We are redirecting you to your course...
-            </p>
+{% block title %}Payment Successful | ExamForEverybody{% endblock %}
 
-            <div class="alert alert-light border">
-                Redirecting in <span id="timer" class="fw-bold text-dark">5</span> seconds...
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="bg-success text-white text-center py-4">
+                    <div class="mb-2">
+                        <i class="bi bi-check-circle-fill" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-white">Payment Successful!</h3>
+                    <p class="opacity-75 mb-0">Thank you for your purchase</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <h5 class="text-muted small text-uppercase fw-bold ls-1">Order Confirmed</h5>
+                        <h2 class="text-dark fw-bold mb-1">
+                            {% if order.payment_method == 'PAYPAL' %}${% else %}₹{% endif %}{{ order.total_amount|floatformat:2 }}
+                        </h2>
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3">
+                            <i class="bi bi-check2 me-1"></i> Paid
+                        </span>
+                    </div>
+
+                    <ul class="list-group list-group-flush mb-4 rounded-3 border">
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted small">Order ID</span>
+                            <span class="fw-bold font-monospace">#{{ order.id|stringformat:"04d" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted small">Course</span>
+                            <span class="fw-semibold text-end text-truncate" style="max-width: 180px;">{{ item.title }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <span class="text-muted small">Date</span>
+                            <span class="fw-semibold">{{ order.created|date:"M d, Y" }}</span>
+                        </li>
+                        {% if order.external_transaction_id %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3 bg-light">
+                            <span class="text-muted small">Transaction Ref</span>
+                            <span class="small font-monospace text-muted">{{ order.external_transaction_id }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <div class="alert alert-light border text-center mb-4">
+                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                        <span class="text-muted">Redirecting in <span id="timer" class="fw-bold text-dark">5</span> seconds...</span>
+                    </div>
+
+                    <a href="{{ next_url }}" class="btn btn-primary w-100 py-2 rounded-pill shadow-sm fw-bold">
+                        Go to Content Now <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
             </div>
-            
-            <a href="{{ next_url }}" class="btn btn-success rounded-pill px-4 mt-2">
-                Go Now <i class="bi bi-arrow-right ms-2"></i>
-            </a>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. Get the destination URL from Django
+    // Auto-Redirect Script
     const nextUrl = "{{ next_url }}";
     let timeLeft = 5;
     const timerElement = document.getElementById('timer');
 
-    // 2. Start Countdown
     const interval = setInterval(() => {
         timeLeft--;
-        timerElement.textContent = timeLeft;
+        if(timerElement) timerElement.textContent = timeLeft;
 
         if (timeLeft <= 0) {
             clearInterval(interval);
-            // 3. Redirect
             window.location.href = nextUrl;
         }
     }, 1000);

@@ -276,20 +276,15 @@
             if (data.status === 'PAID') {
                 stopPolling();
                 
-                // --- UPDATE 1: Match PayPal Success Behavior ---
-                // Redirect to the Success Page with 'next' parameter
-                const finalUrl = "{% url 'marketplace:item_detail' slug=item.slug %}";
-                const successPageUrl = "{% url 'payment_success' %}";
-                
-                // Redirects to: /payment-success/?next=/marketplace/item-slug/
-                window.location.href = `${successPageUrl}?next=${encodeURIComponent(finalUrl)}`;
+                const successUrl = "{% url 'payment_success' %}?order_id=" + orderId;
+                window.location.href = successUrl;
                 
             } else if (data.status === 'FAILED') {
                 stopPolling();
                 
                 // --- UPDATE 2: Match PayPal Failure Behavior ---
                 // Redirect to the dedicated Failure Page
-                window.location.href = "{% url 'payment_cancel' %}";
+               window.location.href = "{% url 'payment_cancel' %}?order_id=" + orderId;
             }
         });
     }
@@ -303,7 +298,7 @@
         .then(() => {
             // --- UPDATE 3: Treat Timeout as Cancellation/Failure ---
             // Redirect to the dedicated Failure Page
-            window.location.href = "{% url 'payment_cancel' %}";
+            window.location.href = "{% url 'payment_cancel' %}?order_id=" + orderId;
         });
     }
 
