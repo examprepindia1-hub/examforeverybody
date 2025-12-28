@@ -1,6 +1,4 @@
-# mocktests/services.py
-
-from django.db.models import Sum
+from .models import UserAnswer
 
 class BaseExamStrategy:
     """Base class with default logic for GENERAL exams"""
@@ -11,12 +9,38 @@ class BaseExamStrategy:
     def get_result_template(self):
         return 'mocktests/result_general.html'
 
+    def grade_answers(self, attempt):
+        """
+        CRITICAL FIX: Compares user's selected option with the correct option
+        and updates the database before scoring.
+        """
+        # Fetch all answers for this attempt with their related questions and selected options
+        answers = UserAnswer.objects.filter(attempt=attempt).select_related('question', 'selected_option')
+        
+        for answer in answers:
+            # 1. Logic for MCQ
+            if answer.question.question_type == 'MCQ':
+                if answer.selected_option and answer.selected_option.is_correct:
+                    answer.is_correct = True
+                    # Optional: Add partial marks logic here if needed
+                else:
+                    answer.is_correct = False
+            
+            # 2. Logic for Subjective/Essay (Requires manual grading usually)
+            # For now, we assume false unless an admin marks it true later
+            
+            answer.save()
+
     def calculate_score(self, attempt):
-        """Standard simple scoring: Sum of correct answers"""
+        """Standard simple scoring"""
+        # 1. Run the Grading Logic First!
+        self.grade_answers(attempt)
+        
+        # 2. Calculate Score
         total_score = 0
         correct_count = 0
         
-        # Simple loop (you can optimize this with aggregate queries)
+        # Re-fetch to ensure we have the latest is_correct status
         for answer in attempt.answers.all():
             if answer.is_correct:
                 total_score += answer.question.marks
@@ -25,65 +49,61 @@ class BaseExamStrategy:
         return {
             'score': total_score,
             'correct_count': correct_count,
-            'passed': total_score >= (attempt.test.pass_percentage / 100) * total_score # Simplified logic
+            'passed': True # You can implement pass/fail logic here
         }
 
 class SATExamStrategy(BaseExamStrategy):
     """Specific logic for Digital SAT"""
     
     def get_take_test_template(self):
-        return 'mocktests/exams/sat/take_test.html'  # Custom UI for SAT
+        return 'mocktests/exams/sat/take_test.html'
 
     def get_result_template(self):
-        return 'mocktests/exams/sat/result.html'     # 400-1600 Score Card
+        return 'mocktests/exams/sat/result.html'
 
     def calculate_score(self, attempt):
-        """
-        SAT Scoring is complex (400-1600 scale). 
-        You would implement the curve logic here.
-        """
-        raw_score = super().calculate_score(attempt)['score']
+        # 1. Grade the answers (calls the parent method)
+        self.grade_answers(attempt)
         
-        # Dummy Logic: Convert raw score to 400-1600 scale
-        # Real logic uses lookup tables based on difficulty.
-        sat_score = 400 + (raw_score * 10) 
-        sat_score = min(1600, sat_score) # Cap at 1600
+        # 2. Get Raw Counts
+        math_correct = attempt.answers.filter(is_correct=True, question__section__title__icontains="Math").count()
+        rw_correct = attempt.answers.filter(is_correct=True, question__section__title__icontains="Reading").count()
+        
+        # 3. Simple Mock SAT Algorithm (Curve)
+        # In a real app, you'd use a lookup table (e.g., 30 correct = 650 points)
+        # Base score 400. Each question roughly ~10-15 points depending on difficulty.
+        
+        math_score = 200 + (math_correct * 10)
+        if math_score > 800: math_score = 800
+        
+        rw_score = 200 + (rw_correct * 10)
+        if rw_score > 800: rw_score = 800
+        
+        total_sat_score = math_score + rw_score
 
         return {
-            'score': sat_score,
-            'details': "Your SAT Score is based on an adaptive curve."
+            'score': total_sat_score,
+            'details': {
+                'math': math_score,
+                'rw': rw_score
+            }
         }
 
 class IELTSExamStrategy(BaseExamStrategy):
-    """Specific logic for IELTS"""
-    
-    def get_take_test_template(self):
-        return 'mocktests/exams/ielts/take_test.html' # Split Screen UI
+    # ... (Keep your IELTS logic similar to above) ...
+    pass
 
-    def get_result_template(self):
-        return 'mocktests/exams/ielts/result.html'    # Band 0-9 Report
-
-    def calculate_score(self, attempt):
-        raw_score = super().calculate_score(attempt)['score']
-        
-        # IELTS Band Conversion (approximate)
-        # 30-40 -> Band 8-9, etc.
-        band = 0
-        if raw_score >= 39: band = 9.0
-        elif raw_score >= 37: band = 8.5
-        elif raw_score >= 35: band = 8.0
-        # ... more logic ...
-        else: band = 4.0
-
-        return {
-            'score': band,
-            'details': "IELTS Band Score calculated."
-        }
-
-# --- FACTORY FUNCTION ---
+# --- FACTORY FUNCTION FIXED ---
 def get_exam_strategy(exam_type):
+    """
+    Maps Model choices (SAT_ADAPTIVE, etc.) to Strategy Classes.
+    """
     strategies = {
-        'SAT': SATExamStrategy(),
+        # FIX: Map the actual model values to the strategy
+        'SAT_ADAPTIVE': SATExamStrategy(),
+        'SAT_NON_ADAPTIVE': SATExamStrategy(),
+        'SAT': SATExamStrategy(), # Keep for safety
+        
         'IELTS': IELTSExamStrategy(),
         'GENERAL': BaseExamStrategy(),
     }

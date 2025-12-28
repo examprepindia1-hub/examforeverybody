@@ -10,9 +10,9 @@ from marketplace.models import MarketplaceItem
 from enrollments.models import UserEnrollment
 from .models import (
     QuestionReport, MockTestAttributes, UserTestAttempt, 
-    TestSection, TestQuestion, UserAnswer, QuestionOption
+    TestSection, TestQuestion, UserAnswer
 )
-from .services import get_exam_strategy  # <--- The Strategy Factory
+from .services import get_exam_strategy
 
 @login_required
 def start_test(request, slug):
@@ -23,7 +23,7 @@ def start_test(request, slug):
     
     # 1. Enrollment Check
     if not UserEnrollment.objects.filter(user=request.user, item=item).exists():
-        return redirect('item_detail', slug=slug)
+        return redirect('marketplace:item_detail', slug=slug)
 
     test_details = get_object_or_404(MockTestAttributes, item=item)
 
@@ -34,10 +34,10 @@ def start_test(request, slug):
         status=UserTestAttempt.Status.IN_PROGRESS
     )
 
-    # 3. Strategy Hook (Optional)
-    # If SAT, we might need to assign the initial "Routing Module" here.
-    # strategy = get_exam_strategy(test_details.exam_type)
-    # strategy.initialize_attempt(attempt) 
+    # 3. Mark start time immediately if new
+    if created or not attempt.started_at:
+        attempt.started_at = timezone.now()
+        attempt.save()
 
     has_started = attempt.answers.exists()
 
@@ -57,15 +57,13 @@ def take_test(request, attempt_id):
     """
     attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
     
+    # Redirect if already submitted
     if attempt.status == UserTestAttempt.Status.SUBMITTED:
         return redirect('test_result', attempt_id=attempt.id)
 
     test = attempt.test
     
-    # 1. Get the correct Strategy (SAT, IELTS, or GENERAL)
-    strategy = get_exam_strategy(test.exam_type)
-
-    # 2. Timer Logic (Server-Side Calculation)
+    # 1. Timer Logic (Server-Side Calculation)
     now = timezone.now()
     if not attempt.started_at:
         attempt.started_at = now
@@ -75,15 +73,19 @@ def take_test(request, attempt_id):
     total_duration_seconds = test.duration_minutes * 60
     remaining_seconds = max(0, int(total_duration_seconds - elapsed))
 
+    # Auto-submit if time is up
     if remaining_seconds <= 0:
         return submit_test(request, attempt.id)
 
-    # 3. Fetch Data (Optimized)
-    # For Adaptive tests, we might filter sections differently here later.
+    # 2. Get Strategy (SAT, IELTS, or GENERAL)
+    strategy = get_exam_strategy(test.exam_type)
+
+    # 3. Fetch Data (Optimized with Prefetch)
     sections = TestSection.objects.filter(test=test).prefetch_related(
         Prefetch('questions', queryset=TestQuestion.objects.order_by('sort_order').prefetch_related('options', 'images', 'audios'))
     ).order_by('sort_order')
 
+    # Load existing answers to repopulate the UI
     existing_answers = UserAnswer.objects.filter(attempt=attempt).values(
         'question_id', 'selected_option_id', 'text_answer', 'is_marked_for_review'
     )
@@ -97,7 +99,6 @@ def take_test(request, attempt_id):
         'remaining_seconds': remaining_seconds,
     }
     
-    # 4. Render the specific template for this exam type
     template_name = strategy.get_take_test_template()
     return render(request, template_name, context)
 
@@ -106,15 +107,35 @@ def take_test(request, attempt_id):
 @require_POST
 def save_answer(request):
     """
-    AJAX Endpoint: Saves answers (Text, Radio, Audio)
+    AJAX Endpoint: Saves answers (Text, Radio, Audio).
+    Includes Security & Timer checks.
     """
+    # 1. Common Security Check Helper
+    def get_valid_attempt(att_id):
+        att = get_object_or_404(UserTestAttempt, id=att_id, user=request.user)
+        
+        # Check A: Is it already submitted?
+        if att.status == UserTestAttempt.Status.SUBMITTED:
+            return None, JsonResponse({'status': 'error', 'message': 'Test already submitted'}, status=403)
+        
+        # Check B: Has the time expired? (+2 minute buffer for network latency)
+        if att.test.duration_minutes > 0 and att.started_at:
+            elapsed = (timezone.now() - att.started_at).total_seconds()
+            allowed = (att.test.duration_minutes * 60) + 120 
+            if elapsed > allowed:
+                return None, JsonResponse({'status': 'error', 'message': 'Time limit exceeded'}, status=403)
+                
+        return att, None
+
     # A. Handle File Upload (Audio/Speaking)
     if request.content_type.startswith('multipart/form-data'):
         attempt_id = request.POST.get('attempt_id')
         question_id = request.POST.get('question_id')
         audio_file = request.FILES.get('audio_data')
         
-        attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
+        attempt, error_response = get_valid_attempt(attempt_id)
+        if error_response: return error_response
+
         question = get_object_or_404(TestQuestion, id=question_id)
         
         answer, created = UserAnswer.objects.update_or_create(
@@ -133,7 +154,9 @@ def save_answer(request):
         text_input = data.get('text_input')
         is_reviewed = data.get('is_reviewed', False)
 
-        attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
+        attempt, error_response = get_valid_attempt(attempt_id)
+        if error_response: return error_response
+
         question = get_object_or_404(TestQuestion, id=question_id)
 
         answer, created = UserAnswer.objects.update_or_create(
@@ -157,22 +180,27 @@ def submit_test(request, attempt_id):
     attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
     test = attempt.test
 
+    # Process if POST request OR if it's an auto-submit (via GET from take_test)
+    # But only if not already submitted to prevent re-grading
     if request.method == 'POST' or attempt.status != UserTestAttempt.Status.SUBMITTED:
-        # 1. Get Strategy
+        
         strategy = get_exam_strategy(test.exam_type)
         
-        # 2. Calculate Score (Delegated to Strategy)
-        # This handles SAT scaling, IELTS bands, or simple percentage
+        # 1. Grade & Calculate Score
+        # This calls grade_answers() internally in our new services.py
         result_data = strategy.calculate_score(attempt)
         
-        # 3. Update Attempt
+        # 2. Finalize Attempt
         attempt.status = UserTestAttempt.Status.SUBMITTED
         attempt.completed_at = timezone.now()
         attempt.score = result_data['score']
         
-        # Determine Pass/Fail (Strategy can also handle this if logic is complex)
-        # Simple default logic:
-        attempt.is_passed = attempt.score >= test.pass_percentage
+        # 3. Pass/Fail Logic
+        if isinstance(result_data.get('passed'), bool):
+             attempt.is_passed = result_data['passed']
+        else:
+             # Fallback
+             attempt.is_passed = attempt.score >= test.pass_percentage
         
         attempt.save()
 
@@ -188,16 +216,22 @@ def test_result(request, attempt_id):
     """
     attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
     
+    # Prevent viewing result if test isn't finished
     if attempt.status != UserTestAttempt.Status.SUBMITTED:
         return redirect('take_test', attempt_id=attempt.id)
 
-    # 1. Get Strategy
     strategy = get_exam_strategy(attempt.test.exam_type)
 
-    # 2. Common Stats (Useful for all templates)
+    # 1. Basic Stats
     total_questions = TestQuestion.objects.filter(section__test=attempt.test).count()
     correct_answers = attempt.answers.filter(is_correct=True).count()
-    incorrect_answers = attempt.answers.filter(is_correct=False).exclude(selected_option=None, text_answer__exact='').count()
+    
+    # Count incorrect (excluding skipped/empty)
+    incorrect_answers = attempt.answers.filter(is_correct=False).exclude(
+        selected_option__isnull=True, 
+        text_answer__exact=''
+    ).count()
+    
     skipped_answers = total_questions - (correct_answers + incorrect_answers)
     accuracy = (correct_answers / total_questions * 100) if total_questions > 0 else 0
     
@@ -209,7 +243,7 @@ def test_result(request, attempt_id):
         minutes, seconds = divmod(remainder, 60)
         time_taken = f"{hours:02}:{minutes:02}:{seconds:02}"
 
-    # 3. Detailed Analysis (List building)
+    # 2. Detailed Question Analysis
     all_questions = TestQuestion.objects.filter(
         section__test=attempt.test
     ).select_related('section').prefetch_related('options', 'images').order_by('section__sort_order', 'sort_order')
@@ -245,12 +279,11 @@ def test_result(request, attempt_id):
         'accuracy': round(accuracy, 1),
         'time_taken': time_taken,
         'analysis_list': analysis_list,
+        'score_details': attempt.score, # Pass score for templates
     }
     
-    # 4. Render Strategy Specific Template
-    # (e.g. mocktests/exams/sat/result.html)
+    # 3. Use Strategy Template
     template_name = strategy.get_result_template()
-    
     return render(request, template_name, context)
 
 @login_required

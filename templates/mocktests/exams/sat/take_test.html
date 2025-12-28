@@ -3,96 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAT Exam - {{ test.item.title }}</title>
+    <title>Exam in Progress - {{ test.item.title }}</title>
+    {% load static %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
     <script>
     window.MathJax = {
-      tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['$$', '$$']] },
+      tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
       svg: { fontCache: 'global' }
     };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
-        body { background-color: #f4f6f8; height: 100vh; overflow: hidden; user-select: none; }
-        /* Exam Header */
-        .exam-header { height: 60px; background: white; border-bottom: 1px solid #dee2e6; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 20; }
-        .timer-box { font-family: monospace; font-size: 1.2rem; font-weight: bold; }
+        .beat-animation { animation: beat 1s infinite; }
+@keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        body { background-color: #f4f6f8; height: 100vh; overflow: hidden; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; user-select: none; }
         
-        /* Layout */
+        /* --- Header --- */
+        .exam-header { height: 60px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); z-index: 20; position: relative; }
+        .system-status { display: flex; align-items: center; gap: 15px; font-size: 0.85rem; color: #6c757d; border-right: 1px solid #dee2e6; padding-right: 15px; margin-right: 15px; }
+        .status-item { display: flex; align-items: center; gap: 5px; }
+        .timer-box { background: #fff; color: #dc3545; padding: 5px 12px; border-radius: 4px; font-weight: 700; font-family: monospace; font-size: 1.3rem; border: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px; }
+        
+        /* --- Layout --- */
         .exam-container { height: calc(100vh - 60px); display: flex; }
-        .sidebar { width: 300px; background: white; border-left: 1px solid #dee2e6; display: flex; flex-direction: column; }
-        .question-area { flex: 1; display: flex; flex-direction: column; position: relative; }
-        .question-scroll { flex: 1; overflow-y: auto; padding: 40px; scroll-behavior: smooth; }
+        .question-area { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
+        .question-scroll-content { flex: 1; overflow-y: auto; padding: 30px 40px; scroll-behavior: smooth; background-color: #f4f6f8; padding-bottom: 100px; }
         
-        /* Palette */
-        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 15px; }
-        .palette-btn { height: 40px; border: 1px solid #dee2e6; background: #f8f9fa; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 4px; font-weight: 600; }
-        .palette-btn.current { border-color: #0d6efd; box-shadow: 0 0 0 2px #0d6efd; }
-        .palette-btn.answered { background: #198754; color: white; border-color: #198754; }
-        .palette-btn.review { background: #6610f2; color: white; }
-
-        /* Question Blocks */
         .question-block { display: none; }
-        .question-block.active { display: block; }
-        .option-wrapper:hover { background-color: #f8f9fa; border-color: #0d6efd !important; cursor: pointer; }
+        .question-block.active { display: block; animation: fadeIn 0.3s ease-in-out; }
         
-        /* Nav Footer */
-        .nav-footer { height: 70px; background: white; border-top: 1px solid #dee2e6; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+        /* Enhanced Card */
+        .question-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #eaeaea; }
+        .question-text { font-size: 1.15rem; color: #212529; line-height: 1.6; font-weight: 500; }
+
+        /* Split Screen (IELTS Reading) */
+        .passage-col { border-right: 1px solid #dee2e6; padding-right: 25px; max-height: 65vh; overflow-y: auto; }
+        .question-col { padding-left: 25px; }
+        @media(max-width: 991px) { .passage-col { border-right: none; border-bottom: 1px solid #dee2e6; padding-bottom: 20px; margin-bottom: 20px; padding-right: 0; padding-left: 0; max-height: 400px; } .question-col { padding-left: 0; } }
+
+        .nav-footer { height: 70px; background: white; border-top: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); z-index: 5; }
+
+        /* --- Sidebar --- */
+        .sidebar { width: 340px; background: white; border-left: 1px solid #e0e0e0; display: flex; flex-direction: column; z-index: 10; }
+        .accordion-button { padding: 12px 15px; font-size: 0.9rem; font-weight: 600; background-color: #f8f9fa; color: #495057; }
+        .accordion-button:not(.collapsed) { color: #0056D2; background-color: #eef2ff; box-shadow: inset 0 -1px 0 rgba(0,0,0,.125); }
+        .accordion-body { padding: 10px; background: #fff; }
+        
+        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .palette-btn { width: 40px; height: 40px; border-radius: 6px; border: 1px solid #e0e0e0; background: #f8f9fa; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; color: #495057; }
+        .palette-btn:hover { background-color: #e9ecef; }
+        
+        .palette-btn.current { border-color: #0056D2; box-shadow: 0 0 0 2px #0056D2; z-index: 2; transform: scale(1.05); }
+        .palette-btn.answered { background-color: #198754; color: white; border-color: #198754; }
+        .palette-btn.review { background-color: #6610f2; color: white; border-color: #6610f2; }
+        .palette-btn.review-answered { background-color: #6610f2; color: white; border-color: #6610f2; position: relative; }
+        .palette-btn.review-answered::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 8px; height: 8px; background: #0dcaf0; border-radius: 50%; border: 1px solid #6610f2; }
+
+        #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-box { padding: 15px; border-radius: 8px; border: 1px solid; }
+        
+        /* Options Styling */
+        .option-wrapper { cursor: pointer; transition: 0.2s; }
+        .option-wrapper:hover { background-color: #f8f9fa; border-color: #0d6efd !important; }
+        .answer-input:checked + label { font-weight: 600; color: #0d6efd; }
     </style>
 </head>
 <body oncontextmenu="return false;">
 
+    <div id="fullscreen-overlay">
+        <div class="text-center">
+            <div class="spinner-grow text-primary mb-4" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h2 class="fw-bold mb-3">Exam Environment Ready</h2>
+            <p class="text-muted mb-4">Click below to enter full-screen mode and start the timer.</p>
+            
+            <button class="btn btn-primary btn-lg rounded-pill px-5 shadow" onclick="enableFullScreen()">
+                <i class="bi bi-arrows-fullscreen me-2"></i> Begin Assessment
+            </button>
+        </div>
+    </div>
+
     <div class="exam-header">
-        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-mortarboard-fill me-2"></i>Digital SAT</h6>
+        <div class="d-flex align-items-center">
+            <span class="h5 mb-0 fw-bold text-primary me-3">Exam4Everybody</span>
+            <div style="height: 25px; width: 1px; background: #e0e0e0; margin-right: 15px;"></div>
+            <h6 class="mb-0 text-secondary d-none d-md-block text-truncate" style="max-width: 300px;">{{ test.item.title }}</h6>
+        </div>
+        
         <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-sm btn-outline-dark" onclick="toggleCalculator()"><i class="bi bi-calculator me-1"></i> Calc</button>
-            <div class="timer-box text-danger" id="timer">--:--</div>
-            <button class="btn btn-sm btn-dark px-3 fw-bold" onclick="document.getElementById('submit-form').submit()">Finish</button>
+            <div class="system-status d-none d-lg-flex">
+                <div class="status-item" title="Current Time"><span id="system-time">--:--</span></div>
+                <div class="status-item" id="battery-status" title="Battery"><i class="bi bi-battery-full" id="battery-icon"></i><span id="battery-level">--%</span></div>
+            </div>
+            <button class="btn btn-light border btn-sm fw-bold text-dark" onclick="toggleCalculator()">
+    <i class="bi bi-calculator"></i> Calc
+</button>
+            <button class="btn btn-outline-secondary btn-sm border-0" data-bs-toggle="modal" data-bs-target="#instructionsModal"><i class="bi bi-info-circle me-1"></i> Instructions</button>
+            <div class="timer-box" id="timer"><i class="bi bi-stopwatch"></i> <span>00:00:00</span></div>
+            <button type="button" class="btn btn-dark btn-sm fw-bold px-3" onclick="confirmSubmit()">Finish</button>
+            <form id="submit-form" action="{% url 'submit_test' attempt.id %}" method="post" style="display:none;">
+                {% csrf_token %}
+            </form>
         </div>
     </div>
 
     <div class="exam-container">
         <div class="question-area">
-            <div class="question-scroll" id="q-container">
+            <div class="question-scroll-content" id="question-container">
                 {% for section in sections %}
                     {% for question in section.questions.all %}
-                    <div class="question-block" id="q-block-{{ question.id }}" data-qid="{{ question.id }}">
+                    <div class="question-block" id="q-block-{{ question.id }}" data-section-id="{{ section.id }}" data-qid="{{ question.id }}">
                         
-                        <div class="card border-0 shadow-sm p-4" style="max-width: 800px; margin: 0 auto;">
-                            <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
-                                <span class="fw-bold text-uppercase text-muted">{{ section.title }}</span>
-                                <span class="badge bg-light text-dark border">Question {{ forloop.counter }}</span>
+                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                            <span class="badge bg-light text-secondary border text-uppercase ls-1">{{ section.title }}</span>
+                        </div>
+
+                        <div class="question-card">
+                            
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+                                    Q{{ forloop.counter }}.
+                                </span>
+                                <div class="d-flex gap-3 align-items-center">
+                                     <span class="badge bg-warning text-dark border d-none word-count-badge" id="wc-{{ question.id }}">0 Words</span>
+                                     <span class="badge bg-light text-muted border">+{{ question.marks }} Marks</span>
+                                     <button type="button" class="btn btn-link text-muted p-0" onclick="reportQuestion('{{ question.id }}')" title="Report Issue">
+                                        <i class="bi bi-flag"></i>
+                                     </button>
+                                </div>
                             </div>
 
-                            <div class="fs-5 mb-4" style="line-height: 1.6;">
-                                {{ question.question_text|safe|linebreaks }}
-                            </div>
+                            <div class="row">
+                                {% if question.passage %}
+                                <div class="col-lg-6 passage-col">
+                                    <div class="bg-light p-4 rounded-3 text-secondary" style="font-family: 'Georgia', serif; line-height: 1.8;">
+                                        <div class="small fw-bold text-uppercase text-muted mb-3 pb-2 border-bottom">Read the Passage</div>
+                                        {{ question.passage.content|safe|linebreaks }}
+                                        
+                                        {% if question.passage.image %}
+                                            <img src="{{ question.passage.image.url }}" class="img-fluid mt-3 rounded shadow-sm">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
 
-                            {% if question.question_type == 'MCQ' %}
-                                {% for option in question.options.all %}
-                                <div class="form-check mb-3 p-3 border rounded option-wrapper">
-                                    <input class="form-check-input answer-input" type="radio" 
-                                           name="q_{{ question.id }}" 
-                                           id="opt_{{ option.id }}" 
-                                           value="{{ option.id }}"
-                                           onchange="saveData('{{ question.id }}')">
-                                    <label class="form-check-label w-100" for="opt_{{ option.id }}">
-                                        {{ option.option_text }}
-                                    </label>
+                                <div class="{% if question.passage %}col-lg-6 question-col{% else %}col-12{% endif %}">
+                                    
+                                    {% if question.audios.all %}
+                                        <div class="mb-4 p-3 bg-warning bg-opacity-10 border border-warning rounded-3">
+                                            <h6 class="fw-bold small text-uppercase mb-2 text-warning-emphasis"><i class="bi bi-headphones me-2"></i>Audio Clip</h6>
+                                            {% for audio in question.audios.all %}
+                                                <audio controls controlsList="nodownload" class="w-100">
+                                                    <source src="{{ audio.audio_file.url }}" type="audio/mpeg">
+                                                </audio>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="question-text mb-4">
+                                        {{ question.question_text|safe|linebreaks }}
+                                        {% for media in question.images.all %}
+                                            <img src="{{ media.image.url }}" class="img-fluid rounded border my-2 d-block mx-auto" style="max-height: 300px;">
+                                            {% if media.caption %}<div class="text-center small text-muted fst-italic">{{ media.caption }}</div>{% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="options-list">
+                                        {% if question.question_type == 'MCQ' %}
+                                            {% for option in question.options.all %}
+                                            <div class="form-check mb-3 p-3 border rounded-3 bg-white d-flex align-items-start option-wrapper">
+                                                <input class="form-check-input answer-input me-3 mt-1 flex-shrink-0" 
+                                                       type="radio" 
+                                                       name="question_{{ question.id }}" 
+                                                       id="opt_{{ option.id }}" 
+                                                       value="{{ option.id }}"
+                                                       data-qid="{{ question.id }}"
+                                                       style="transform: scale(1.3);">
+
+                                                <label class="form-check-label w-100 cursor-pointer" for="opt_{{ option.id }}" style="line-height: 1.5;">
+                                                    {% if option.option_image %}
+                                                        <img src="{{ option.option_image.url }}" class="img-fluid rounded border mb-2 d-block" style="max-height: 120px;">
+                                                    {% endif %}
+                                                    {{ option.option_text }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+
+                                        {% elif question.question_type == 'ESSAY' or question.question_type == 'NUMERIC' %}
+                                            <div class="form-group">
+                                                <textarea class="form-control p-3 border-secondary-subtle shadow-sm answer-text-input" 
+                                                          style="resize: vertical;"
+                                                          rows="{% if question.question_type == 'ESSAY' %}12{% else %}2{% endif %}" 
+                                                          data-qid="{{ question.id }}"
+                                                          data-type="{{ question.question_type }}"
+                                                          placeholder="Type your answer here..."></textarea>
+                                                {% if question.question_type == 'ESSAY' %}
+                                                <div class="form-text text-end small">Word count updates automatically.</div>
+                                                {% endif %}
+                                            </div>
+                                            {% elif question.question_type == 'SPEAKING' %}
+    <div class="audio-recorder-box text-center p-4 border rounded-3 bg-light">
+        <div class="mb-3">
+            <i class="bi bi-mic-fill text-danger fs-1" id="mic-icon-{{ question.id }}"></i>
+        </div>
+        <h6 class="mb-3" id="status-{{ question.id }}">Click record to start answering</h6>
+        
+        <button class="btn btn-danger rounded-pill px-4 me-2" id="btn-record-{{ question.id }}" onclick="startRecording({{ question.id }})">
+            <i class="bi bi-record-circle"></i> Record
+        </button>
+        <button class="btn btn-dark rounded-pill px-4" id="btn-stop-{{ question.id }}" onclick="stopRecording({{ question.id }})" disabled>
+            <i class="bi bi-stop-fill"></i> Stop
+        </button>
+
+        <div class="mt-3 d-none" id="playback-container-{{ question.id }}">
+            <audio controls class="w-100 mb-2" id="audio-preview-{{ question.id }}"></audio>
+            <div class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> Answer Saved Successfully</div>
+        </div>
+    </div>
+{% endif %}
+                                    
+                                        
+                                    </div>
+
+                                    <input type="checkbox" id="review_{{ question.id }}" style="display: none;">
+
                                 </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="mb-3">
-                                    <label class="form-label text-muted small fw-bold">YOUR ANSWER</label>
-                                    <input type="text" class="form-control form-control-lg text-answer-input" 
-                                           data-qid="{{ question.id }}"
-                                           placeholder="Enter value (e.g., 4.5)"
-                                           onblur="saveData('{{ question.id }}')">
-                                </div>
-                            {% endif %}
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
@@ -100,140 +241,575 @@
             </div>
 
             <div class="nav-footer">
-                <button class="btn btn-outline-secondary" onclick="move(-1)">Previous</button>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="mark-review" onchange="toggleReview()">
-                    <label class="form-check-label fw-bold small">Mark for Review</label>
+                <div>
+                    <button class="btn btn-outline-secondary me-2" id="btn-prev" onclick="navigate(-1)"><i class="bi bi-chevron-left"></i> Previous</button>
+                    <button class="btn btn-outline-danger" onclick="clearCurrentResponse()">Clear Answer</button>
                 </div>
-                <button class="btn btn-primary px-4" onclick="move(1)">Next</button>
+                <div class="form-check form-switch ms-3">
+                    <input class="form-check-input" type="checkbox" id="current-review-chk" style="transform: scale(1.2);">
+                    <label class="form-check-label small fw-bold ms-2" for="current-review-chk">Mark for Review</label>
+                </div>
+                <button class="btn btn-primary px-4" id="btn-next" onclick="navigate(1)">Next <i class="bi bi-chevron-right"></i></button>
             </div>
         </div>
 
         <div class="sidebar">
-            <div class="p-3 bg-light border-bottom fw-bold">Question Palette</div>
-            <div class="flex-grow-1 overflow-auto">
+            <div class="accordion accordion-flush flex-grow-1 overflow-y-auto custom-scrollbar" id="paletteAccordion">
                 {% for section in sections %}
-                <div class="p-2 bg-secondary bg-opacity-10 small fw-bold text-uppercase">{{ section.title }}</div>
-                <div class="palette-grid">
-                    {% for q in section.questions.all %}
-                    <div class="palette-btn" id="pal-{{ q.id }}" onclick="jumpTo('{{ q.id }}')">{{ forloop.counter }}</div>
-                    {% endfor %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#section-collapse-{{ section.id }}">
+                            {{ section.title }}
+                        </button>
+                    </h2>
+                    <div id="section-collapse-{{ section.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#paletteAccordion">
+                        <div class="accordion-body">
+                            <div class="palette-grid">
+                                {% for question in section.questions.all %}
+                                    <div class="palette-btn" id="palette-btn-{{ question.id }}" onclick="jumpToQuestion('{{ question.id }}')">
+                                        {{ forloop.counter }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
-        </div>
-    </div>
-
-    <form id="submit-form" method="post" action="{% url 'submit_test' attempt.id %}">{% csrf_token %}</form>
-
-    <div id="calculator" class="card shadow border-0" style="position: fixed; bottom: 80px; left: 20px; width: 250px; display: none; background: #343a40;">
-        <div class="card-header bg-dark text-white d-flex justify-content-between py-2">
-            <small>Calculator</small><button type="button" class="btn-close btn-close-white small" onclick="toggleCalculator()"></button>
-        </div>
-        <div class="p-2">
-            <input id="calc-disp" class="form-control text-end mb-2 fw-bold" value="0" readonly>
-            <div class="row g-1">
-                <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="cInput('7')">7</button></div>
-                <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="cInput('8')">8</button></div>
-                <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="cInput('9')">9</button></div>
-                <div class="col-3"><button class="btn btn-warning w-100 btn-sm" onclick="cSolve('/')">/</button></div>
-                <div class="col-12"><button class="btn btn-primary w-100 btn-sm mt-1" onclick="cEval()">=</button></div>
-                <div class="col-12"><button class="btn btn-danger w-100 btn-sm mt-1" onclick="document.getElementById('calc-disp').value='0'">Clear</button></div>
+            
+            <div class="p-3 bg-light border-top small">
+                <div class="row g-2">
+                    <div class="col-6"><span class="badge bg-success rounded-circle p-1 me-1"> </span> Answered</div>
+                    <div class="col-6"><span class="badge bg-secondary rounded-circle p-1 me-1"> </span> Not Visited</div>
+                    <div class="col-6"><span class="badge bg-primary rounded-circle p-1 me-1"> </span> Active</div>
+                    <div class="col-6"><span class="badge rounded-circle p-1 me-1" style="background:#6610f2;"> </span> Review</div>
+                </div>
             </div>
         </div>
     </div>
 
+    <div class="modal fade" id="submitSummaryModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark">Exam Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="text-muted mb-4">You are about to submit your test. Here is your status:</p>
+                    <div class="row g-3 text-center mb-4">
+                        <div class="col-4"><div class="stat-box bg-success bg-opacity-10 border-success"><h2 class="fw-bold text-success mb-0" id="summary-answered">0</h2><small class="text-success fw-bold">Answered</small></div></div>
+                        <div class="col-4"><div class="stat-box" style="background-color: #f3ebff; border-color: #d0bfff; color: #6610f2;"><h2 class="fw-bold mb-0" id="summary-review">0</h2><small class="fw-bold">Review</small></div></div>
+                        <div class="col-4"><div class="stat-box bg-danger bg-opacity-10 border-danger"><h2 class="fw-bold text-danger mb-0" id="summary-unanswered">0</h2><small class="text-danger fw-bold">Skipped</small></div></div>
+                    </div>
+                    <div id="review-warning" class="alert alert-warning small d-none"><i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Warning:</strong> You have questions marked for review.</div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Keep Working</button>
+                    <button type="button" class="btn btn-dark rounded-pill px-4 fw-bold" onclick="finalSubmit()">Submit Exam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="instructionsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title fw-bold">Exam Instructions</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div class="text-muted">{{ test.instructions|safe|linebreaks }}</div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-primary" data-bs-dismiss="modal">Resume Test</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Report Question</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="report-qid">
+                    <div class="mb-3">
+                        <label class="form-label">Issue Description</label>
+                        <textarea class="form-control" id="report-reason" rows="3" placeholder="e.g. Typo, wrong answer..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-danger" onclick="submitReport()">Submit</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- 1. SETUP ---
-        const savedData = {{ answers_json|safe }};
-        const questions = document.querySelectorAll('.question-block');
-        const qIds = Array.from(questions).map(el => el.dataset.qid);
-        let currIdx = 0;
+        // --- 1. GLOBAL VARIABLES ---
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const savedAnswers = {{ answers_json|safe }};
+        const allQuestionIds = [];
+        {% for section in sections %}
+            {% for q in section.questions.all %}
+                allQuestionIds.push("{{ q.id }}");
+            {% endfor %}
+        {% endfor %}
         
-        // --- 2. RESTORE STATE ---
-        window.onload = function() {
-            // Restore Answers
-            for(const [qid, data] of Object.entries(savedData)) {
-                if(data.selected_option_id) {
-                    const r = document.querySelector(`input[name="q_${qid}"][value="${data.selected_option_id}"]`);
-                    if(r) r.checked = true;
+        let currentIdx = 0;
+        let isFullScreen = false;
+        let submitModal = null;
+        let reportModal = null;
+
+        // --- 2. INITIALIZATION ---
+        document.addEventListener("DOMContentLoaded", function() {
+            submitModal = new bootstrap.Modal(document.getElementById('submitSummaryModal'));
+            reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+
+            // A. Restore Radio Answers
+            for (const [qid, data] of Object.entries(savedAnswers)) {
+                if (data.selected_option_id) {
+                    const radio = document.getElementById(`opt_${data.selected_option_id}`);
+                    if (radio) {
+                        radio.checked = true;
+                        radio.closest('.option-wrapper').classList.add('border-primary', 'bg-light');
+                    }
                 }
-                if(data.text_answer) {
-                    const t = document.querySelector(`input[data-qid="${qid}"]`);
-                    if(t) t.value = data.text_answer;
+                
+                // B. Restore Text Answers
+                if (data.text_answer) {
+                    const textArea = document.querySelector(`textarea[data-qid="${qid}"]`);
+                    if (textArea) {
+                        textArea.value = data.text_answer;
+                        // Trigger input to update word count
+                        textArea.dispatchEvent(new Event('input'));
+                    }
                 }
-                updatePalette(qid, true, data.is_marked_for_review);
+
+                // C. Restore Review Status
+                const hiddenChk = document.getElementById(`review_${qid}`);
+                if (hiddenChk && data.is_marked_for_review) hiddenChk.checked = true;
+                
+                // D. Update Visual Palette
+                const hasAnswer = !!data.selected_option_id || (data.text_answer && data.text_answer.trim() !== '');
+                updatePaletteVisuals(qid, hasAnswer, data.is_marked_for_review);
             }
-            showQ(0);
-        };
 
-        // --- 3. NAVIGATION ---
-        function showQ(idx) {
-            questions.forEach(el => el.classList.remove('active'));
-            questions[idx].classList.add('active');
-            currIdx = idx;
+            // --- LISTENERS ---
             
-            // Highlight Palette
-            document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('current'));
-            document.getElementById(`pal-${qIds[idx]}`).classList.add('current');
-            
-            // Sync Review Checkbox
-            // (Ideally fetch from savedData or DOM state)
-        }
-        function move(dir) {
-            const next = currIdx + dir;
-            if(next >= 0 && next < questions.length) showQ(next);
-        }
-        function jumpTo(qid) {
-            const idx = qIds.indexOf(qid);
-            if(idx !== -1) showQ(idx);
-        }
+            // 1. Radio Inputs (MCQ)
+            document.querySelectorAll('.answer-input').forEach(input => {
+                input.addEventListener('change', function() {
+                    const qid = this.dataset.qid;
+                    // Visual styling
+                    document.querySelectorAll(`input[name="question_${qid}"]`).forEach(el => {
+                        el.closest('.option-wrapper').classList.remove('border-primary', 'bg-light');
+                    });
+                    this.closest('.option-wrapper').classList.add('border-primary', 'bg-light');
+                    saveData(qid);
+                });
+            });
 
-        // --- 4. SAVING ---
+            // 2. Div Clicks for Radios
+            document.querySelectorAll('.option-wrapper').forEach(wrapper => {
+                wrapper.addEventListener('click', function(e) {
+                    if (e.target !== this.querySelector('input') && e.target.tagName !== 'LABEL') {
+                        const input = this.querySelector('input');
+                        if (!input.checked) {
+                            input.checked = true;
+                            input.dispatchEvent(new Event('change'));
+                        }
+                    }
+                });
+            });
+
+            // 3. Text Inputs (Essay/Numeric)
+            document.querySelectorAll('.answer-text-input').forEach(input => {
+                // Word Count for Essays
+                if(input.dataset.type === 'ESSAY') {
+                    const badge = document.getElementById(`wc-${input.dataset.qid}`);
+                    badge.classList.remove('d-none');
+                    
+                    input.addEventListener('input', function() {
+                        const val = this.value.trim();
+                        const words = val === '' ? 0 : val.split(/\s+/).length;
+                        badge.innerText = `${words} Words`;
+                        
+                        // Debounce save (wait 1s)
+                        clearTimeout(this.saveTimeout);
+                        this.saveTimeout = setTimeout(() => saveData(this.dataset.qid), 1000);
+                    });
+                } else {
+                    // Numeric/Short: Save on blur
+                    input.addEventListener('blur', function() {
+                        saveData(this.dataset.qid);
+                    });
+                }
+            });
+
+            // --- SMART RESUME LOGIC ---
+            // Jump to the first question that has NO answer stored
+            let jumpIdx = 0;
+            for(let i = 0; i < allQuestionIds.length; i++) {
+                if(!savedAnswers[allQuestionIds[i]]) {
+                    jumpIdx = i;
+                    break;
+                }
+            }
+            showQuestionBlock(jumpIdx);
+        });
+
+        // --- 3. CORE LOGIC ---
+
+        let mediaRecorder;
+let audioChunks = [];
+
+function startRecording(qid) {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.start();
+        audioChunks = [];
+
+        // UI Updates
+        document.getElementById(`mic-icon-${qid}`).classList.add('beat-animation');
+        document.getElementById(`status-${qid}`).innerText = "Recording... Speak now.";
+        document.getElementById(`btn-record-${qid}`).disabled = true;
+        document.getElementById(`btn-stop-${qid}`).disabled = false;
+
+        mediaRecorder.addEventListener("dataavailable", event => {
+            audioChunks.push(event.data);
+        });
+
+        mediaRecorder.addEventListener("stop", () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            uploadAudio(qid, audioBlob);
+        });
+    });
+}
+
+function stopRecording(qid) {
+    if (mediaRecorder) {
+        mediaRecorder.stop();
+        // UI Updates
+        document.getElementById(`mic-icon-${qid}`).classList.remove('beat-animation');
+        document.getElementById(`status-${qid}`).innerText = "Processing...";
+        document.getElementById(`btn-record-${qid}`).disabled = false;
+        document.getElementById(`btn-stop-${qid}`).disabled = true;
+    }
+}
+
+function uploadAudio(qid, blob) {
+    const formData = new FormData();
+    formData.append('attempt_id', {{ attempt.id }});
+    formData.append('question_id', qid);
+    formData.append('audio_data', blob, `answer_${qid}.wav`);
+
+    fetch("{% url 'save_answer' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken }, // No Content-Type header for FormData (Browser sets it)
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Show Playback
+        const audioUrl = URL.createObjectURL(blob);
+        const audioEl = document.getElementById(`audio-preview-${qid}`);
+        audioEl.src = audioUrl;
+        document.getElementById(`playback-container-${qid}`).classList.remove('d-none');
+        document.getElementById(`status-${qid}`).innerText = "Recording saved.";
+        updatePaletteVisuals(qid, true, false);
+    })
+    .catch(err => {
+        console.error("Upload failed", err);
+        alert("Failed to save audio. Please try again.");
+    });
+}
+
         function saveData(qid) {
-            const radio = document.querySelector(`input[name="q_${qid}"]:checked`);
-            const text = document.querySelector(`input[data-qid="${qid}"]`);
-            const optId = radio ? radio.value : null;
-            const txtVal = text ? text.value : null;
-            const isReview = document.getElementById('mark-review').checked; // Simplified
+            const selectedRadio = document.querySelector(`input[name="question_${qid}"]:checked`);
+            const textInput = document.querySelector(`textarea[data-qid="${qid}"]`);
             
-            updatePalette(qid, !!(optId || txtVal), isReview);
+            const optionId = selectedRadio ? selectedRadio.value : null;
+            const textVal = textInput ? textInput.value : null;
+            const isReviewed = document.getElementById(`review_${qid}`).checked;
+
+            // Check if "answered"
+            const isAnswered = !!optionId || (textVal && textVal.trim().length > 0);
+            updatePaletteVisuals(qid, isAnswered, isReviewed);
 
             fetch("{% url 'save_answer' %}", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
-                body: JSON.stringify({ attempt_id: {{ attempt.id }}, question_id: qid, option_id: optId, text_input: txtVal, is_reviewed: isReview })
+                headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+                body: JSON.stringify({
+                    attempt_id: {{ attempt.id }},
+                    question_id: qid,
+                    option_id: optionId,
+                    text_input: textVal,
+                    is_reviewed: isReviewed
+                })
+            }).catch(console.error);
+        }
+
+        function updatePaletteVisuals(qid, isAnswered, isReviewed) {
+            const btn = document.getElementById(`palette-btn-${qid}`);
+            if(!btn) return;
+            
+            btn.className = 'palette-btn'; // Reset
+            if (qid === allQuestionIds[currentIdx]) btn.classList.add('current');
+            
+            if (isReviewed && isAnswered) btn.classList.add('review-answered');
+            else if (isReviewed) btn.classList.add('review');
+            else if (isAnswered) btn.classList.add('answered');
+        }
+
+        // --- 4. NAVIGATION ---
+        document.getElementById('current-review-chk').addEventListener('change', function() {
+            const qid = allQuestionIds[currentIdx];
+            document.getElementById(`review_${qid}`).checked = this.checked;
+            saveData(qid);
+        });
+        
+        function clearCurrentResponse() {
+            const qid = allQuestionIds[currentIdx];
+            // Clear Radio
+            document.querySelectorAll(`input[name="question_${qid}"]`).forEach(r => {
+                r.checked = false;
+                r.closest('.option-wrapper').classList.remove('border-primary', 'bg-light');
             });
+            // Clear Text
+            const textInput = document.querySelector(`textarea[data-qid="${qid}"]`);
+            if(textInput) {
+                textInput.value = '';
+                // Reset Word Count
+                const badge = document.getElementById(`wc-${qid}`);
+                if(badge) badge.innerText = "0 Words";
+            }
+            
+            saveData(qid);
         }
 
-        function updatePalette(qid, answered, review) {
-            const btn = document.getElementById(`pal-${qid}`);
-            btn.className = 'palette-btn'; // reset
-            if(review) btn.classList.add('review');
-            else if(answered) btn.classList.add('answered');
-            if(qid === qIds[currIdx]) btn.classList.add('current');
+        function showQuestionBlock(index) {
+            if (index < 0 || index >= allQuestionIds.length) return;
+            
+            // Hide old
+            document.querySelectorAll('.question-block').forEach(el => el.classList.remove('active'));
+            
+            // Show new
+            const qid = allQuestionIds[index];
+            const block = document.getElementById(`q-block-${qid}`);
+            block.classList.add('active');
+            currentIdx = index;
+
+            // Nav Buttons
+            document.getElementById('btn-prev').disabled = (index === 0);
+            const nextBtn = document.getElementById('btn-next');
+            if (index === allQuestionIds.length - 1) {
+                nextBtn.innerHTML = 'Submit <i class="bi bi-check-lg"></i>';
+                nextBtn.className = "btn btn-success px-4";
+            } else {
+                nextBtn.innerHTML = 'Next <i class="bi bi-chevron-right"></i>';
+                nextBtn.className = "btn btn-primary px-4";
+            }
+
+            // Palette Highlighting
+            document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('current'));
+            const pBtn = document.getElementById(`palette-btn-${qid}`);
+            if(pBtn) pBtn.classList.add('current');
+
+            // Auto-expand Accordion
+            const sectionId = block.dataset.sectionId;
+            const collapseEl = document.getElementById(`section-collapse-${sectionId}`);
+            if (collapseEl && !collapseEl.classList.contains('show')) {
+                const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: true });
+            }
+
+            // Sync Toggle Switch
+            const hiddenInput = document.getElementById(`review_${qid}`);
+            document.getElementById('current-review-chk').checked = hiddenInput ? hiddenInput.checked : false;
         }
 
-        // --- 5. EXTRAS ---
-        function toggleCalculator() {
-            const c = document.getElementById('calculator');
-            c.style.display = c.style.display === 'none' ? 'block' : 'none';
-        }
-        function cInput(v) { document.getElementById('calc-disp').value += v; }
-        function cEval() { 
-            try { document.getElementById('calc-disp').value = eval(document.getElementById('calc-disp').value); } 
-            catch { document.getElementById('calc-disp').value = 'Err'; }
+        function navigate(direction) {
+            if (direction === 1 && currentIdx === allQuestionIds.length - 1) {
+                confirmSubmit();
+                return;
+            }
+            showQuestionBlock(currentIdx + direction);
         }
 
-        // Timer
-        let t = {{ remaining_seconds }};
+        function jumpToQuestion(qid) {
+            const idx = allQuestionIds.indexOf(qid);
+            if (idx !== -1) showQuestionBlock(idx);
+        }
+
+        function confirmSubmit() {
+            let answered = 0, review = 0, unanswered = 0;
+            allQuestionIds.forEach(qid => {
+                const hiddenInput = document.getElementById(`review_${qid}`);
+                const isReviewed = hiddenInput ? hiddenInput.checked : false;
+                
+                // Check if answered (Radio or Text)
+                const radio = document.querySelector(`input[name="question_${qid}"]:checked`);
+                const text = document.querySelector(`textarea[data-qid="${qid}"]`);
+                const hasText = text && text.value.trim().length > 0;
+                
+                if (radio || hasText) answered++; else unanswered++;
+                if (isReviewed) review++;
+            });
+            
+            document.getElementById('summary-answered').innerText = answered;
+            document.getElementById('summary-review').innerText = review;
+            document.getElementById('summary-unanswered').innerText = unanswered;
+            
+            const reviewWarn = document.getElementById('review-warning');
+            if (review > 0) reviewWarn.classList.remove('d-none');
+            else reviewWarn.classList.add('d-none');
+            submitModal.show();
+        }
+
+        function finalSubmit() { document.getElementById('submit-form').submit(); }
+
+        // --- 5. UTILITIES (Report, Time, Fullscreen) ---
+        
+        window.reportQuestion = function(qid) {
+            if (reportModal) {
+                document.getElementById('report-qid').value = qid;
+                document.getElementById('report-reason').value = '';
+                reportModal.show();
+            }
+        };
+
+        window.submitReport = function() {
+            const qid = document.getElementById('report-qid').value;
+            const reason = document.getElementById('report-reason').value;
+            
+            // Assuming you have a report view (add url if missing)
+            fetch("{% url 'report_question' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+                body: JSON.stringify({ question_id: qid, reason: reason })
+            }).then(() => {
+                alert("Report submitted.");
+                reportModal.hide();
+            });
+        };
+
+        function updateSystemTime() {
+            document.getElementById('system-time').innerText = new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit', hour12: true});
+        }
+        setInterval(updateSystemTime, 1000); updateSystemTime();
+
+        function updateBatteryStatus() {
+            if ('getBattery' in navigator) navigator.getBattery().then(b => {
+                const update = () => {
+                    const level = Math.round(b.level * 100);
+                    document.getElementById('battery-level').innerText = level + "%";
+                    document.getElementById('battery-icon').className = b.charging ? "bi bi-battery-charging text-success" : (level > 20 ? "bi bi-battery-full" : "bi bi-battery text-danger");
+                };
+                update(); b.addEventListener('levelchange', update); b.addEventListener('chargingchange', update);
+            });
+            else document.getElementById('battery-status').style.display = 'none';
+        }
+        updateBatteryStatus();
+
+        function enableFullScreen() {
+            const el = document.documentElement;
+            if(el.requestFullscreen) el.requestFullscreen().then(() => {
+                document.getElementById('fullscreen-overlay').style.display = 'none'; isFullScreen = true;
+            }).catch(() => { document.getElementById('fullscreen-overlay').style.display = 'none'; });
+            else document.getElementById('fullscreen-overlay').style.display = 'none';
+        }
+
+        // --- 6. SERVER-SIDE TIMER ---
+        let timeRemaining = {{ remaining_seconds }};
+        const timerDisplay = document.querySelector('#timer span');
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+        
+        // Initial Render
+        timerDisplay.innerText = formatTime(timeRemaining);
+
         setInterval(() => {
-            if(t<=0) document.getElementById('submit-form').submit();
-            t--;
-            const m = Math.floor(t/60).toString().padStart(2,0);
-            const s = (t%60).toString().padStart(2,0);
-            document.getElementById('timer').innerText = `${Math.floor(t/3600).toString().padStart(2,0)}:${m}:${s}`;
+            if(!isFullScreen && timeRemaining > 0) return; 
+            
+            timeRemaining--;
+            if (timeRemaining <= 0) {
+                timeRemaining = 0;
+                finalSubmit();
+            }
+            timerDisplay.innerText = formatTime(timeRemaining);
         }, 1000);
     </script>
+
+    <div id="exam-calculator" class="card shadow border-0" style="position: fixed; bottom: 20px; right: 20px; width: 260px; z-index: 1000; display: none; background: #2c3e50;">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2" style="cursor: move;" id="calc-header">
+        <small><i class="bi bi-calculator me-2"></i>Calculator</small>
+        <button type="button" class="btn-close btn-close-white small" onclick="toggleCalculator()"></button>
+    </div>
+    <div class="p-2">
+        <input type="text" id="calc-display" class="form-control text-end mb-2 fs-4 fw-bold bg-light" readonly value="0">
+        <div class="row g-1">
+            <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="calcInput('(')">(</button></div>
+            <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="calcInput(')')">)</button></div>
+            <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="calcInput('%')">%</button></div>
+            <div class="col-3"><button class="btn btn-warning w-100 btn-sm" onclick="calcClear()">AC</button></div>
+            
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('7')">7</button></div>
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('8')">8</button></div>
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('9')">9</button></div>
+            <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="calcInput('/')">÷</button></div>
+
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('4')">4</button></div>
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('5')">5</button></div>
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('6')">6</button></div>
+            <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="calcInput('*')">×</button></div>
+
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('1')">1</button></div>
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('2')">2</button></div>
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('3')">3</button></div>
+            <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="calcInput('-')">-</button></div>
+
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('0')">0</button></div>
+            <div class="col-3"><button class="btn btn-light w-100 btn-sm" onclick="calcInput('.')">.</button></div>
+            <div class="col-3"><button class="btn btn-primary w-100 btn-sm" onclick="calcSolve()">=</button></div>
+            <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="calcInput('+')">+</button></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calculator Logic
+    function toggleCalculator() {
+        const calc = document.getElementById('exam-calculator');
+        calc.style.display = (calc.style.display === 'none') ? 'block' : 'none';
+    }
+    function calcInput(val) { 
+        const display = document.getElementById('calc-display');
+        if(display.value === '0') display.value = val;
+        else display.value += val; 
+    }
+    function calcClear() { document.getElementById('calc-display').value = '0'; }
+    function calcSolve() {
+        try { document.getElementById('calc-display').value = eval(document.getElementById('calc-display').value); }
+        catch { document.getElementById('calc-display').value = 'Error'; }
+    }
+    
+    // Draggable Logic
+    const dragElement = document.getElementById("exam-calculator");
+    const dragHeader = document.getElementById("calc-header");
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    dragHeader.onmousedown = function(e) {
+        e.preventDefault();
+        pos3 = e.clientX; pos4 = e.clientY;
+        document.onmouseup = function() { document.onmouseup = null; document.onmousemove = null; };
+        document.onmousemove = function(e) {
+            e.preventDefault();
+            pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
+            pos3 = e.clientX; pos4 = e.clientY;
+            dragElement.style.top = (dragElement.offsetTop - pos2) + "px";
+            dragElement.style.left = (dragElement.offsetLeft - pos1) + "px";
+        };
+    };
+</script>
 </body>
 </html>
