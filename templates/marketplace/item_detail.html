@@ -195,15 +195,12 @@
                                     {% trans "Log in to Enroll" %}
                                 </a>
                             {% endif %}
-                        </div>
-                        
-                        <p class="text-center small text-muted mt-3 mb-0">{% trans "30-Day Money-Back Guarantee" %}</p>
+                        </div>                        
                     {% endif %}
                     <hr>
                     <h6 class="fw-bold">{% trans "This includes:" %}</h6>
                     <ul class="list-unstyled small text-muted">
                         <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Full lifetime access" %}</li>
-                        <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Access on mobile and TV" %}</li>
                         {% if item.item_type == 'MOCK_TEST' %}
                              <li><i class="bi bi-check-lg text-success me-2"></i> {% trans "Detailed performance analytics" %}</li>
                         {% endif %}

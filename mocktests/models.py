@@ -103,6 +103,13 @@ class TestQuestion(models.Model):
     
   
     question_type = models.CharField(max_length=20, choices=QuestionType.choices, default=QuestionType.MCQ)
+    correct_answer_value = models.CharField(
+        _("Correct Answer (Input)"), 
+        max_length=255, 
+        blank=True, 
+        null=True,
+        help_text=_("For Numeric/Input questions. Enter the exact correct value.")
+    )
     marks = models.PositiveIntegerField(default=1)
     sort_order = models.PositiveIntegerField(default=0)
 

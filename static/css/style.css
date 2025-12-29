@@ -254,7 +254,7 @@ footer p, footer li, footer span { color: #b0b0b0 !important; } /* Lighter gray 
     color: #E59819; /* Gold color for stars */
     font-size: 1rem;
 }
-site-footer {
+.site-footer {
     background-color: #1a1a2e; /* Dark blue/black background */
     color: #b3b3b3; /* Light grey text for readability */
     padding: 60px 0 20px;
@@ -393,3 +393,44 @@ site-footer {
       margin: 0 10px;
     }
   }
+/* static/css/style.css */
+
+/* --- GLOBAL LOADER OVERLAY --- */
+#global-loader {
+    position: fixed !important;      /* 1. Force it to float on top */
+    top: 0;
+    left: 0;
+    width: 100vw;                   /* 2. Full Width of viewport */
+    height: 100vh;                  /* 3. Full Height of viewport */
+    background-color: rgba(255, 255, 255, 0.9); /* White background with slight transparency */
+    z-index: 999999 !important;     /* 4. Ensure it sits on top of everything (even navbar) */
+    display: flex;                  /* 5. Enable Flexbox for centering */
+    justify-content: center;        /* 6. Center horizontally */
+    align-items: center;            /* 7. Center vertically */
+    flex-direction: column;         /* 8. Stack spinner and text */
+    backdrop-filter: blur(5px);     /* 9. Blur the background content */
+    transition: opacity 0.3s ease;
+}
+
+/* Helper to hide the loader */
+.d-none {
+    display: none !important;
+}
+
+/* Loader Text Styling */
+.loader-text {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #0056D2; /* Your Brand Color */
+    font-family: sans-serif;
+    letter-spacing: 0.5px;
+    animation: pulse 1.5s infinite;
+}
+
+/* Optional Pulse Animation for text */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}

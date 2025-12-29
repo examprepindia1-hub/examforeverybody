@@ -270,7 +270,7 @@
     }
 
     function checkStatus(orderId) {
-        fetch(`/billing/api/check-status/${orderId}/`)
+        fetch(`/billing/api/check-status/${orderId}/`,{skipLoader: true})
         .then(res => res.json())
         .then(data => {
             if (data.status === 'PAID') {

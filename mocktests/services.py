@@ -11,10 +11,8 @@ class BaseExamStrategy:
 
     def grade_answers(self, attempt):
         """
-        CRITICAL FIX: Compares user's selected option with the correct option
-        and updates the database before scoring.
+        Grades both MCQ and NUMERIC/INPUT answers.
         """
-        # Fetch all answers for this attempt with their related questions and selected options
         answers = UserAnswer.objects.filter(attempt=attempt).select_related('question', 'selected_option')
         
         for answer in answers:
@@ -22,21 +20,28 @@ class BaseExamStrategy:
             if answer.question.question_type == 'MCQ':
                 if answer.selected_option and answer.selected_option.is_correct:
                     answer.is_correct = True
-                    # Optional: Add partial marks logic here if needed
                 else:
                     answer.is_correct = False
             
-            # 2. Logic for Subjective/Essay (Requires manual grading usually)
-            # For now, we assume false unless an admin marks it true later
-            
+            # 2. Logic for NUMERIC / INPUT (The Fix)
+            elif answer.question.question_type == 'NUMERIC':
+                # Get the user's text input and the stored correct value
+                user_val = str(answer.text_answer).strip() if answer.text_answer else ""
+                correct_val = str(answer.question.correct_answer_value).strip() if answer.question.correct_answer_value else ""
+                
+                # Compare them (Case-insensitive)
+                if user_val and correct_val and user_val.lower() == correct_val.lower():
+                    answer.is_correct = True
+                else:
+                    answer.is_correct = False
+
+            # 3. Save the result
             answer.save()
 
     def calculate_score(self, attempt):
         """Standard simple scoring"""
-        # 1. Run the Grading Logic First!
         self.grade_answers(attempt)
         
-        # 2. Calculate Score
         total_score = 0
         correct_count = 0
         
@@ -49,7 +54,7 @@ class BaseExamStrategy:
         return {
             'score': total_score,
             'correct_count': correct_count,
-            'passed': True # You can implement pass/fail logic here
+            'passed': True 
         }
 
 class SATExamStrategy(BaseExamStrategy):
@@ -62,7 +67,7 @@ class SATExamStrategy(BaseExamStrategy):
         return 'mocktests/exams/sat/result.html'
 
     def calculate_score(self, attempt):
-        # 1. Grade the answers (calls the parent method)
+        # 1. Grade the answers
         self.grade_answers(attempt)
         
         # 2. Get Raw Counts
@@ -70,9 +75,6 @@ class SATExamStrategy(BaseExamStrategy):
         rw_correct = attempt.answers.filter(is_correct=True, question__section__title__icontains="Reading").count()
         
         # 3. Simple Mock SAT Algorithm (Curve)
-        # In a real app, you'd use a lookup table (e.g., 30 correct = 650 points)
-        # Base score 400. Each question roughly ~10-15 points depending on difficulty.
-        
         math_score = 200 + (math_correct * 10)
         if math_score > 800: math_score = 800
         
@@ -90,20 +92,13 @@ class SATExamStrategy(BaseExamStrategy):
         }
 
 class IELTSExamStrategy(BaseExamStrategy):
-    # ... (Keep your IELTS logic similar to above) ...
     pass
 
-# --- FACTORY FUNCTION FIXED ---
 def get_exam_strategy(exam_type):
-    """
-    Maps Model choices (SAT_ADAPTIVE, etc.) to Strategy Classes.
-    """
     strategies = {
-        # FIX: Map the actual model values to the strategy
         'SAT_ADAPTIVE': SATExamStrategy(),
         'SAT_NON_ADAPTIVE': SATExamStrategy(),
-        'SAT': SATExamStrategy(), # Keep for safety
-        
+        'SAT': SATExamStrategy(),
         'IELTS': IELTSExamStrategy(),
         'GENERAL': BaseExamStrategy(),
     }

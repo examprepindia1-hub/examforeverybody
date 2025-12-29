@@ -25,7 +25,12 @@
     <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
-
+     <div id="global-loader" class="d-none">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="loader-text">Processing...</p>
+    </div>
     <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
         <div class="container-fluid px-4">
             <a class="navbar-brand d-flex align-items-center p-0 me-4" href="{% url 'home' %}">
@@ -205,6 +210,83 @@
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const loader = document.getElementById('global-loader');
+        let activeRequests = 0;
+
+        // --- CORE FUNCTIONS ---
+
+        window.showLoader = function() {
+            activeRequests++;
+            loader.classList.remove('d-none');
+        };
+
+        window.hideLoader = function(force = false) {
+            if (force) {
+                activeRequests = 0;
+            } else {
+                activeRequests--;
+            }
+            
+            if (activeRequests <= 0) {
+                activeRequests = 0;
+                loader.classList.add('d-none');
+            }
+        };
+
+        // --- 1. API INTERCEPTOR (For AJAX/Fetch calls) ---
+        // This keeps the loader visible as long as any API call is active
+        const originalFetch = window.fetch;
+        window.fetch = function(input, init) {
+    // If the request options has 'skipLoader: true', don't show the overlay
+    if (init && init.skipLoader) {
+        return originalFetch.apply(this, arguments);
+    }
+
+    showLoader();
+    return originalFetch.apply(this, arguments)
+        .finally(() => {
+            hideLoader();
+        });
+};
+
+        // --- 2. PAGE NAVIGATION HANDLER ---
+        // Shows loader when user clicks a valid internal link
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            
+            // Check if it's a valid link that causes a page reload
+            if (link && link.href && !link.target && !link.hasAttribute('download') && 
+                !e.ctrlKey && !e.metaKey && !link.href.includes('#')) {
+                
+                // Only show if linking to the same domain
+                if (link.hostname === window.location.hostname) {
+                    // Force show (reset counter to ensure it shows immediately)
+                    activeRequests = 0; 
+                    showLoader();
+                }
+            }
+        });
+
+        // --- 3. FORM SUBMISSION HANDLER ---
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            // Don't show if the form is target="_blank"
+            if (!form.target) {
+                activeRequests = 0;
+                showLoader();
+            }
+        });
+
+        // Safety: Hide loader when the page is fully loaded via Back Button (bfcache)
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                hideLoader(true);
+            }
+        });
+    });
+</script>
 </body>
 
 </html>

@@ -141,9 +141,10 @@ class TestSectionAdmin(admin.ModelAdmin):
                         sort_order=index + 1
                     )
 
+                    raw_correct = str(row['Correct_Option']).strip() if row['Correct_Option'] else ''
+
                     # Create Options (Only for MCQ)
                     if q.question_type == 'MCQ':
-                        correct_opt = str(row['Correct_Option']).strip().upper() if row['Correct_Option'] else ''
                         
                         options_map = {
                             'A': row.get('Option_A'),
@@ -157,8 +158,12 @@ class TestSectionAdmin(admin.ModelAdmin):
                                 QuestionOption.objects.create(
                                     question=q,
                                     option_text=text,
-                                    is_correct=(key == correct_opt)
+                                    is_correct=(key == raw_correct.upper())
                                 )
+                    elif q.question_type == 'NUMERIC' or q.question_type == 'INPUT':
+                        q.correct_answer_value = raw_correct
+                        q.save()
+                        
                     count += 1
                 
                 self.message_user(request, f"Successfully imported {count} questions from {file.name}!")
