@@ -6,6 +6,25 @@ from django.utils.translation import gettext_lazy as _
 from model_utils.models import TimeStampedModel
 from marketplace.models import MarketplaceItem
 
+class PaymentAuditLog(models.Model):
+    email_message_id = models.CharField(max_length=255, unique=True, db_index=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    sender = models.CharField(max_length=255)
+    subject = models.CharField(max_length=500)
+    raw_body_text = models.TextField() # Decoded text content
+    
+    # Extraction Results
+    extracted_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    extracted_vpa = models.CharField(max_length=255, null=True, blank=True)
+    extracted_utr = models.CharField(max_length=255, null=True, blank=True)
+    
+    # Outcome
+    is_processed = models.BooleanField(default=False)
+    processing_error = models.TextField(null=True, blank=True) # "Regex failed", "Order not found", etc.
+
+    def __str__(self):
+        return f"{self.sender} - {self.email_message_id}"
+    
 class Order(TimeStampedModel):
     """
     Represents a Shopping Cart Checkout.
