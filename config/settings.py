@@ -50,7 +50,7 @@ LANGUAGES = (
     ('zh-hans', 'Mandarin (Simplified Chinese)'), 
 )
 PAYMENTS_ACTIVE = True
-PAYPAL_TEST = env('PAYPAL_TEST', cast=bool)
+PAYPAL_TEST = env('PAYPAL_TEST', cast=bool, default=True)
 PAYPAL_RECEIVER_EMAIL = env('PAYPAL_RECEIVER_EMAIL')
 # 2. Where Django should look for translation files
 LOCALE_PATHS = [
