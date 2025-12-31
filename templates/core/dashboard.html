@@ -14,7 +14,7 @@
     </div>
     
     <a href="{% url 'explore' %}" class="btn btn-primary rounded-pill px-4">
-        <i class="bi bi-compass me-2"></i>Explore Courses
+        <i class="bi bi-compass me-2"></i>Explore Exams
     </a>
 </div>
 
@@ -159,7 +159,7 @@
                         {% endfor %}
                     </div>
                     <div class="card-footer bg-white text-center p-3 border-top">
-                        <a href="#" class="text-decoration-none small fw-bold">View Full History</a>
+                        <a href="{% url 'dashboard_recent_attempts' %}" class="text-decoration-none small fw-bold">View Full History</a>
                     </div>
                 </div>
             </div>

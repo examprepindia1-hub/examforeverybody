@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - ExamForEverybody{% endblock %}
+
+{% block content %}
+<div class="bg-white py-5 text-center">
+    <div class="container py-4">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3">Our Mission</span>
+        <h1 class="fw-bold display-5 mb-3">Democratizing Education</h1>
+        <p class="lead text-muted mx-auto mb-5" style="max-width: 700px;">
+            We believe high-quality exam preparation should be accessible to everyone, everywhere. No barriers, just learning.
+        </p>
+    </div>
+</div>
+
+<div class="bg-light py-5">
+    <div class="container">
+        
+        <div class="row align-items-center mb-5 pb-4">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                         alt="Team working" 
+                         class="img-fluid rounded-4 shadow-sm position-relative z-2">
+                    
+                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-primary opacity-10 rounded-4" 
+                         style="transform: translate(-20px, 20px); z-index: 1;"></div>
+                </div>
+            </div>
+            <div class="col-lg-6 ps-lg-5">
+                <h3 class="fw-bold mb-3 text-dark">Empowering Students to Dream Big</h3>
+                <p class="text-muted mb-4" style="line-height: 1.8;">
+                    ExamForEverybody was founded on a simple premise: <strong>talent is universal, but opportunity is not.</strong> 
+                    Expensive coaching classes and exclusive resources often create a divide. We are here to bridge that gap by building the world's most accessible exam preparation platform.
+                </p>
+                <div class="d-flex align-items-center gap-4">
+                    <div>
+                        <h2 class="fw-bold text-primary mb-0">50k+</h2>
+                        <small class="text-muted">Students</small>
+                    </div>
+                    <div class="vr opacity-25"></div>
+                    <div>
+                        <h2 class="fw-bold text-primary mb-0">100+</h2>
+                        <small class="text-muted">Mock Tests</small>
+                    </div>
+                    <div class="vr opacity-25"></div>
+                    <div>
+                        <h2 class="fw-bold text-primary mb-0">15+</h2>
+                        <small class="text-muted">Countries</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-5 mt-5">
+            <h3 class="fw-bold">Our Core Values</h3>
+            <p class="text-muted">The principles that drive every decision we make.</p>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift">
+                    <div class="mb-3 text-primary">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-globe-americas fs-3"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Accessibility First</h5>
+                    <p class="text-muted small">
+                        We keep our prices affordable and offer free resources so that financial status never dictates academic success.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift">
+                    <div class="mb-3 text-primary">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-patch-check-fill fs-3"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Uncompromised Quality</h5>
+                    <p class="text-muted small">
+                        Our content is curated by top educators and industry experts to ensure you are learning from the best.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4 text-center hover-lift">
+                    <div class="mb-3 text-primary">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="bi bi-cpu-fill fs-3"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">Driven by Technology</h5>
+                    <p class="text-muted small">
+                        We use AI-driven analytics to identify your weak spots and personalize your learning path instantly.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm bg-white p-5 text-center mx-auto" style="max-width: 800px; border-radius: 16px;">
+            <h3 class="fw-bold text-dark mb-3">Be Part of the Journey</h3>
+            <p class="text-muted mb-4 mx-auto" style="max-width: 600px;">
+                Whether you are a student looking to ace your exam or an educator wanting to contribute, there is a place for you here.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'student_signup' %}" class="btn btn-primary rounded-pill px-4 fw-bold">Join as Student</a>
+                <a href="{% url 'contact_support' %}" class="btn btn-outline-dark rounded-pill px-4 fw-bold">Contact Us</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+    }
+</style>
+{% endblock %}

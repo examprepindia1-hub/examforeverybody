@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Help Center - ExamForEverybody{% endblock %}
+
+{% block content %}
+<div class="bg-white py-5 text-center">
+    <div class="container py-4">
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3">Help Center</span>
+        <h1 class="fw-bold display-5 mb-3">How can we help you?</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 600px;">
+            Find answers to common questions about our mock tests, technical issues, and billing.
+        </p>
+    </div>
+</div>
+
+<div class="bg-light py-5" style="min-height: 600px;">
+    <div class="container">
+        
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8">
+                <ul class="nav nav-pills nav-fill bg-white p-2 rounded-pill shadow-sm" id="faqTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill active fw-bold" id="general-tab" data-bs-toggle="pill" data-bs-target="#general" type="button" role="tab">
+                            <i class="bi bi-info-circle me-2"></i>General
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill fw-bold" id="exams-tab" data-bs-toggle="pill" data-bs-target="#exams" type="button" role="tab">
+                            <i class="bi bi-laptop me-2"></i>Exams
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill fw-bold" id="billing-tab" data-bs-toggle="pill" data-bs-target="#billing" type="button" role="tab">
+                            <i class="bi bi-credit-card me-2"></i>Billing
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="tab-content" id="faqTabContent">
+                    
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
+                        <div class="accordion shadow-sm rounded-3 overflow-hidden" id="accordionGeneral">
+                            
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#gen1">
+                                        What is ExamForEverybody?
+                                    </button>
+                                </h2>
+                                <div id="gen1" class="accordion-collapse collapse show" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body text-muted small">
+                                        ExamForEverybody is a global platform designed to democratize exam preparation. We offer high-quality, AI-driven mock tests and resources for exams like SAT, GRE, NEET, and JEE at affordable prices.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#gen2">
+                                        Is the platform free to use?
+                                    </button>
+                                </h2>
+                                <div id="gen2" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body text-muted small">
+                                        We offer both free and premium content. You can access select mock tests and study materials for free. Premium full-length simulations and live workshops are available for a small fee.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#gen3">
+                                        Do I need to install any software?
+                                    </button>
+                                </h2>
+                                <div id="gen3" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body text-muted small">
+                                        No. Our platform is 100% web-based. You can take tests directly in your browser (Chrome, Safari, Firefox, or Edge) without downloading anything.
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="exams" role="tabpanel">
+                        <div class="accordion shadow-sm rounded-3 overflow-hidden" id="accordionExams">
+                            
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#exam1">
+                                        Can I pause a mock test?
+                                    </button>
+                                </h2>
+                                <div id="exam1" class="accordion-collapse collapse show" data-bs-parent="#accordionExams">
+                                    <div class="accordion-body text-muted small">
+                                        <strong>No.</strong> To simulate real exam conditions, our timers continue running even if you close the window. We recommend ensuring you have a stable internet connection and 2-3 hours of free time before starting a full-length test.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#exam2">
+                                        What happens if my internet disconnects?
+                                    </button>
+                                </h2>
+                                <div id="exam2" class="accordion-collapse collapse" data-bs-parent="#accordionExams">
+                                    <div class="accordion-body text-muted small">
+                                        Don't worry! Your answers are auto-saved every few seconds. Once your internet is restored, refresh the page, and you can resume exactly where you left off.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#exam3">
+                                        How accurate are the AI scores?
+                                    </button>
+                                </h2>
+                                <div id="exam3" class="accordion-collapse collapse" data-bs-parent="#accordionExams">
+                                    <div class="accordion-body text-muted small">
+                                        Our scoring algorithms are trained on official grading rubrics. For objective sections (MCQ), accuracy is 100%. For subjective sections (Essays/Speaking), our AI provides an estimated score within a +/- 5% margin of human graders.
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="billing" role="tabpanel">
+                        <div class="accordion shadow-sm rounded-3 overflow-hidden" id="accordionBilling">
+                            
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#bill1">
+                                        What payment methods do you accept?
+                                    </button>
+                                </h2>
+                                <div id="bill1" class="accordion-collapse collapse show" data-bs-parent="#accordionBilling">
+                                    <div class="accordion-body text-muted small">
+                                        We accept all major credit/debit cards via PayPal for international students. For users in India, we support UPI (GPay, PhonePe, Paytm) via secure QR code scanning.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#bill2">
+                                        What is your refund policy?
+                                    </button>
+                                </h2>
+                                <div id="bill2" class="accordion-collapse collapse" data-bs-parent="#accordionBilling">
+                                    <div class="accordion-body text-muted small">
+                                        We offer a <strong>7-day refund guarantee</strong> if you have not started the test or consumed more than 20% of the course content. Please contact support to initiate a request.
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="text-center mt-5">
+                    <p class="text-muted mb-3">Still can't find what you're looking for?</p>
+                    <a href="{% url 'contact_support' %}" class="btn btn-outline-dark rounded-pill px-4 fw-bold">Contact Support</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Tab Styling */
+    .nav-pills .nav-link {
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+    }
+    .nav-pills .nav-link:hover {
+        background-color: #f8f9fa;
+        color: var(--brand-dark);
+    }
+    .nav-pills .nav-link.active {
+        background-color: var(--brand-dark) !important;
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    
+    /* Clean Accordion Styling */
+    .accordion-button:not(.collapsed) {
+        color: var(--brand-primary);
+        background-color: #f8f9fa;
+        box-shadow: none;
+    }
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,.125);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Cookie Policy - ExamForEverybody{% endblock %}
+
+{% block content %}
+<div class="bg-light-section section-pad">
+    <div class="container" style="max-width: 900px;">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold text-dark">Cookie Policy</h1>
+        </div>
+
+        <div class="card border-0 shadow-sm p-5">
+            <p class="lead">ExamForEverybody uses cookies to improve your experience, secure your account, and analyze website traffic.</p>
+            
+            <h4 class="fw-bold mt-4">What are Cookies?</h4>
+            <p>Cookies are small text files stored on your device when you visit a website. They help the site remember your login status and preferences.</p>
+
+            <h4 class="fw-bold mt-4">Types of Cookies We Use</h4>
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Category</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">Essential Cookies</td>
+                            <td>Required for the site to work (e.g., keeping you logged in, CSRF security tokens).</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Analytics Cookies</td>
+                            <td>Help us understand how visitors interact with the site (e.g., Google Analytics).</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Functional Cookies</td>
+                            <td>Remember your language preferences and local settings.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 class="fw-bold mt-4">Managing Cookies</h4>
+            <p>Most browsers automatically accept cookies. You can modify your browser settings to decline cookies if you prefer, but this may prevent you from taking full advantage of the website (e.g., you may not be able to stay logged in).</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

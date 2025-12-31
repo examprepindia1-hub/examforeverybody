@@ -213,7 +213,27 @@ footer h5 { color: #fff; font-weight: 700; }
 footer a { color: #e0e0e0 !important; text-decoration: none; transition: color 0.2s;}
 footer a:hover { color: var(--brand-primary) !important; }
 footer p, footer li, footer span { color: #b0b0b0 !important; } /* Lighter gray for readable footer text */
+/* ... existing footer styles ... */
 
+/* ADD THIS NEW CLASS FOR THE BOTTOM BAR */
+.footer-container-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: block; /* This ensures it takes full width, unlike the grid above */
+}
+
+/* Optional: Ensure the bottom bar content is centered nicely */
+.footer-bottom {
+    margin-top: 40px; /* Reduced from 60px for tighter look */
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Vertically align items */
+    flex-wrap: wrap;
+    gap: 15px;
+}
 
 
 @keyframes slideIn {

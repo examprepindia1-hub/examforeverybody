@@ -1,10 +1,39 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load i18n %}
-
+{% load currency_tags %}
 {% block title %}{{ item.title }} - ExamForEverybody{% endblock %}
 
 {% block content %}
+
+{% if user.is_authenticated and not is_enrolled %}
+    
+    {% if latest_order_status == 'PENDING' %}
+    <div class="alert alert-warning border-0 rounded-0 mb-0 text-center py-3" role="alert">
+        <div class="container">
+            <i class="bi bi-hourglass-split fs-4 align-middle me-2"></i>
+            <span class="fw-bold">{% trans "Payment Processing..." %}</span>
+            <span class="ms-2">
+                {% trans "We have received your order request but payment is still confirming. Please wait a moment and" %} 
+                <a href="." class="fw-bold text-decoration-underline text-dark">{% trans "refresh this page" %}</a>.
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if latest_order_status == 'FAILED' %}
+    <div class="alert alert-danger border-0 rounded-0 mb-0 text-center py-3" role="alert">
+        <div class="container">
+            <i class="bi bi-exclamation-circle-fill fs-4 align-middle me-2"></i>
+            <span class="fw-bold">{% trans "Payment Failed" %}</span>
+            <span class="ms-2">
+                {% trans "Your last transaction was not successful. Please try purchasing again below." %}
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
+{% endif %}
 
 <div style="background-color: var(--brand-dark); color: white;" class="py-5 mb-4">
     <div class="container">
@@ -168,11 +197,11 @@
                     {% else %}
                         <div class="mb-4">
                             {% if PAYMENTS_ACTIVE %}
-                                <h2 class="fw-bold text-primary">₹{{ item.price }}</h2>
+                                <h2 class="fw-bold text-primary">{% show_price item %}</h2>
                             {% else %}
                                 <h2 class="fw-bold text-success">
                                     FREE
-                                    <small class="text-muted text-decoration-line-through fs-6 ms-2">₹{{ item.price }}</small>
+                                    <small class="text-muted text-decoration-line-through fs-6 ms-2">{% show_price item %}</small>
                                 </h2>
                                 <span class="badge bg-warning text-dark mb-2">Beta Access</span>
                             {% endif %}

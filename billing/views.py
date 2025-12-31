@@ -120,8 +120,8 @@ def initiate_purchase(request, slug):
         messages.info(request, "You are already enrolled in this content.")
         return redirect('marketplace:item_detail', slug=slug)
 
-    usd_price = round(item.price / 86, 2)  # Assuming ~86 INR = 1 USD
-    if usd_price < 1: usd_price = 1.00 # Minimum $1
+    usd_price = item.price_usd  # Assuming ~86 INR = 1 USD
+    
 
     # B. Create Pending Order
     # Note: We save the USD price in total_amount so it matches PayPal's return signal

@@ -36,7 +36,7 @@ class MarketplaceItem(TimeStampedModel):
     item_type = models.CharField(max_length=20, choices=ItemType.choices)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     thumbnail_image = models.ImageField(upload_to='thumbnails/items/', blank=True, null=True)
-    
+    price_usd = models.DecimalField(_("Price (USD)"), max_digits=10, decimal_places=2, default=0.00, help_text="Price for users outside India")
     # Relations
     categories = models.ManyToManyField(Category, related_name='items', blank=True)
     

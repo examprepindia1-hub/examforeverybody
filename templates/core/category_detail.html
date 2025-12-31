@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
+
 {% block title %}{{ category.display_name }} - ExamForEverybody{% endblock %}
 
 {% block content %}
-<div class="bg-primary py-5 text-white position-relative overflow-hidden"
+<div style="background-color: var(--brand-dark); color: white;" class="py-5 position-relative overflow-hidden"
      {% if category.image %}
         style="background-image: url('{{ category.image.url }}'); background-size: cover; background-position: center;"
     {% endif %}>

@@ -24,10 +24,10 @@ from mocktests.models import (
 )
 
 # --- CONFIGURATION ---
-GEMINI_API_KEY = getattr(settings, "GEMINI_API_KEY", "AIzaSyBU0QOvQ7YKfFO5JuGmIEaI60DpiAkyDy8")
-# Use the latest stable model available to you. 
-# If 'gemini-3' fails, switch to 'gemini-2.0-flash-exp' or 'gemini-1.5-flash'
-MODEL_NAME = "gemini-3-flash-preview" 
+GEMINI_API_KEY = getattr(settings, "GEMINI_API_KEY", "") 
+
+# Use 'gemini-1.5-flash' for speed/cost, or 'gemini-1.5-pro' for maximum reasoning quality
+MODEL_NAME = "gemini-3-pro-preview" 
 
 # SAT VISUAL STYLE
 SAT_STYLE_GUIDE = """
@@ -42,35 +42,56 @@ plt.rcParams.update({
 })
 """
 
-# ==============================================================================
-#  BLUEPRINTS
-# ==============================================================================
 BLUEPRINT_RW = [
-    ("Craft & Structure", "Words in Context", 5),
-    ("Craft & Structure", "Text Structure and Purpose", 4),
-    ("Craft & Structure", "Cross-Text Connections", 2),
-    ("Information & Ideas", "Command of Evidence (Textual)", 3),
-    ("Information & Ideas", "Command of Evidence (Quantitative)", 3),
+    # --- CRAFT & STRUCTURE (approx 28%) ---
+    ("Craft & Structure", "Words in Context", 4),
+    ("Craft & Structure", "Text Structure and Purpose", 3),
+    ("Craft & Structure", "Cross-Text Connections", 1),
+    
+    # --- INFORMATION & IDEAS (approx 26%) ---
+    ("Information & Ideas", "Central Ideas and Details", 2),
+    ("Information & Ideas", "Command of Evidence (Textual)", 2),
+    ("Information & Ideas", "Command of Evidence (Quantitative)", 2),
     ("Information & Ideas", "Inferences", 2),
+    
+    # --- STANDARD ENGLISH CONVENTIONS (approx 26%) ---
     ("Standard English Conventions", "Boundaries (Punctuation)", 3),
     ("Standard English Conventions", "Form, Structure, and Sense (Grammar)", 3),
-    ("Expression of Ideas", "Transitions", 2)
+    
+    # --- EXPRESSION OF IDEAS (approx 20%) ---
+    ("Expression of Ideas", "Rhetorical Synthesis", 2),
+    ("Expression of Ideas", "Transitions", 3),
 ]
+# Total: 27 Questions (Correct)
+
 
 BLUEPRINT_MATH = [
+    # --- ALGEBRA (approx 35% -> 7-8 Qs) ---
     ("Algebra", "Linear equations in one variable", 2),
     ("Algebra", "Linear inequalities in one or two variables", 2),
     ("Algebra", "Systems of two linear equations", 2),
+    ("Algebra", "Linear functions", 1),
+    
+    # --- ADVANCED MATH (approx 35% -> 7-8 Qs) ---
     ("Advanced Math", "Quadratic equations and functions", 2),
     ("Advanced Math", "Exponential functions", 2),
-    ("Advanced Math", "Nonlinear equations and systems", 1),
-    ("Problem-Solving", "Ratios, rates, proportional relationships", 3),
-    ("Problem-Solving", "Probability and conditional probability", 2),
-    ("Geometry", "Area and volume", 2),
-    ("Geometry", "Lines, angles, and triangles", 2),
+    ("Advanced Math", "Nonlinear equations and systems", 2), # Increased to 2
+    ("Advanced Math", "Equivalent expressions", 1),
+    
+    # --- PROBLEM-SOLVING & DATA ANALYSIS (approx 15% -> 3-4 Qs) ---
+    ("Problem-Solving", "Ratios, rates, proportional relationships", 1), # Reduced to 1
+    ("Problem-Solving", "Percentages", 1),
+    ("Problem-Solving", "Probability and conditional probability", 1),
+    ("Data Analysis", "Scatterplots and linear models", 1), 
+    # Removed "Statistics" to fit the 22-question limit while keeping high-yield topics
+    
+    # --- GEOMETRY & TRIGONOMETRY (approx 15% -> 3-4 Qs) ---
+    ("Geometry", "Area and volume", 1),
+    ("Geometry", "Lines, angles, and triangles", 1),
     ("Geometry", "Circles", 1),
-    ("Data Analysis", "Scatterplots and linear models", 1)
+    ("Geometry", "Right triangles and trigonometry", 1),
 ]
+# Total: 22 Questions (Correct)
 
 class Command(BaseCommand):
     help = 'The Ultimate Parallel SAT Generator (Fastest & Best Quality)'
@@ -80,14 +101,14 @@ class Command(BaseCommand):
         parser.add_argument('--workers', type=int, default=4, help='Number of parallel requests')
 
     def handle(self, *args, **options):
-        if not GEMINI_API_KEY:
-            self.stdout.write(self.style.ERROR("Error: GEMINI_API_KEY is missing."))
+        if not GEMINI_API_KEY or len(GEMINI_API_KEY) < 20:
+            self.stdout.write(self.style.ERROR("Error: Invalid or missing GEMINI_API_KEY in settings.py"))
             return
 
         self.client = genai.Client(api_key=GEMINI_API_KEY)
         self.lock = threading.Lock() 
         
-        self.log(f"--- 🚀 Starting Ultimate SAT Generation ({MODEL_NAME}) ---")
+        self.log(f"--- 🚀 Starting Robust SAT Generation ({MODEL_NAME}) ---")
         self.log(f"--- ⚡ Parallel Workers: {options['workers']} ---")
 
         # 1. Setup Exam
@@ -112,14 +133,14 @@ class Command(BaseCommand):
             self.stdout.write(message)
 
     def setup_exam_structure(self, force_restart):
-        slug = 'sat-digital-ultimate-v1'
+        slug = 'sat-mock-test-05'
         if force_restart:
             MarketplaceItem.objects.filter(slug=slug).delete()
 
         item, _ = MarketplaceItem.objects.get_or_create(
             slug=slug,
             defaults={
-                'title': 'Digital SAT: Ultimate Edition',
+                'title': 'SAT Mock Test 5',
                 'description': 'The most advanced AI-generated SAT simulation. High-performance, style-consistent, and blueprint-accurate.',
                 'price': 59.00,
                 'item_type': 'MOCK_TEST',
@@ -147,10 +168,11 @@ class Command(BaseCommand):
             self.log(f"  ✓ {section_title} complete. Skipping.")
             return
 
+        # Clear partial data to ensure purity
         if section.questions.count() > 0:
             section.questions.all().delete()
 
-        self.log(f"  ... Generating {section_title} ({difficulty}) using {max_workers} threads")
+        self.log(f"  ... Generating {section_title} ({difficulty})")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = []
@@ -169,23 +191,74 @@ class Command(BaseCommand):
         max_retries = 3
         for attempt in range(max_retries):
             try:
+                # 1. Generate
                 questions_data = self.call_gemini_json_mode(subject, domain, sub_topic, difficulty, count)
                 
                 if not isinstance(questions_data, list) or len(questions_data) == 0:
                      raise ValueError("Empty JSON returned")
 
+                # 2. VALIDATION GATEKEEPER
+                valid_questions = []
+                for q in questions_data:
+                    is_valid, reason = self.validate_question_data(q)
+                    if is_valid:
+                        valid_questions.append(q)
+                    else:
+                        self.log(self.style.WARNING(f"        ⚠️ Rejected Q: {reason}"))
+
+                # If we lost questions due to validation, fail the batch so we retry
+                if len(valid_questions) < count:
+                    raise ValueError(f"Only {len(valid_questions)}/{count} questions passed validation.")
+
+                # 3. Save Atomic
                 with transaction.atomic():
-                    for q_data in questions_data:
+                    for q_data in valid_questions:
                         self.save_question_to_db(section, q_data)
                 
-                self.log(f"      + {sub_topic}: Saved {len(questions_data)} Qs")
+                self.log(f"      + {sub_topic}: Saved {len(valid_questions)} Qs")
                 return
 
             except Exception as e:
-                sleep_time = (attempt + 1) * 2 + (id(threading.current_thread()) % 3)
-                time.sleep(sleep_time)
+                self.log(self.style.WARNING(f"      ! Retry '{sub_topic}' ({attempt+1}/{max_retries}): {e}"))
+                time.sleep(2)
         
-        self.log(self.style.ERROR(f"      x Failed topic {sub_topic} after retries"))
+        self.log(self.style.ERROR(f"      x CRITICAL FAIL: '{sub_topic}' failed after 3 retries."))
+
+    def validate_question_data(self, data):
+        """
+        Ensures the question is perfect before DB insertion.
+        Returns: (bool, str_reason)
+        """
+        # A. Basic Fields
+        if not data.get('question_text') or not data.get('correct_answer'):
+            return False, "Missing text or answer"
+
+        # B. Option Validation (MCQ Only)
+        if data.get('type') == 'MCQ':
+            options = data.get('options', [])
+            
+            # Check 1: Count
+            if len(options) != 4:
+                return False, f"Invalid option count: {len(options)}"
+            
+            # Check 2: Duplicates (Normalize to check 5.0 vs 5)
+            clean_opts = [str(o).strip().lower() for o in options]
+            if len(set(clean_opts)) != len(clean_opts):
+                return False, "Duplicate options found"
+
+            # Check 3: Answer Existence
+            correct = str(data.get('correct_answer')).strip().lower()
+            if correct not in clean_opts:
+                # Last ditch effort: if answer is '5' and options has '5.0', it's okay? 
+                # No, we want strict matching for DB integrity.
+                return False, f"Correct answer '{correct}' not in options {clean_opts}"
+
+            # Check 4: Nonsense Content
+            for opt in options:
+                if "option" in str(opt).lower() or str(opt).strip() == "":
+                    return False, f"Nonsense option detected: {opt}"
+
+        return True, "Valid"
 
     def call_gemini_json_mode(self, subject, domain, sub_topic, difficulty, count):
         image_rule = "python_code: null"
@@ -198,24 +271,20 @@ class Command(BaseCommand):
             - NO plt.show().
             """
 
-        # --- UPDATED PROMPT WITH STRICT FORMATTING RULES ---
         prompt = f"""
         Role: Senior SAT Exam Writer. 
         Task: Create {count} {difficulty} questions.
         Context: {subject} > {domain} > {sub_topic}
         
-        STRICT QUALITY & FORMATTING RULES:
-        1. Options: Plain text only (e.g. "5", NOT "A) 5" or "(B) 10").
-        2. {image_rule}
-        3. MATH NOTATION (CRITICAL):
-           - Use SINGLE DOLLAR SIGNS ($x$) for variables/math inside sentences.
-           - Use DOUBLE DOLLAR SIGNS ($$x=y$$) ONLY for standalone equations on their own line.
-           - For systems of equations, use a cases block: $$ \\begin{{cases}} 2x+y=10 \\\\ x-y=5 \\end{{cases}} $$
-        4. Distractors: Must be plausible common errors.
-        5. Explanations: Step-by-step clarity.
+        STRICT QUALITY RULES:
+        1. **DISTINCT OPTIONS:** For MCQs, all 4 options MUST be unique. Do not use synonyms (e.g., "5" and "5.0").
+        2. **PLAUSIBLE DISTRACTORS:** Options must make logical sense. No "Option A" placeholders.
+        3. **FORMATTING:** - Options: Plain text only (e.g. "5", NOT "A) 5").
+           - Math: Use single $ for inline, double $$ for display equations.
+        4. {image_rule}
         
         Output JSON:
-        [{{ "question_text": "...", "type": "MCQ"|"NUMERIC", "options": ["..."], "correct_answer": "...", "explanation": "...", "python_code": "..." }}]
+        [{{ "question_text": "...", "type": "MCQ"|"NUMERIC", "options": ["...", "...", "...", "..."], "correct_answer": "...", "explanation": "...", "python_code": "..." }}]
         """
         
         response = self.client.models.generate_content(
@@ -238,18 +307,8 @@ class Command(BaseCommand):
         q_type = data.get('type', 'MCQ').upper()
         q_text = self.clean_text(data.get('question_text'))
         
-        if not q_text: return
-
         correct_raw = self.clean_text(str(data.get('correct_answer')))
-        options_raw = [self.clean_text(o) for o in data.get('options', []) if self.clean_text(o)]
-        
-        if q_type == 'MCQ' and correct_raw and options_raw:
-            match_found = any(o.lower() == correct_raw.lower() for o in options_raw)
-            if not match_found:
-                if len(options_raw) >= 4:
-                    options_raw[-1] = correct_raw
-                else:
-                    options_raw.append(correct_raw)
+        options_raw = [self.clean_text(o) for o in data.get('options', [])]
 
         question = TestQuestion.objects.create(
             section=section,

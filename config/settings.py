@@ -61,7 +61,7 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
 UPI_VERIFICATION_EMAIL_HOST_USER = env('UPI_VERIFICATION_EMAIL_HOST_USER')
 UPI_VERIFICATION_EMAIL_HOST_PASSWORD = env('UPI_VERIFICATION_EMAIL_HOST_PASSWORD')
-
+GEMINI_API_KEY = env('GEMINI_API_KEY')
 UPI_MERCHANT_VPA=env('UPI_MERCHANT_VPA')
 UPI_MERCHANT_NAME=env('UPI_MERCHANT_NAME')
 # 3. Model Translation settings (for django-modeltranslation)
@@ -114,6 +114,7 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 # Add this line below to make categories available on every page (Navbar)
                 'core.context_processors.global_categories', 
+                'marketplace.context_processors.currency_processor'
             ],
         },
     },

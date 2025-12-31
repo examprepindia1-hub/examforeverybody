@@ -3,6 +3,8 @@ from django.urls import reverse
 from django.conf import settings
 from django.utils.text import slugify
 
+from core.models import Category
+
 class Post(models.Model):
     STATUS_CHOICES = (
         ('draft', 'Draft'),
@@ -17,7 +19,7 @@ class Post(models.Model):
     image = models.ImageField(upload_to='blog/images/', blank=True, null=True)
     
     content = models.TextField() # You can swap this for CKEditor later for rich text
-    
+    categories = models.ManyToManyField(Category, related_name='posts', blank=True)
     # Meta fields
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     is_featured = models.BooleanField(default=False)

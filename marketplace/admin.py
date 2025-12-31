@@ -10,7 +10,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(MarketplaceItem)
 class MarketplaceItemAdmin(admin.ModelAdmin):
-    list_display = ('title', 'item_type', 'price', 'is_active', 'created')
+    list_display = ('title', 'item_type', 'price', 'is_active', 'created', 'slug')
     list_filter = ('item_type', 'is_active', 'categories')
     search_fields = ('title', 'description')
     prepopulated_fields = {'slug': ('title',)}
