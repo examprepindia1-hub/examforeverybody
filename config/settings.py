@@ -39,12 +39,9 @@ LANGUAGES = (
     ('fr', 'French'),
     ('zh-hans', 'Mandarin (Simplified Chinese)'), 
 )
-PAYPAL_CLIENT_ID = env('PAYPAL_CLIENT_ID', default='your_dummy_client_id')
-PAYPAL_SECRET = env('PAYPAL_SECRET', default='your_dummy_secret')
-PAYPAL_MODE = env('PAYPAL_MODE', default='sandbox') # 'sandbox' or 'live'
 PAYMENTS_ACTIVE = True
-PAYPAL_TEST = True  # True for Sandbox, False for Production
-PAYPAL_RECEIVER_EMAIL = 'sb-q47gdc48239901@business.example.com'
+PAYPAL_TEST = env('PAYPAL_TEST', cast=bool)
+PAYPAL_RECEIVER_EMAIL = env('PAYPAL_RECEIVER_EMAIL')
 # 2. Where Django should look for translation files
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
