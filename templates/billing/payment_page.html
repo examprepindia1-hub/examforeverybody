@@ -61,8 +61,21 @@
                                         <p class="small text-muted mb-0" style="line-height: 1.4;">
                                             We detected you are accessing from outside India. 
                                             <strong>UPI is not available.</strong> Please use PayPal.
-                                            <br><br>
-                                            <em>Are you in India? Turn off your VPN to use UPI.</em>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if CURRENCY_CODE == 'INR' %}
+                            <div class="alert alert-warning border-0 bg-warning bg-opacity-10 mb-4">
+                                <div class="d-flex">
+                                    <i class="bi bi-geo-alt-fill text-warning me-3 fs-4"></i>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-1">In India?</h6>
+                                        <p class="small text-muted mb-0" style="line-height: 1.4;">
+                                            We detected you are accessing from India. 
+                                            <strong>PayPal is not available.</strong> Please use UPI.
                                         </p>
                                     </div>
                                 </div>
@@ -89,18 +102,33 @@
                                 </div>
                             </div>
 
-                            <div id="section-paypal" class="text-center py-4 {% if CURRENCY_CODE == 'INR' %}d-none{% endif %}">
-                                <p class="text-muted mb-3">You will be redirected to PayPal to complete your purchase securely.</p>
-                                <form action="{{ paypal_form.get_login_url }}" method="post">
-                                    {{ paypal_form.as_p }}
-                                    <button type="submit" class="btn btn-warning btn-lg px-5 fw-bold shadow-sm rounded-pill">
-                                        <i class="bi bi-paypal me-2"></i> Pay with PayPal
+                            <div id="section-paypal" class="{% if CURRENCY_CODE == 'INR' %}d-none{% endif %}">
+                                
+                                <div id="paypal-location-blocker" class="d-none text-center py-5">
+                                    <i class="bi bi-geo-alt-fill text-muted fs-1 mb-3"></i>
+                                    <h5 class="fw-bold text-dark">PayPal Unavailable</h5>
+                                    <p class="text-muted small mb-3">
+                                        PayPal payments are only supported for users outside India.<br>
+                                        Please use UPI for local payments.
+                                    </p>
+                                    <button class="btn btn-outline-success btn-sm" onclick="switchTab('upi')">
+                                        Switch to UPI
                                     </button>
-                                    <style>
-                                        #section-paypal form input[type="image"] { display: none; }
-                                        #section-paypal form p { display: none; }
-                                    </style>
-                                </form>
+                                </div>
+
+                                <div id="paypal-actual-form" class="text-center py-4">
+                                    <p class="text-muted mb-3">You will be redirected to PayPal to complete your purchase securely.</p>
+                                    <form action="{{ paypal_form.get_login_url }}" method="post">
+                                        {{ paypal_form.as_p }}
+                                        <button type="submit" class="btn btn-warning btn-lg px-5 fw-bold shadow-sm rounded-pill">
+                                            <i class="bi bi-paypal me-2"></i> Pay with PayPal
+                                        </button>
+                                        <style>
+                                            #section-paypal form input[type="image"] { display: none; }
+                                            #section-paypal form p { display: none; }
+                                        </style>
+                                    </form>
+                                </div>
                             </div>
 
                             <div id="section-upi" class="{% if CURRENCY_CODE != 'INR' %}d-none{% endif %}">
@@ -214,10 +242,20 @@
         if(method === 'paypal') {
             document.getElementById('section-paypal').classList.remove('d-none');
             stopPolling(); 
+
+            // NEW: LOGIC TO BLOCK PAYPAL FOR INDIANS
+            if (userCurrency === 'INR') {
+                document.getElementById('paypal-actual-form').classList.add('d-none');
+                document.getElementById('paypal-location-blocker').classList.remove('d-none');
+            } else {
+                document.getElementById('paypal-actual-form').classList.remove('d-none');
+                document.getElementById('paypal-location-blocker').classList.add('d-none');
+            }
+
         } else {
             document.getElementById('section-upi').classList.remove('d-none');
             
-            // 4. CHECK CURRENCY LOGIC
+            // 4. CHECK CURRENCY LOGIC FOR UPI
             if (userCurrency !== 'INR') {
                 // Not in India? Show Blocker Message
                 document.getElementById('upi-actual-form').classList.add('d-none');
@@ -232,7 +270,6 @@
 
     // --- UPI LOGIC (Unchanged below this line) ---
     function generateQR() {
-        // ... (Keep existing generateQR logic) ...
         const vpaInput = document.getElementById('customer-vpa');
         const vpa = vpaInput.value.trim();
         const checkbox = document.getElementById('upi-consent');
@@ -266,7 +303,6 @@
             } else {
                 document.getElementById('qr-image').src = data.qr_url;
                 document.getElementById('order-ref').textContent = data.order_ref;
-                // document.getElementById('timeout-ref').textContent = data.order_ref; // If timeout element exists
                 document.getElementById('upi-step-2').classList.remove('d-none');
                 startPolling(data.order_ref);
             }
@@ -282,13 +318,10 @@
     function startPolling(orderId) {
         timeLeft = 240; 
         updateTimerDisplay();
-        // document.getElementById('delay-warning').classList.add('d-none'); 
         
         countdownInterval = setInterval(() => {
             timeLeft--;
             updateTimerDisplay();
-
-            // if (timeLeft === 60) document.getElementById('delay-warning').classList.remove('d-none');
             if (timeLeft <= 0) handleTimeout(orderId);
         }, 1000);
 

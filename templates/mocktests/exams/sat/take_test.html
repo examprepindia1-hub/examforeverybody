@@ -314,6 +314,26 @@
         </div>
     </div>
 
+    <div class="modal fade" id="reportSuccessModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg text-center p-4">
+                <div class="mb-3">
+                    <div class="spinner-grow text-success" role="status" style="width: 1rem; height: 1rem; animation-duration: 2s;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <i class="bi bi-check-circle-fill text-success position-absolute" style="font-size: 3rem; transform: translate(-50%, -50%); margin-left: -0.5rem; margin-top: 0.5rem;"></i>
+                </div>
+                <div class="mt-4">
+                    <h4 class="fw-bold text-dark">Thank You</h4>
+                    <p class="text-muted">Your report has been submitted successfully.<br>Our team will review the issue.</p>
+                    <button type="button" class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold" onclick="resumeAfterReport()">
+                        <i class="bi bi-arrows-fullscreen me-2"></i> Resume Test
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="exam-calculator" class="card shadow border-0" style="position: fixed; bottom: 20px; right: 20px; width: 260px; z-index: 1000; display: none; background: #2c3e50;">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2" style="cursor: move;" id="calc-header">
             <small><i class="bi bi-calculator me-2"></i>Calculator</small>
@@ -616,7 +636,7 @@
             document.getElementById('submit-form').submit(); 
         }
 
-        // --- REPORTING ---
+        // --- REPORTING LOGIC UPDATED ---
         window.reportQuestion = function(qid) {
             if (reportModal) {
                 document.getElementById('report-qid').value = qid;
@@ -624,18 +644,39 @@
                 reportModal.show();
             }
         };
+        
         window.submitReport = function() {
             const qid = document.getElementById('report-qid').value;
             const reason = document.getElementById('report-reason').value;
+
+            if (!reason.trim()) {
+                alert("Please provide a reason."); // Validation
+                return;
+            }
+
             fetch("{% url 'report_question' %}", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
                 body: JSON.stringify({ question_id: qid, reason: reason }),
                 skipLoader: true
-            }).then(() => {
-                alert("Report submitted.");
-                reportModal.hide();
+            })
+            .then(response => {
+                if(response.ok) {
+                    reportModal.hide(); // Hide input modal
+                    window.reportSuccessModal.show(); // Show nice success modal
+                } else {
+                    alert("Failed to send report. Please try again.");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Network error.");
             });
+        };
+
+        window.resumeAfterReport = function() {
+            window.reportSuccessModal.hide();
+            enableFullScreen(); // Triggers browser full-screen request via user gesture
         };
 
         // --- TIMER & FULLSCREEN ---
@@ -674,6 +715,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             submitModal = new bootstrap.Modal(document.getElementById('submitSummaryModal'));
             reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+            window.reportSuccessModal = new bootstrap.Modal(document.getElementById('reportSuccessModal'));
 
             // 1. Restore Answers
             for (const [qid, data] of Object.entries(savedAnswers)) {
