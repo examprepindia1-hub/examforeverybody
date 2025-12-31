@@ -26,7 +26,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'django-insecure-)d0@zy94%y3m^97(#b3&0u#rfz)fp55yy3#kkq@=z3pwn12-&f'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG', cast=bool, default=False)
 
 ALLOWED_HOSTS = []
 
@@ -194,6 +194,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.dev'] 
-CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.dev']
-PAYPAL_CURRENCY = 'USD'
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '.ngrok-free.dev'])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['https://*.ngrok-free.dev'])
+PAYPAL_CURRENCY = env('PAYPAL_CURRENCY', default='USD')
