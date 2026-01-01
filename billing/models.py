@@ -34,6 +34,8 @@ class Order(TimeStampedModel):
         PAID = 'PAID', _('Paid')
         FAILED = 'FAILED', _('Failed')
         REFUNDED = 'REFUNDED', _('Refunded')
+        TIMED_OUT = 'TIMED_OUT', _('Timed Out')
+        INCORRECT_AMOUNT = 'INCORRECT_AMOUNT', _('Incorrect Amount')
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
     

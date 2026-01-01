@@ -1,191 +1,181 @@
 import imaplib
 import email
 import re
-import logging
 import socket
 import datetime
+import pytz
 from bs4 import BeautifulSoup
 from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
-from billing.models import Order, PaymentAuditLog
-from enrollments.models import UserEnrollment
+from billing.models import Order
 
 # --- CONFIGURATION ---
-# Set a strict timeout so the script doesn't hang forever if Gmail is slow
+# Set a strict timeout so the script doesn't hang forever
 socket.setdefaulttimeout(30) 
 
-# Configure Logging (Output shows in console or your log files)
-logger = logging.getLogger(__name__)
-
 class Command(BaseCommand):
-    help = 'Enterprise-grade HDFC UPI payment verification scanner'
+    help = 'Enterprise HDFC UPI Verification (With Atomic Safety & Amount Handling)'
 
-    # --- CENTRALIZED REGEX PATTERNS ---
-    # Matches: "Rs. 1,200.00" or "INR 500"
-    REGEX_AMOUNT = r"(?:Rs\.?|INR)\s*([\d,]+\.?\d{0,2})"
-    # Matches: "by VPA user@upi" or "from VPA user@upi"
-    REGEX_VPA = r"(?:by|from)\s+VPA\s+([a-zA-Z0-9\.\-_]+@[a-zA-Z0-9\.\-_]+)"
-    # Matches: "reference number is 123456789"
+    # --- REGEX PATTERNS (TUNED) ---
+    # Matches: "Rs. 1.00" (Handles commas and decimals)
+    REGEX_AMOUNT = r"Rs\.?\s*([\d,]+\.?\d{0,2})"
+    
+    # Matches: "by VPA jsamyak100-1@okaxis"
+    # Logic: Captures until the next space to avoid grabbing names like "SAMYAK"
+    REGEX_VPA = r"by\s+VPA\s+([a-zA-Z0-9\.\-_]+@[a-zA-Z0-9\.\-_]+)"
+    
+    # Matches: "reference number is 636758035286"
     REGEX_UTR = r"reference number is\s+(?P<utr>\d+)"
 
     def handle(self, *args, **kwargs):
-        logger.info("🔌 Connecting to IMAP Server...")
+        print("🔌 Connecting to IMAP Server...")
         
         try:
             mail = imaplib.IMAP4_SSL('imap.gmail.com')
             mail.login(settings.UPI_VERIFICATION_EMAIL_HOST_USER, settings.UPI_VERIFICATION_EMAIL_HOST_PASSWORD)
             
-            # Select the specific folder/label
             mail.select('UPI_ALERTS') 
 
-            # --- TIMEZONE SAFETY FIX ---
-            # Search from YESTERDAY to handle timezone boundaries (e.g., 11:59 PM payments)
-            yesterday = timezone.now() - datetime.timedelta(days=1)
-            date_search_str = yesterday.strftime("%d-%b-%Y")
+            # --- TIMEZONE FIX (IST) ---
+            # Ensures we search the correct "days" relative to Indian banking hours
+            now_utc = timezone.now()
+            ist_timezone = pytz.timezone('Asia/Kolkata')
+            now_ist = now_utc.astimezone(ist_timezone)
             
-            # Query: UNSEEN emails from HDFC received SINCE yesterday
+            # Search last 3 days to cover weekends/holidays
+            search_date = now_ist - datetime.timedelta(days=3)
+            date_search_str = search_date.strftime("%d-%b-%Y")
+            
+            # Query: UNSEEN emails from HDFC
             query = f'(UNSEEN FROM "alerts@hdfcbank.net" SINCE "{date_search_str}")'
-            status, data = mail.search(None, query)
             
+            print(f"   🇮🇳 Current Time (IST): {now_ist}")
+            
+            status, data = mail.search(None, query)
             email_ids = data[0].split()
             
             if not email_ids:
-                logger.info("   No new payment alerts found.")
+                print("   ℹ️ No new unread payment alerts.")
                 return
 
-            logger.info(f"🔍 Found {len(email_ids)} emails to process.")
+            print(f"🔍 Found {len(email_ids)} unread emails...")
 
             for num in email_ids:
                 try:
                     self.process_single_email(mail, num)
                 except Exception as e:
-                    logger.error(f"   ❌ Critical failure on email ID {num}: {e}", exc_info=True)
+                    print(f"   ❌ Critical Error on Email {num}: {e}")
 
             mail.close()
             mail.logout()
-            logger.info("Done.")
+            print("Done.")
 
         except Exception as e:
-            logger.critical(f"IMAP Connection Failed: {e}", exc_info=True)
+            print(f"🔥 IMAP Connection Failed: {e}")
 
     def process_single_email(self, mail, num):
-        """Processes a single email with full audit logging and locking."""
-        
         # 1. Fetch Email
         _, msg_data = mail.fetch(num, '(RFC822)')
         msg = email.message_from_bytes(msg_data[0][1])
         
-        # 2. Extract Metadata
-        # Message-ID is unique globally. We use it to prevent processing the same email twice.
-        message_id = msg.get("Message-ID", "").strip()
-        sender = msg.get("From", "")
-        subject = msg.get("Subject", "")
+        # 2. Extract Body
+        body_text = self.extract_body(msg)
+        clean_body = " ".join(body_text.split())
 
-        # --- IDEMPOTENCY CHECK ---
-        # If we have already successfully processed this Message-ID, skip it.
-        if PaymentAuditLog.objects.filter(email_message_id=message_id, is_processed=True).exists():
-            logger.warning(f"   ⚠️ Skipping duplicate email (already processed): {message_id}")
+        # 3. Validation: Must be a credit alert
+        if "credited" not in clean_body.lower():
             return
 
-        # 3. Extract & Clean Body
-        body_text = self.extract_body(msg)
-        clean_body = " ".join(body_text.split()) # Normalize whitespace
+        # 4. Regex Extraction
+        amount_match = re.search(self.REGEX_AMOUNT, clean_body, re.IGNORECASE)
+        vpa_match = re.search(self.REGEX_VPA, clean_body, re.IGNORECASE)
+        utr_match = re.search(self.REGEX_UTR, clean_body, re.IGNORECASE)
 
-        # 4. Initialize Audit Log (Record the attempt)
-        audit_log, created = PaymentAuditLog.objects.get_or_create(
-            email_message_id=message_id,
-            defaults={
-                'sender': sender,
-                'subject': subject,
-                'raw_body_text': clean_body[:5000] # Save start of body for debugging
-            }
-        )
+        if not (amount_match and vpa_match):
+            # print(f"   ⚠️ Regex Failed. Snippet: {clean_body[:50]}")
+            return
+
+        # 5. Data Cleaning
+        extracted_amount = Decimal(amount_match.group(1).replace(',', ''))
+        # Remove trailing dots/spaces from VPA
+        extracted_vpa = vpa_match.group(1).strip().rstrip('.')
+        extracted_utr = utr_match.group('utr') if utr_match else None
+
+        print(f"   Processing: {extracted_vpa} | ₹{extracted_amount} | UTR: {extracted_utr}")
 
         try:
-            # 5. Filter Non-Credit Alerts
-            if "credited" not in clean_body.lower() and "received" not in clean_body.lower():
-                audit_log.processing_error = "Ignored: Not a credit alert"
-                audit_log.save()
-                return
-
-            # 6. Regex Extraction
-            amount_match = re.search(self.REGEX_AMOUNT, clean_body, re.IGNORECASE)
-            vpa_match = re.search(self.REGEX_VPA, clean_body, re.IGNORECASE)
-            utr_match = re.search(self.REGEX_UTR, clean_body, re.IGNORECASE)
-
-            if not (amount_match and vpa_match):
-                audit_log.processing_error = "Regex Failure: Could not extract Amount or VPA"
-                audit_log.save()
-                logger.warning(f"   ⚠️ Regex failed for email {message_id}")
-                return
-
-            # Data Formatting
-            extracted_amount = Decimal(amount_match.group(1).replace(',', ''))
-            extracted_vpa = vpa_match.group(1).strip()
-            extracted_utr = utr_match.group('utr') if utr_match else None
-            
-            # Update Audit Log with extracted data
-            audit_log.extracted_amount = extracted_amount
-            audit_log.extracted_vpa = extracted_vpa
-            audit_log.extracted_utr = extracted_utr
-            audit_log.save()
-
-            logger.info(f"   Processing: {extracted_vpa} | ₹{extracted_amount} | UTR: {extracted_utr}")
-
-            # 7. BUSINESS LOGIC (Atomic Transaction + DB Locking)
+            # START ATOMIC BLOCK (All or Nothing)
             with transaction.atomic():
-                # Lock the row immediately to prevent race conditions
-                order = Order.objects.select_for_update().filter(
+                
+                # -------------------------------------------------------
+                # CASE A: EXACT MATCH (Success)
+                # -------------------------------------------------------
+                # Checks PENDING, TIMED_OUT (Revival), and INCORRECT_AMOUNT (Correction)
+                success_order = Order.objects.select_for_update().filter(
                     payer_upi_id__iexact=extracted_vpa,
                     total_amount=extracted_amount,
-                    status=Order.OrderStatus.PENDING
-                ).first()
+                    status__in=[
+                        Order.OrderStatus.PENDING, 
+                        Order.OrderStatus.TIMED_OUT
+                    ]
+                ).order_by('-created').first()
 
-                if not order:
-                    audit_log.processing_error = f"No Matching PENDING Order found in DB"
-                    audit_log.save()
-                    logger.info(f"   ❌ No Pending Order: {extracted_vpa} - {extracted_amount}")
-                    return
+                if success_order:
+                    if success_order.status == Order.OrderStatus.PAID:
+                        print(f"   ⚠️ Order {success_order.id} is already PAID.")
+                        return
 
-                # Double-check status (Redundant but safe)
-                if order.status == Order.OrderStatus.PAID:
-                    audit_log.processing_error = "Order was already PAID (Race condition avoided)"
-                    audit_log.save()
-                    return
+                    # 1. Update Order
+                    success_order.status = Order.OrderStatus.PAID
+                    if extracted_utr:
+                        success_order.external_transaction_id = extracted_utr
+                    success_order.save()
+                    
+                    # 2. Enroll User (Must succeed or we Rollback)
+                    from enrollments.models import UserEnrollment
+                    
+                    order_item = success_order.items.first()
+                    if not order_item:
+                        raise ValueError(f"Order {success_order.id} has no items to enroll!")
 
-                # --- SUCCESS PATH ---
-                # A. Update Order
-                order.status = Order.OrderStatus.PAID
-                if extracted_utr:
-                    order.external_transaction_id = extracted_utr
-                order.save()
-
-                # B. Enroll User
-                order_item = order.items.first()
-                if order_item:
                     UserEnrollment.objects.get_or_create(
-                        user=order.user, 
+                        user=success_order.user, 
                         item=order_item.item, 
-                        source_order=order
+                        source_order=success_order
                     )
-                
-                # C. Finalize Audit Log
-                audit_log.is_processed = True
-                audit_log.processing_error = None # Clear any previous errors
-                audit_log.save()
-                
-                logger.info(f"   ✅ SUCCESS: Order {order.transaction_id} marked PAID.")
+                    
+                    print(f"   ✅ SUCCESS: Order {success_order.id} Paid & Enrolled!")
+                    return # Exit function success
+
+                # -------------------------------------------------------
+                # CASE B: PARTIAL/WRONG PAYMENT (Warning)
+                # -------------------------------------------------------
+                # If we are here, Amount didn't match. Find VPA match in PENDING.
+                wrong_order = Order.objects.select_for_update().filter(
+                    payer_upi_id__iexact=extracted_vpa,
+                    status=Order.OrderStatus.PENDING
+                ).order_by('-created').first()
+
+                if wrong_order:
+                    print(f"   ⚠️ WRONG AMOUNT: User paid ₹{extracted_amount}, expected ₹{wrong_order.total_amount}")
+                    wrong_order.status = Order.OrderStatus.INCORRECT_AMOUNT
+                    wrong_order.save()
+                    return
+
+                # -------------------------------------------------------
+                # CASE C: ORPHAN (No Match)
+                # -------------------------------------------------------
+                print(f"   ❌ ORPHAN: No matching order found for {extracted_vpa}")
 
         except Exception as e:
-            audit_log.processing_error = f"System Exception: {str(e)}"
-            audit_log.save()
-            raise e
+            # CRITICAL: This catches Enrollment errors and auto-rollbacks the transaction
+            print(f"   🔥 ROLLBACK: Transaction failed for {extracted_vpa}. Error: {e}")
 
     def extract_body(self, msg):
-        """Robustly extracts text from email using BeautifulSoup."""
+        """Robustly extracts text from email."""
         text_content = ""
         html_content = ""
 
@@ -193,9 +183,7 @@ class Command(BaseCommand):
             for part in msg.walk():
                 content_type = part.get_content_type()
                 payload = part.get_payload(decode=True)
-                
                 if not payload: continue
-                
                 if content_type == "text/plain":
                     text_content += payload.decode(errors="ignore")
                 elif content_type == "text/html":
@@ -205,13 +193,9 @@ class Command(BaseCommand):
             if payload:
                 text_content = payload.decode(errors="ignore")
 
-        # Priority 1: Plain Text (Safest)
         if text_content.strip():
             return text_content
-        
-        # Priority 2: HTML parsed to Text
         if html_content:
             soup = BeautifulSoup(html_content, "html.parser")
             return soup.get_text(separator=" ")
-        
         return ""

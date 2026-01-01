@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Failed | ExamForEverybody{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="bg-warning text-white text-center py-4">
+                    <div class="mb-2">
+                        <i class="bi bi-x-circle-fill" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0 text-white">Payment Pending</h3>
+                    <p class="opacity-75 mb-0">Transaction is being processed</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    
+                    {% if order %}
+                        <div class="text-center mb-4">
+                            <h5 class="text-muted small text-uppercase fw-bold ls-1">Attempted Order</h5>
+                            <h2 class="text-dark fw-bold mb-1">
+                                {% if order.payment_method == 'PAYPAL' %}${% else %}₹{% endif %}{{ order.total_amount|floatformat:2 }}
+                            </h2>
+                            <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
+                                <i class="bi bi-exclamation-circle me-1"></i> Verification Pending
+                            </span>
+                        </div>
+
+                        <ul class="list-group list-group-flush mb-4 rounded-3 border">
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-muted small">Order Reference</span>
+                                <span class="fw-bold font-monospace">#{{ order.id|stringformat:"04d" }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <span class="text-muted small">Exam</span>
+                                <span class="fw-semibold text-end text-truncate" style="max-width: 180px;">{{ item.title }}</span>
+                            </li>
+                        </ul>
+                    
+                    {% else %}
+                        <div class="text-center mb-4">
+                            <p class="text-muted">We couldn't retrieve the order details, but rest assured if you have been charged, it will be processed shortly.</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2">
+                        {% if item %}
+                            <a href="{% url 'marketplace:item_detail' slug=item.slug %}" class="btn btn-dark py-2 rounded-pill shadow-sm fw-bold">
+                                <i class="bi bi-arrow-repeat me-2"></i> Try Again
+                            </a>
+                        {% else %}
+                            <a href="{% url 'marketplace:item_list' %}" class="btn btn-dark py-2 rounded-pill shadow-sm fw-bold">
+                                <i class="bi bi-collection me-2"></i> Browse Exams
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary py-2 rounded-pill">
+                            Go to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

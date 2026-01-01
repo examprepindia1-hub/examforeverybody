@@ -59,9 +59,9 @@ def expire_order(request, order_id):
         try:
             order = Order.objects.get(transaction_id=order_id, user=request.user)
             if order.status == Order.OrderStatus.PENDING:
-                order.status = Order.OrderStatus.FAILED
+                order.status = Order.OrderStatus.TIMED_OUT
                 order.save()
-                return JsonResponse({'status': 'FAILED'})
+                return JsonResponse({'status': 'TIMED_OUT'})
             return JsonResponse({'status': order.status})
         except Order.DoesNotExist:
             return JsonResponse({'error': 'Order not found'}, status=404)
@@ -109,7 +109,7 @@ def payment_cancel(request):
         # Pass the item so the 'Try Again' button knows where to go
         context['item'] = order.items.first().item
         
-    return render(request, 'billing/payment_failed.html', context)
+    return render(request, 'billing/payment_pending.html', context)
 
 @login_required
 def initiate_purchase(request, slug):
