@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -16,4 +16,5 @@ urlpatterns = [
     path('about/', views.about_us, name='about_us'),
     path('careers/', views.careers, name='careers'),
     path('faq/', views.faq, name='faq'),
+    path('robots.txt', include('robots.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
