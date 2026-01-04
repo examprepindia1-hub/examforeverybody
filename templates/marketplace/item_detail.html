@@ -3,8 +3,42 @@
 {% load i18n %}
 {% load currency_tags %}
 {% block title %}{{ item.title }} - ExamForEverybody{% endblock %}
+{% block meta_description %}{{ item.description|truncatewords:25 }}{% endblock %}
 
+{% block og_title %}{{ item.title }}{% endblock %}
+{% block og_description %}{{ item.description|truncatewords:30 }}{% endblock %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ item.thumbnail_image.url }}{% endblock %}
+
+{% block twitter_title %}{{ item.title }}{% endblock %}
+{% block twitter_description %}{{ item.description|truncatewords:30 }}{% endblock %}
+{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{{ item.thumbnail_image.url }}{% endblock %}
 {% block content %}
+
+<script type="application/ld+json">
+    {
+      "@context": "https://schema.org/", 
+      "@type": "Product", 
+      "name": "{{ item.title|escapejs }}",
+      "image": "{{ request.scheme }}://{{ request.get_host }}{% if item.thumbnail_image %}{{ item.thumbnail_image.url }}{% else %}/static/images/logo.svg{% endif %}",
+      "description": "{{ item.description|striptags|truncatewords:50|escapejs }}",
+      "sku": "{{ item.id }}",
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ request.build_absolute_uri }}",
+        "priceCurrency": "INR",
+        "price": "{{ item.price }}",
+        "availability": "{% if item.is_active %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
+      }
+      {% if item.avg_rating %}
+      ,
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ item.avg_rating }}",
+        "reviewCount": "{{ item.total_reviews }}"
+      }
+      {% endif %}
+    }
+    </script>
 
 {% if user.is_authenticated and not is_enrolled %}
     

@@ -91,9 +91,11 @@ INSTALLED_APPS = [
     'enrollments.apps.EnrollmentsConfig',
     'blog.apps.BlogConfig',
     'paypal.standard.ipn',
-    'robots',
     'django.contrib.sites',
+    'django.contrib.sitemaps',
 ]
+
+SITE_ID = 1
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -210,8 +212,3 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '.n
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['https://*.ngrok-free.dev'])
 PAYPAL_CURRENCY = env('PAYPAL_CURRENCY', default='USD')
 
-# ID of your current site (usually 1)
-SITE_ID = 1 
-
-# Cache the robots.txt for 24 hours (86400 seconds) to save DB hits
-ROBOTS_CACHE_TIMEOUT = 60*60*24

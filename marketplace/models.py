@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from model_utils.models import TimeStampedModel # Good for created_at/modified_at auto-handling
 from core.models import Category # Importing from your core app
 from django.conf import settings # To reference your CustomUser
+from django.urls import reverse
 
 class MarketplaceItem(TimeStampedModel):
     """
@@ -45,6 +46,9 @@ class MarketplaceItem(TimeStampedModel):
 
     def __str__(self):
         return self.title
+    
+    def get_absolute_url(self):
+        return reverse('marketplace:item_detail', args=[self.slug])
 
 class Testimonial(TimeStampedModel):
     """

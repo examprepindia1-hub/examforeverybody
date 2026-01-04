@@ -1,9 +1,41 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load blog_extras %}
-{% block title %}{{ post.title }}{% endblock %}
+
+{% block title %}{{ post.title }} | ExamForEverybody Blog{% endblock %}
+{% block meta_description %}{{ post.content|striptags|truncatewords:25 }}{% endblock %}
+
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.content|striptags|truncatewords:30 }}{% endblock %}
+{% if post.thumbnail %}
+    {% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ post.thumbnail.url }}{% endblock %}
+{% endif %}
 
 {% block content %}
+
+<script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "{{ post.title|escapejs }}",
+      "image": "{{ request.scheme }}://{{ request.get_host }}{% if post.thumbnail %}{{ post.thumbnail.url }}{% else %}/static/images/logo.svg{% endif %}",
+      "author": {
+        "@type": "Organization",
+        "name": "ExamForEverybody Team"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "ExamForEverybody",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ request.scheme }}://{{ request.get_host }}/static/images/logo.svg"
+        }
+      },
+      "datePublished": "{{ post.created_at|date:'Y-m-d' }}",
+      "dateModified": "{{ post.updated_at|date:'Y-m-d' }}"
+    }
+    </script>
+
 <div class="bg-white">
     <div class="container py-5 text-center" style="max-width: 800px;">
         <span class="text-muted text-uppercase small ls-1">{{ post.created_at|date:"F d, Y" }}</span>

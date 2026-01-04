@@ -15,6 +15,9 @@ from django.shortcuts import render
 from marketplace.models import MarketplaceItem
 from blog.models import Post  # <--- Import this
 from django.contrib import messages
+from django.http import HttpResponse
+from django.views.decorators.http import require_GET
+
 
 def search(request):
     query = request.GET.get('q', '')
@@ -195,3 +198,22 @@ def faq(request):
     return render(request, 'core/faq.html')
 
 
+@require_GET
+def robots_txt(request):
+    """
+    Generates a robots.txt file that points to the sitemap.
+    """
+    # 1. Define the rules
+    lines = [
+        "User-agent: *",
+        "Disallow: /admin/",
+        "Disallow: /dashboard/",
+        "Disallow: /billing/",
+        "Disallow: /accounts/",
+        "Allow: /",
+        "",
+        # 2. Dynamic Sitemap Link
+        f"Sitemap: {request.scheme}://{request.get_host()}/sitemap.xml",
+    ]
+    
+    return HttpResponse("\n".join(lines), content_type="text/plain")
