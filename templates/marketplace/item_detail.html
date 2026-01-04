@@ -232,7 +232,10 @@
                     {% else %}
                         <div class="mb-4">
                             {% if PAYMENTS_ACTIVE %}
-                                <h2 class="fw-bold text-primary">{% show_price item %}</h2>
+                                {% if exam.price > 0 %}
+                                        <h2 class="fw-bold text-primary">{% show_price item %}</h2>
+                                    {% endif %}
+                                
                             {% else %}
                                 <h2 class="fw-bold text-success">
                                     FREE
@@ -247,7 +250,7 @@
                                 <form action="{% url 'initiate_purchase' item.slug %}" method="post">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-primary-ud btn-lg w-100">
-                                        {% if PAYMENTS_ACTIVE %}
+                                        {% if exam.price > 0 %}
                                             {% trans "Buy Now" %}
                                         {% else %}
                                             {% trans "Enroll for Free" %}

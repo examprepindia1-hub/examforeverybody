@@ -220,7 +220,11 @@
                             </div>
 
                             <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-primary">{% show_price item %}</span>
+                                {% if exam.price > 0 %}
+                                        <span class="fw-bold text-dark fs-5">{% show_price exam %}</span>
+                                    {% else %} 
+                                        <span class="fw-bold text-success fs-5">FREE</span>
+                                    {% endif %}
                             </div>
                         </div>
                     </a>
