@@ -116,6 +116,7 @@ def initiate_purchase(request, slug):
     item = get_object_or_404(MarketplaceItem, slug=slug)
     if item.price_usd <= 0 or item.price <= 0:
         messages.info(request, "You are successfully enrolled in this content.")
+        UserEnrollment.objects.get_or_create(user=request.user, item=item)
         return redirect('marketplace:item_detail', slug=slug)
     # 1. Check if already enrolled
     if UserEnrollment.objects.filter(user=request.user, item=item).exists():
