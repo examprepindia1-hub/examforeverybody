@@ -16,6 +16,31 @@
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
+    <!-- Desmos Graphing Calculator Integration -->
+    <script src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=8f3af243824042a7a8a697f730059d9e"></script>
+    <style>
+        #desmos-calculator-modal {
+            display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(44,62,80,0.85); align-items: center; justify-content: center;
+        }
+        #desmos-calculator-box {
+            background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 0; width: 640px; max-width: 98vw; position: relative;
+        }
+        #desmos-calculator-header {
+            background: #222f3e; color: #fff; padding: 10px 20px; border-radius: 12px 12px 0 0;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        #desmos-calculator-close {
+            background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;
+        }
+        #calculator { width: 600px; height: 400px; margin: 0 auto; }
+        @media (max-width: 700px) {
+            #calculator { width: 95vw; height: 60vw; min-height: 300px; }
+            #desmos-calculator-box { width: 98vw; }
+        }
+    </style>
+
     <style>
         .beat-animation { animation: beat 1s infinite; }
         @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
@@ -106,8 +131,8 @@
                 <div class="status-item" title="Current Time"><span id="system-time">--:--</span></div>
                 <div class="status-item" id="battery-status" title="Battery"><i class="bi bi-battery-full" id="battery-icon"></i><span id="battery-level">--%</span></div>
             </div>
-            <button class="btn btn-light border btn-sm fw-bold text-dark" onclick="toggleCalculator()">
-                <i class="bi bi-calculator"></i> Calc
+            <button class="btn btn-light border btn-sm fw-bold text-dark" onclick="toggleDesmosCalculator()">
+                <i class="bi bi-calculator"></i> Graphing Calc
             </button>
             <button class="btn btn-outline-secondary btn-sm border-0" data-bs-toggle="modal" data-bs-target="#instructionsModal"><i class="bi bi-info-circle me-1"></i> Instructions</button>
             <div class="timer-box" id="timer"><i class="bi bi-stopwatch"></i> <span>00:00:00</span></div>
@@ -363,6 +388,17 @@
                 <div class="col-3"><button class="btn btn-primary w-100 btn-sm" onclick="calcSolve()">=</button></div>
                 <div class="col-3"><button class="btn btn-secondary w-100 btn-sm" onclick="calcInput('+')">+</button></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Desmos Calculator Modal -->
+    <div id="desmos-calculator-modal">
+        <div id="desmos-calculator-box">
+            <div id="desmos-calculator-header">
+                <span><i class="bi bi-calculator me-2"></i>Graphing Calculator</span>
+                <button id="desmos-calculator-close" onclick="toggleDesmosCalculator()">&times;</button>
+            </div>
+            <div id="calculator"></div>
         </div>
     </div>
 
@@ -708,6 +744,35 @@
             document.getElementById('system-time').innerText = new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute:'2-digit', hour12: true});
         }
         setInterval(updateSystemTime, 1000); updateSystemTime();
+
+        // --- DESMOS CALCULATOR LOGIC ---
+        function toggleDesmosCalculator() {
+            const modal = document.getElementById('desmos-calculator-modal');
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            } else {
+                modal.style.display = 'flex';
+                // Lazy init Desmos only once
+                if (!window._desmosLoaded) {
+                    setTimeout(function() {
+                        var elt = document.getElementById('calculator');
+                        window.desmosCalc = Desmos.GraphingCalculator(elt, { keypad: true });
+                        window._desmosLoaded = true;
+                    }, 100);
+                }
+            }
+        }
+        // Add keyboard shortcut (Ctrl+Alt+C) to open/close Desmos
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'c') {
+                e.preventDefault();
+                toggleDesmosCalculator();
+            }
+        });
+        // Also close Desmos on overlay click (except box)
+        document.getElementById('desmos-calculator-modal').addEventListener('click', function(e) {
+            if (e.target === this) toggleDesmosCalculator();
+        });
 
         // ==========================================
         // 3. INITIALIZATION (DOMContentLoaded)
