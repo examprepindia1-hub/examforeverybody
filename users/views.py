@@ -17,6 +17,9 @@ from config import settings
 
 from .forms import StudentSignUpForm, UserLoginForm, UserUpdateForm
 
+def register(request):
+    return redirect('student_signup')
+
 def student_signup(request):
     if request.method == 'POST':
         form = StudentSignUpForm(request.POST)

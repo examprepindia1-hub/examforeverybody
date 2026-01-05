@@ -6,7 +6,7 @@ from .forms import CustomPasswordResetForm, CustomSetPasswordForm
 urlpatterns = [
     # --- Authentication ---
     path('signup/student/', views.student_signup, name='student_signup'),
-    
+    path('register/', views.register, name='register'),
     # NEW: Email Activation Link
     path('activate/<uidb64>/<token>/', views.activate, name='activate'),
 
