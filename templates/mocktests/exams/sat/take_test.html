@@ -774,6 +774,28 @@
             if (e.target === this) toggleDesmosCalculator();
         });
 
+        // --- BATTERY STATUS ---
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(function(battery) {
+                function updateBatteryInfo() {
+                    const level = Math.round(battery.level * 100);
+                    document.getElementById('battery-level').innerText = level + '%';
+                    const icon = document.getElementById('battery-icon');
+                    if (icon) {
+                        if (level > 80) icon.className = 'bi bi-battery-full';
+                        else if (level > 60) icon.className = 'bi bi-battery-three-quarters';
+                        else if (level > 40) icon.className = 'bi bi-battery-half';
+                        else if (level > 20) icon.className = 'bi bi-battery';
+                        else icon.className = 'bi bi-battery';
+                    }
+                }
+                updateBatteryInfo();
+                battery.addEventListener('levelchange', updateBatteryInfo);
+            });
+        } else {
+            document.getElementById('battery-level').innerText = 'N/A';
+        }
+
         // ==========================================
         // 3. INITIALIZATION (DOMContentLoaded)
         // ==========================================
