@@ -28,7 +28,7 @@ def markdown_with_cards(text):
             item = MarketplaceItem.objects.get(slug=slug, is_active=True)
             
             # Render the existing card template
-            card_html = render_to_string('includes/item_card.html', {'item': item})
+            card_html = render_to_string('includes/blog_item_card.html', {'item': item})
             
             # --- WIDTH FIX ---
             # The original card has "col-12 col-md-6..." classes which ruin the blog layout.
