@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.db.models import Prefetch
 import json
 
-from marketplace.models import MarketplaceItem
+from marketplace.models import MarketplaceItem, Testimonial
 from enrollments.models import UserEnrollment
 from .models import (
     QuestionReport, MockTestAttributes, UserTestAttempt, 
@@ -204,9 +204,57 @@ def submit_test(request, attempt_id):
         
         attempt.save()
 
-        return redirect('test_result', attempt_id=attempt.id)
+        return redirect('exam_feedback', attempt_id=attempt.id)
 
     return redirect('take_test', attempt_id=attempt_id)
+
+
+@login_required
+def exam_feedback(request, attempt_id):
+    """
+    Intermediary page to collect feedback before showing results.
+    """
+    attempt = get_object_or_404(UserTestAttempt, id=attempt_id, user=request.user)
+    
+    # Security: Cannot give feedback if not submitted
+    if attempt.status != UserTestAttempt.Status.SUBMITTED:
+        return redirect('take_test', attempt_id=attempt.id)
+
+    # Check if user has already given feedback for this Item
+    # If yes, we can choose to show it or let them update it.
+    # For now, we will pass the existing one to the template if it exists.
+    existing_review = Testimonial.objects.filter(
+        user=request.user, 
+        item=attempt.test.item
+    ).first()
+
+    if request.method == "POST":
+        # 1. Get Data
+        rating = request.POST.get('rating')
+        text = request.POST.get('feedback', '')
+        
+        # 2. Save Testimonial (Update or Create)
+        if rating:
+            user_country = getattr(request.user, 'country', 'India') # Fallback if country field is empty
+            
+            Testimonial.objects.update_or_create(
+                user=request.user,
+                item=attempt.test.item,
+                defaults={
+                    'rating': int(rating),
+                    'text': text,
+                    'country': str(user_country) if user_country else 'India'
+                }
+            )
+        
+        # 3. Proceed to Result
+        return redirect('test_result', attempt_id=attempt.id)
+
+    context = {
+        'attempt': attempt,
+        'existing_review': existing_review
+    }
+    return render(request, 'mocktests/feedback_page.html', context)
 
 
 @login_required

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            
+            <div class="text-center mb-5">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="fw-bold">Assessment Submitted!</h2>
+                <p class="text-muted">Your response has been recorded successfully.</p>
+            </div>
+
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h5 class="mb-0 fw-bold">How was your experience?</h5>
+                    <p class="mb-0 small opacity-75">{{ attempt.test.item.title }}</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4 text-center">
+                            <label class="form-label text-muted small fw-bold text-uppercase mb-3">Rate the Exam Quality</label>
+                            <div class="rating-stars d-flex justify-content-center gap-2" style="cursor: pointer;">
+                                {% for i in "12345" %}
+                                    <i class="bi bi-star-fill fs-2 star-icon" data-value="{{ forloop.counter }}" 
+                                       style="color: {% if existing_review.rating >= forloop.counter %}#ffc107{% else %}#e9ecef{% endif %}; transition: 0.2s;">
+                                    </i>
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" name="rating" id="rating-input" value="{{ existing_review.rating|default:0 }}">
+                            <div class="form-text mt-2" id="rating-text">
+                                {% if existing_review %}You rated this {{ existing_review.rating }} stars{% else %}Click stars to rate{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="feedback" class="form-label fw-bold">Any suggestions or comments?</label>
+                            <textarea class="form-control bg-light" id="feedback" name="feedback" rows="4" 
+                                      placeholder="Tell us what you liked or what needs improvement...">{{ existing_review.text }}</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold">
+                                Submit & View Result <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                            
+                            <div class="text-center mt-2">
+                                <a href="{% url 'test_result' attempt.id %}" class="text-decoration-none text-muted small">
+                                    Skip & View Result
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple Star Rating Logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const stars = document.querySelectorAll('.star-icon');
+        const input = document.getElementById('rating-input');
+        const text = document.getElementById('rating-text');
+        const labels = ["Terrible", "Bad", "Average", "Good", "Excellent"];
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const val = this.getAttribute('data-value');
+                input.value = val;
+                
+                // Update visuals
+                stars.forEach(s => {
+                    if (s.getAttribute('data-value') <= val) {
+                        s.style.color = '#ffc107'; // Yellow
+                    } else {
+                        s.style.color = '#e9ecef'; // Grey
+                    }
+                });
+                
+                text.innerText = labels[val-1];
+                text.classList.add('fw-bold', 'text-warning');
+            });
+
+            // Hover Effect
+            star.addEventListener('mouseover', function() {
+                const val = this.getAttribute('data-value');
+                stars.forEach(s => {
+                    if (s.getAttribute('data-value') <= val) s.style.transform = 'scale(1.2)';
+                });
+            });
+            star.addEventListener('mouseout', function() {
+                stars.forEach(s => s.style.transform = 'scale(1)');
+            });
+        });
+    });
+</script>
+{% endblock %}
