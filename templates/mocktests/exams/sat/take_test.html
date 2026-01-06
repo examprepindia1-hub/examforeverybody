@@ -288,6 +288,23 @@
         </div>
     </div>
 
+    <div class="modal fade" id="timeWarningModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-warning border-3 shadow-lg">
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">2 Minutes Remaining!</h3>
+                    <p class="text-muted">Please review your answers. The exam will auto-submit when the timer reaches zero.</p>
+                    <button type="button" class="btn btn-warning rounded-pill px-5 fw-bold text-dark mt-2" data-bs-dismiss="modal">
+                        Okay, Got it
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="instructionsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -629,7 +646,15 @@
             submitModal.show();
         }
 
+        // FIXED: PREVENT DOUBLE SUBMIT AND STOP TIMER
+        let isSubmitting = false;
         function finalSubmit() { 
+            if(isSubmitting) return; // Prevent double trigger
+            isSubmitting = true;
+
+            // Stop the timer loop immediately
+            if(window.examTimer) clearInterval(window.examTimer);
+
             // 1. Manually show loader because .submit() ignores event listeners
             if(window.showLoader) window.showLoader();
             // 2. Submit form
@@ -690,6 +715,9 @@
 
         let timeRemaining = {{ remaining_seconds }};
         const timerDisplay = document.querySelector('#timer span');
+        const timerBox = document.getElementById('timer');
+        let warningShown = false; 
+
         function formatTime(seconds) {
             const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
             const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
@@ -697,10 +725,29 @@
             return `${h}:${m}:${s}`;
         }
         timerDisplay.innerText = formatTime(timeRemaining);
-        setInterval(() => {
+
+        // FIXED: ASSIGNED INTERVAL TO VARIABLE SO WE CAN STOP IT
+        window.examTimer = setInterval(() => {
             if(!isFullScreen && timeRemaining > 0) return; 
             timeRemaining--;
-            if (timeRemaining <= 0) { timeRemaining = 0; finalSubmit(); }
+            
+            // --- NEW: 2-Minute Warning Logic ---
+            if (timeRemaining <= 120 && timeRemaining > 0 && !warningShown) {
+                warningShown = true;
+                if(window.timeWarningModal) window.timeWarningModal.show();
+                timerBox.classList.remove('text-secondary'); 
+                timerBox.style.backgroundColor = '#ffebee'; 
+                timerBox.style.borderColor = '#dc3545';     
+                timerBox.style.color = '#dc3545';           
+                timerBox.classList.add('beat-animation');   
+            }
+            // -----------------------------------
+
+            if (timeRemaining <= 0) { 
+                timeRemaining = 0; 
+                clearInterval(window.examTimer); // STOP THE LOOP
+                finalSubmit(); 
+            }
             timerDisplay.innerText = formatTime(timeRemaining);
         }, 1000);
 
@@ -716,6 +763,9 @@
             submitModal = new bootstrap.Modal(document.getElementById('submitSummaryModal'));
             reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
             window.reportSuccessModal = new bootstrap.Modal(document.getElementById('reportSuccessModal'));
+            
+            // --- NEW: Time Warning Modal Init ---
+            window.timeWarningModal = new bootstrap.Modal(document.getElementById('timeWarningModal'));
 
             // 1. Restore Answers
             for (const [qid, data] of Object.entries(savedAnswers)) {
