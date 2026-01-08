@@ -209,7 +209,6 @@ def robots_txt(request):
         "Disallow: /admin/",
         "Disallow: /dashboard/",
         "Disallow: /billing/",
-        "Disallow: /accounts/",
         "Allow: /",
         "",
         # 2. Dynamic Sitemap Link
