@@ -25,6 +25,18 @@ class Post(models.Model):
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # New Fields for Redesign
+    tags = models.CharField(max_length=200, blank=True, help_text="Comma-separated tags (e.g. #JEE, #Physics)")
+    views = models.PositiveIntegerField(default=0)
+
+    @property
+    def read_time(self):
+        """Calculates read time based on 200 words per minute."""
+        import math
+        word_count = len(self.content.split())
+        read_time_min = math.ceil(word_count / 200)
+        return read_time_min if read_time_min > 0 else 1
 
     class Meta:
         ordering = ('-created_at',)
