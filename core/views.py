@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, Q,F
+from django.db.models import Q, Count, Avg, F
+from .utils import get_leaderboard_data, get_user_rank
 
 from marketplace.models import MarketplaceItem
 from enrollments.models import UserEnrollment
@@ -216,3 +217,54 @@ def robots_txt(request):
     ]
     
     return HttpResponse("\n".join(lines), content_type="text/plain")
+
+@login_required
+def leaderboard(request, slug=None):
+    """
+    Global Leaderboard:
+    - Rank users by sum of scores from their MOST RECENT attempt on unique tests.
+    - Only considers SUBMITTED attempts.
+    - SUPPORTS FILTERS: Path param <slug> OR ?slug=<slug> (legacy support)
+    """
+    selected_slug = slug or request.GET.get('slug')
+    
+    # 0. Fetch available tests for the Filter Dropdown
+    # Only show tests that actually have submitted attempts to avoid empty pages
+    available_tests = MarketplaceItem.objects.filter(
+        item_type='MOCK_TEST',
+        mock_test_details__attempts__status='SUBMITTED'
+    ).distinct().order_by('title')
+
+    # 1. Fetch Data via Logic Helper
+    leaderboard_data = get_leaderboard_data(test_slug=selected_slug)
+
+    # 5. Add Rank
+    for index, entry in enumerate(leaderboard_data):
+        entry['rank'] = index + 1
+
+    # 6. Top 20 Logic + Current User
+    # We want to show top 20. If user is authenticated and NOT in top 20, 
+    # we append them as the 21st item (or just at the end).
+    
+    final_leaderboard = leaderboard_data[:20]
+    
+    if request.user.is_authenticated:
+        user_id = request.user.id
+        # Check if user is already in top 20
+        user_in_top_20 = any(entry['user_id'] == user_id for entry in final_leaderboard)
+        
+        if not user_in_top_20:
+            # Find user in the full list
+            user_entry = next((entry for entry in leaderboard_data if entry['user_id'] == user_id), None)
+            if user_entry:
+                final_leaderboard.append(user_entry)
+
+    # 7. No Pagination needed for Top 20 view (or simplified)
+    # Paginator is removed as we intentionally limit the view.
+    
+    context = {
+        'leaderboard': final_leaderboard,
+        'available_tests': available_tests,
+        
+    }
+    return render(request, 'core/leaderboard.html', context)

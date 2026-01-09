@@ -6,10 +6,10 @@
 {% block content %}
 <div class="bg-light py-5" style="min-height: 85vh;">
     <div class="container">
-        
+
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                
+
                 <div class="d-flex align-items-center mb-4">
                     <a href="{% url 'dashboard' %}" class="text-decoration-none text-muted me-3">
                         <i class="bi bi-arrow-left fs-4"></i>
@@ -24,23 +24,27 @@
                     <div class="col-lg-8">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-header bg-white border-bottom py-3">
-                                <h5 class="fw-bold mb-0"><i class="bi bi-file-text me-2 text-primary"></i>Exam Instructions</h5>
+                                <h5 class="fw-bold mb-0"><i class="bi bi-file-text me-2 text-primary"></i>Exam
+                                    Instructions</h5>
                             </div>
                             <div class="card-body p-4">
-    <h6 class="fw-bold text-uppercase text-muted small mb-3">Rules & Regulations</h6>
-    
-    <div class="instruction-content text-secondary mb-4">
-        {{ test.instructions|safe|linebreaks }}
-    </div>
+                                <h6 class="fw-bold text-uppercase text-muted small mb-3">Rules & Regulations</h6>
 
-    <div class="alert alert-light border small">
-        <h6 class="fw-bold text-dark"><i class="bi bi-laptop me-2"></i>System Requirements</h6>
-        <ul class="mb-0 ps-3">
-            <li><strong>Full Screen:</strong> The exam will launch in full-screen mode. Exiting may be recorded as a violation.</li>
-            <li><strong>Connectivity:</strong> Ensure a stable internet connection. Progress saves automatically.</li>
-        </ul>
-    </div>
-</div>
+                                <div class="instruction-content text-secondary mb-4">
+                                    {{ test.instructions|safe|linebreaks }}
+                                </div>
+
+                                <div class="alert alert-light border small">
+                                    <h6 class="fw-bold text-dark"><i class="bi bi-laptop me-2"></i>System Requirements
+                                    </h6>
+                                    <ul class="mb-0 ps-3">
+                                        <li><strong>Full Screen:</strong> The exam will launch in full-screen mode.
+                                            Exiting may be recorded as a violation.</li>
+                                        <li><strong>Connectivity:</strong> Ensure a stable internet connection. Progress
+                                            saves automatically.</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -48,7 +52,7 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
                                 <h5 class="fw-bold mb-4">Summary</h5>
-                                
+
                                 <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                                     <span class="text-muted">Duration</span>
                                     <span class="fw-bold">{{ test.duration_minutes }} Mins</span>
@@ -63,16 +67,21 @@
                                 </div>
 
                                 <div class="d-grid gap-2">
-                                    <a href="{% url 'take_test' attempt.id %}" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                                    <a href="{% url 'take_test' attempt.id %}"
+                                        class="btn btn-primary btn-lg fw-bold shadow-sm">
                                         {% if has_started%}
-                                            Resume Test <i class="bi bi-play-circle-fill ms-2"></i>
+                                        Resume Test <i class="bi bi-play-circle-fill ms-2"></i>
                                         {% else %}
-                                            Launch Exam <i class="bi bi-rocket-takeoff-fill ms-2"></i>
+                                        Launch Exam <i class="bi bi-rocket-takeoff-fill ms-2"></i>
                                         {% endif %}
+                                    </a>
+                                    <a href="{% url 'leaderboard_slug' test.item.slug %}"
+                                        class="btn btn-outline-dark btn-lg rounded-pill px-4 hover-scale">
+                                        <i class="bi bi-trophy-fill me-2 map-icon text-warning"></i> View Leaderboard
                                     </a>
                                     <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
                                 </div>
-                                
+
                                 <p class="text-center text-muted small mt-3 mb-0">
                                     By clicking "Launch", you agree to the exam rules.
                                 </p>

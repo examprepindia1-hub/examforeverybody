@@ -10,13 +10,21 @@
         width: 150px;
         height: 150px;
         border-radius: 50%;
-        background: conic-gradient(#0d6efd {{ accuracy }}%, #e9ecef 0deg);
+
+        background: conic-gradient(#0d6efd {
+                    {
+                    accuracy
+                }
+            }
+
+            %, #e9ecef 0deg);
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
         margin: 0 auto;
     }
+
     .progress-circle::before {
         content: "";
         position: absolute;
@@ -25,36 +33,44 @@
         border-radius: 50%;
         background: white;
     }
+
     .progress-content {
         position: relative;
         z-index: 1;
         text-align: center;
         line-height: 1;
     }
-    
+
     /* Stat Cards */
     .stat-card {
         background: white;
         border-radius: 12px;
         padding: 25px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         height: 100%;
         transition: transform 0.2s;
         border: 1px solid #f0f0f0;
     }
-    .stat-card:hover { transform: translateY(-5px); }
-    
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
     .icon-box {
-        width: 48px; height: 48px;
+        width: 48px;
+        height: 48px;
         border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem; margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
     }
 </style>
 
 <div class="bg-light py-5" style="min-height: 100vh;">
     <div class="container">
-        
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h5 class="text-muted small text-uppercase fw-bold mb-1">Test Result</h5>
@@ -66,7 +82,7 @@
         </div>
 
         <div class="row g-4 mb-5">
-            
+
             <div class="col-lg-4">
                 <div class="stat-card text-center d-flex flex-column justify-content-center">
                     <div class="progress-circle mb-3">
@@ -75,16 +91,16 @@
                             <br><small class="text-muted">Score</small>
                         </div>
                     </div>
-                    
+
                     <h5 class="fw-bold">
                         {% if attempt.is_passed %}
-                            <span class="text-success"><i class="bi bi-trophy-fill me-2"></i>Passed</span>
+                        <span class="text-success"><i class="bi bi-trophy-fill me-2"></i>Passed</span>
                         {% else %}
-                            <span class="text-danger"><i class="bi bi-x-circle-fill me-2"></i>Failed</span>
+                        <span class="text-danger"><i class="bi bi-x-circle-fill me-2"></i>Failed</span>
                         {% endif %}
                     </h5>
                     <p class="text-muted small mb-0">
-                        You scored <strong>{{ attempt.score|floatformat:0 }}</strong> 
+                        You scored <strong>{{ attempt.score|floatformat:0 }}</strong>
                         marks out of <strong>{{ attempt.test.item.questions.count|default:"--" }}</strong>
                     </p>
                 </div>
@@ -101,7 +117,7 @@
                             <p class="text-muted small mb-0">Correct Answers</p>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-4">
                         <div class="stat-card">
                             <div class="icon-box bg-danger bg-opacity-10 text-danger">
@@ -129,11 +145,13 @@
                                     <i class="bi bi-clock-history"></i>
                                 </div>
                                 <div>
-                                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Time Taken</small>
+                                    <small class="text-muted d-block text-uppercase fw-bold"
+                                        style="font-size: 0.7rem;">Time Taken</small>
                                     <span class="h4 fw-bold mb-0">{{ time_taken }}</span>
                                 </div>
                             </div>
-                            <a href="{% url 'marketplace:item_detail' attempt.test.item.slug %}" class="btn btn-primary px-4 rounded-pill">
+                            <a href="{% url 'marketplace:item_detail' attempt.test.item.slug %}"
+                                class="btn btn-primary px-4 rounded-pill">
                                 <i class="bi bi-arrow-repeat me-2"></i> Retake Test
                             </a>
                         </div>
@@ -153,18 +171,20 @@
                     {% for item in analysis_list %}
                     <div class="accordion-item border-0 mb-2">
                         <h2 class="accordion-header" id="heading{{ item.question.id }}">
-                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ item.question.id }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} bg-white"
+                                type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapse{{ item.question.id }}">
                                 <div class="d-flex align-items-center w-100">
                                     <div class="me-3 text-center" style="width: 40px;">
                                         {% if item.status == 'CORRECT' %}
-                                            <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                        <i class="bi bi-check-circle-fill text-success fs-4"></i>
                                         {% elif item.status == 'WRONG' %}
-                                            <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+                                        <i class="bi bi-x-circle-fill text-danger fs-4"></i>
                                         {% else %}
-                                            <i class="bi bi-dash-circle-fill text-secondary fs-4 opacity-50"></i>
+                                        <i class="bi bi-dash-circle-fill text-secondary fs-4 opacity-50"></i>
                                         {% endif %}
                                     </div>
-                                    
+
                                     <div class="flex-grow-1 pe-3 overflow-hidden">
                                         <div class="d-flex align-items-baseline">
                                             <span class="fw-bold text-dark me-2">Q{{ forloop.counter }}.</span>
@@ -173,50 +193,57 @@
                                             </span>
                                         </div>
                                     </div>
-                                    
+
                                     <span class="badge rounded-pill border text-dark me-3 bg-light">
-                                        {% if item.status == 'CORRECT' %}+{{ item.question.marks }}{% else %}0{% endif %}
+                                        {% if item.status == 'CORRECT' %}+{{ item.question.marks }}{% else %}0{% endif
+                                        %}
                                     </span>
                                 </div>
                             </button>
                         </h2>
-                        
-                        <div id="collapse{{ item.question.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#answersAccordion">
+
+                        <div id="collapse{{ item.question.id }}"
+                            class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                            data-bs-parent="#answersAccordion">
                             <div class="accordion-body bg-white p-4 pt-0 border-top-0">
-                                
+
                                 <div class="py-3">
                                     <p class="lead fs-6 text-dark" style="font-weight: 500;">
                                         {{ item.question.question_text|linebreaksbr }}
                                     </p>
-                                    
+
                                     {% if item.question.images.first %}
-                                        <img src="{{ item.question.images.first.image.url }}" class="img-fluid rounded border mt-2" style="max-height: 250px;">
+                                    <img src="{{ item.question.images.first.image.url }}"
+                                        class="img-fluid rounded border mt-2" style="max-height: 250px;">
                                     {% endif %}
                                 </div>
-                                
+
                                 {% if item.question.question_type == 'NUMERIC' %}
-                                    <div class="card bg-light border-0 p-3 mb-4">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Your Answer</small>
-                                                <div class="fs-5 fw-bold {% if item.status == 'CORRECT' %}text-success{% else %}text-danger{% endif %}">
-                                                    {{ item.user_answer.text_answer|default:"(No Answer)" }}
-                                                </div>
+                                <div class="card bg-light border-0 p-3 mb-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted text-uppercase fw-bold"
+                                                style="font-size: 0.75rem;">Your Answer</small>
+                                            <div
+                                                class="fs-5 fw-bold {% if item.status == 'CORRECT' %}text-success{% else %}text-danger{% endif %}">
+                                                {{ item.user_answer.text_answer|default:"(No Answer)" }}
                                             </div>
-                                            <div class="col-md-6">
-                                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Correct Answer</small>
-                                                <div class="fs-5 fw-bold text-primary">
-                                                    {{ item.question.correct_answer_value }}
-                                                </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted text-uppercase fw-bold"
+                                                style="font-size: 0.75rem;">Correct Answer</small>
+                                            <div class="fs-5 fw-bold text-primary">
+                                                {{ item.question.correct_answer_value }}
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
                                 {% else %}
-                                    <div class="row g-3 mb-4">
-                                        {% for option in item.question.options.all %}
-                                        <div class="col-md-6">
-                                            <div class="p-3 rounded border h-100 position-relative d-flex align-items-center
+                                <div class="row g-3 mb-4">
+                                    {% for option in item.question.options.all %}
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded border h-100 position-relative d-flex align-items-center
                                                 {% if option.is_correct %}
                                                     bg-success bg-opacity-10 border-success
                                                 {% elif item.selected_option == option and not option.is_correct %}
@@ -224,36 +251,41 @@
                                                 {% else %}
                                                     bg-light border-0
                                                 {% endif %}">
-                                                
-                                                <div class="me-3 fs-5">
-                                                    {% if option.is_correct %}
-                                                        <i class="bi bi-check-circle-fill text-success"></i>
-                                                    {% elif item.selected_option == option %}
-                                                        <i class="bi bi-x-circle-fill text-danger"></i>
-                                                    {% else %}
-                                                        <i class="bi bi-circle text-secondary opacity-25"></i>
-                                                    {% endif %}
-                                                </div>
-                                                
-                                                <div class="lh-sm">
-                                                    <span class="{% if option.is_correct %}text-success fw-bold{% elif item.selected_option == option %}text-danger fw-bold{% else %}text-secondary{% endif %}">
-                                                        {{ option.option_text }}
-                                                    </span>
-                                                </div>
-                                                
+
+                                            <div class="me-3 fs-5">
                                                 {% if option.is_correct %}
-                                                    <span class="position-absolute top-0 end-0 badge bg-success m-2" style="font-size: 0.6rem;">CORRECT</span>
-                                                {% endif %}
-                                                {% if item.selected_option == option %}
-                                                    <span class="position-absolute top-0 end-0 badge bg-{% if option.is_correct %}success{% else %}danger{% endif %} m-2 me-5" style="font-size: 0.6rem;">YOU</span>
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                                {% elif item.selected_option == option %}
+                                                <i class="bi bi-x-circle-fill text-danger"></i>
+                                                {% else %}
+                                                <i class="bi bi-circle text-secondary opacity-25"></i>
                                                 {% endif %}
                                             </div>
+
+                                            <div class="lh-sm">
+                                                <span
+                                                    class="{% if option.is_correct %}text-success fw-bold{% elif item.selected_option == option %}text-danger fw-bold{% else %}text-secondary{% endif %}">
+                                                    {{ option.option_text }}
+                                                </span>
+                                            </div>
+
+                                            {% if option.is_correct %}
+                                            <span class="position-absolute top-0 end-0 badge bg-success m-2"
+                                                style="font-size: 0.6rem;">CORRECT</span>
+                                            {% endif %}
+                                            {% if item.selected_option == option %}
+                                            <span
+                                                class="position-absolute top-0 end-0 badge bg-{% if option.is_correct %}success{% else %}danger{% endif %} m-2 me-5"
+                                                style="font-size: 0.6rem;">YOU</span>
+                                            {% endif %}
                                         </div>
-                                        {% endfor %}
                                     </div>
+                                    {% endfor %}
+                                </div>
                                 {% endif %}
                                 {% if item.question.explanation %}
-                                <div class="p-4 rounded-3" style="background-color: #e8f4fd; border-left: 5px solid #0d6efd;">
+                                <div class="p-4 rounded-3"
+                                    style="background-color: #e8f4fd; border-left: 5px solid #0d6efd;">
                                     <h6 class="fw-bold text-primary mb-2">
                                         <i class="bi bi-lightbulb-fill me-2"></i>Explanation
                                     </h6>
@@ -274,7 +306,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="text-center mt-5 pb-5">
             <a href="{% url 'home' %}" class="btn btn-link text-decoration-none text-muted">
                 Back to Dashboard
@@ -285,10 +317,10 @@
 </div>
 
 <script>
-window.MathJax = {
-  tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
-  svg: { fontCache: 'global' }
-};
+    window.MathJax = {
+        tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+        svg: { fontCache: 'global' }
+    };
 </script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 {% endblock %}
