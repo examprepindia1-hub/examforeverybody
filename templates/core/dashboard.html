@@ -7,53 +7,70 @@
 <div class="bg-light py-5" style="min-height: 90vh;">
     <div class="container">
 
-        <div class="d-flex justify-content-between align-items-center mb-5">
+        <!-- 1. Header Section -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 gap-3">
             <div>
-                <h1 class="fw-bold mb-1">Welcome back, {{ user.first_name|default:"Student" }}! 👋</h1>
-                <p class="text-muted mb-0">Let's continue your learning journey.</p>
+                <div class="d-flex align-items-center gap-2">
+                    <h1 class="fw-bold text-dark display-6 mb-1">Welcome back, {{ user.first_name|default:"Student" }}!
+                    </h1>
+                    <span class="fs-2">👋</span>
+                </div>
+                <p class="text-secondary lead mb-0">Let's continue your learning journey.</p>
             </div>
 
-            <a href="{% url 'explore' %}" class="btn btn-primary rounded-pill px-4">
+            <a href="{% url 'explore' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
                 <i class="bi bi-compass me-2"></i>Explore Exams
             </a>
         </div>
 
+        <!-- 2. Stats Cards -->
         <div class="row g-4 mb-5">
+            <!-- Card 1: Active Exams -->
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3 fs-4">
-                            <i class="bi bi-book-half"></i>
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                    <div class="card-body d-flex align-items-center gap-4">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                            style="width: 64px; height: 64px; min-width: 64px;">
+                            <i class="bi bi-book-fill fs-4"></i>
                         </div>
                         <div>
-                            <h3 class="fw-bold mb-0">{{ stats.enrolled_count }}</h3>
-                            <small class="text-muted text-uppercase fw-bold">Active Exams</small>
+                            <h2 class="fw-bold text-dark mb-0 display-6">{{ stats.enrolled_count }}</h2>
+                            <small class="text-secondary fw-bold text-uppercase ls-1" style="font-size: 0.75rem;">Active
+                                Exams</small>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Card 2: Attempts Completed -->
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3 fs-4">
-                            <i class="bi bi-check-circle-fill"></i>
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                    <div class="card-body d-flex align-items-center gap-4">
+                        <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center"
+                            style="width: 64px; height: 64px; min-width: 64px;">
+                            <i class="bi bi-check-lg fs-3 fw-bold"></i>
                         </div>
                         <div>
-                            <h3 class="fw-bold mb-0">{{ stats.tests_taken }}</h3>
-                            <small class="text-muted text-uppercase fw-bold">Attempts Completed</small>
+                            <h2 class="fw-bold text-dark mb-0 display-6">{{ stats.tests_taken }}</h2>
+                            <small class="text-secondary fw-bold text-uppercase ls-1"
+                                style="font-size: 0.75rem;">Attempts Completed</small>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Card 3: Average Score -->
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 15px;">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-3 me-3 fs-4">
-                            <i class="bi bi-trophy-fill"></i>
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                    <div class="card-body d-flex align-items-center gap-4">
+                        <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center"
+                            style="width: 64px; height: 64px; min-width: 64px;">
+                            <i class="bi bi-trophy-fill fs-4"></i>
                         </div>
                         <div>
-                            <h3 class="fw-bold mb-0">{{ stats.avg_score|floatformat:0 }}</h3>
-                            <small class="text-muted text-uppercase fw-bold">Average Score</small>
+                            <h2 class="fw-bold text-dark mb-0 display-6">{{ stats.avg_score|floatformat:0 }}</h2>
+                            <small class="text-secondary fw-bold text-uppercase ls-1"
+                                style="font-size: 0.75rem;">Average Score</small>
                         </div>
                     </div>
                 </div>
@@ -61,47 +78,51 @@
         </div>
 
         <div class="row g-5">
-
+            <!-- 3. Left Column: My Learning -->
             <div class="col-lg-8">
-                <div class="d-flex justify-content-between align-items-end mb-4">
-                    <h4 class="fw-bold m-0">My Learning</h4>
-                </div>
+                <h4 class="fw-bold text-dark mb-4">My Learning</h4>
 
                 <div class="row g-4">
                     {% for enrollment in enrollments %}
                     <div class="col-md-6">
-                        <div class="card h-100 border-0 shadow-sm hero-card-floating overflow-hidden">
-                            <div class="position-relative" style="height: 140px; overflow: hidden;">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden hover-lift transition-all">
+                            <!-- Thumbnail -->
+                            <div class="position-relative" style="height: 160px;">
                                 {% if enrollment.item.thumbnail_image %}
                                 <img src="{{ enrollment.item.thumbnail_image.url }}"
-                                    class="w-100 h-100 object-fit-cover">
+                                    class="w-100 h-100 object-fit-cover" alt="{{ enrollment.item.title }}">
                                 {% else %}
                                 <div
-                                    class="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center text-white">
-                                    <i class="bi bi-image fs-1"></i>
+                                    class="w-100 h-100 bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-mortarboard display-4 text-secondary opacity-50"></i>
                                 </div>
                                 {% endif %}
-                                <span class="badge bg-white text-dark position-absolute top-0 start-0 m-3 shadow-sm">
+
+                                <!-- Badge -->
+                                <span
+                                    class="badge bg-white text-dark shadow-sm position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill fw-semibold small">
                                     {{ enrollment.item.get_item_type_display }}
                                 </span>
                             </div>
 
-                            <div class="card-body d-flex flex-column p-4">
-                                <h5 class="card-title fw-bold mb-3 text-truncate">{{ enrollment.item.title }}</h5>
+                            <!-- Body -->
+                            <div class="card-body p-4 d-flex flex-column">
+                                <h5 class="fw-bold text-dark mb-4 text-truncate-2" style="min-height: 3rem;">
+                                    {{ enrollment.item.title }}</h5>
 
-                                <div class="mt-auto">
+                                <div class="mt-auto d-flex flex-column gap-2">
                                     {% if enrollment.item.item_type == 'MOCK_TEST' %}
                                     <a href="{% url 'start_test' enrollment.item.slug %}"
-                                        class="btn btn-outline-primary w-100 fw-bold">
+                                        class="btn btn-outline-primary fw-bold py-2 rounded-3 w-100">
                                         <i class="bi bi-play-circle me-2"></i>Attempt Test
                                     </a>
                                     <a href="{% url 'leaderboard_slug' enrollment.item.slug %}"
-                                        class="btn btn-outline-dark w-100 fw-bold mt-3">
-                                        <i class="bi bi-trophy-fill me-2 map-icon text-warning"></i> View Leaderboard
+                                        class="btn btn-outline-secondary fw-bold py-2 rounded-3 w-100 text-dark">
+                                        <i class="bi bi-trophy-fill text-warning me-2"></i>View Leaderboard
                                     </a>
                                     {% else %}
-                                    <a href="#" class="btn btn-outline-dark w-100 fw-bold">
-                                        <i class="bi bi-journal-text me-2"></i>Resume
+                                    <a href="#" class="btn btn-outline-primary fw-bold py-2 rounded-3 w-100">
+                                        <i class="bi bi-journal-text me-2"></i>Access Content
                                     </a>
                                     {% endif %}
                                 </div>
@@ -110,70 +131,98 @@
                     </div>
                     {% empty %}
                     <div class="col-12">
-                        <div class="text-center py-5 bg-white rounded border border-dashed">
-                            <div class="mb-3 text-muted fs-1"><i class="bi bi-journal-x"></i></div>
-                            <h5>No courses yet</h5>
-                            <p class="text-muted">Start learning by exploring our marketplace.</p>
-                            <a href="{% url 'explore' %}" class="btn btn-primary btn-sm">Browse Catalog</a>
+                        <div class="text-center py-5 rounded-4 border border-dashed border-secondary bg-white">
+                            <i class="bi bi-search display-4 text-secondary opacity-25 mb-3"></i>
+                            <h5 class="fw-bold text-dark">No active enrollments</h5>
+                            <p class="text-secondary mb-4">You haven't enrolled in any tests or courses yet.</p>
+                            <a href="{% url 'explore' %}" class="btn btn-primary rounded-pill px-4 fw-bold">Browse
+                                Catalog</a>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
             </div>
 
+            <!-- 4. Right Column: Recent Activity -->
             <div class="col-lg-4">
-                <h4 class="fw-bold mb-4">Recent Activity</h4>
+                <h4 class="fw-bold text-dark mb-4">Recent Activity</h4>
 
-                <div class="card border-0 shadow-sm p-0 overflow-hidden">
-                    <div class="list-group list-group-flush">
-                        {% for attempt in recent_attempts %}
-                        <a href="{% url 'test_result' attempt.id %}"
-                            class="list-group-item list-group-item-action p-3 d-flex align-items-center">
-                            <div class="me-3">
-                                {% if attempt.status == 'IN_PROGRESS' %}
-                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle p-2">
-                                    <i class="bi bi-clock-history"></i>
-                                </div>
-                                {% elif attempt.is_passed %}
-                                <div class="bg-success bg-opacity-10 text-success rounded-circle p-2">
-                                    <i class="bi bi-trophy-fill"></i>
-                                </div>
-                                {% else %}
-                                <div class="bg-danger bg-opacity-10 text-danger rounded-circle p-2">
-                                    <i class="bi bi-x-lg"></i>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="flex-grow-1" style="min-width: 0;">
-                                <h6 class="mb-1 text-truncate fw-bold">{{ attempt.test.item.title }}</h6>
-                                <small class="text-muted d-block">
+                <div class="d-flex flex-column gap-3">
+                    {% for attempt in recent_attempts %}
+                    <a href="{% url 'test_result' attempt.id %}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm rounded-4 p-3 hover-lift transition-all">
+                            <div class="d-flex align-items-center gap-3">
+                                <!-- Status Icon -->
+                                <div class="rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+                                    style="width: 48px; height: 48px;
+                                    background-color: {% if attempt.status == 'IN_PROGRESS' %}rgba(255, 193, 7, 0.1){% elif attempt.score >= 50 %}rgba(25, 135, 84, 0.1){% else %}rgba(220, 53, 69, 0.1){% endif %};
+                                    color: {% if attempt.status == 'IN_PROGRESS' %}#ffc107{% elif attempt.score >= 50 %}#198754{% else %}#dc3545{% endif %};">
                                     {% if attempt.status == 'IN_PROGRESS' %}
-                                    In Progress...
+                                    <i class="bi bi-clock-history fs-5"></i>
+                                    {% elif attempt.score >= 50 %}
+                                    <i class="bi bi-trophy-fill fs-5"></i>
                                     {% else %}
-                                    Score: {{ attempt.score|floatformat:0 }}
-                                    <span class="mx-1">•</span>
-                                    {{ attempt.modified|timesince }} ago
+                                    <i class="bi bi-x-lg fs-5"></i>
                                     {% endif %}
-                                </small>
+                                </div>
+
+                                <!-- details -->
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <h6 class="fw-bold text-dark mb-1 text-truncate">{{ attempt.test.item.title }}</h6>
+                                    <small class="text-secondary d-block">
+                                        {% if attempt.status == 'IN_PROGRESS' %}
+                                        In Progress...
+                                        {% else %}
+                                        Score: <span class="fw-bold">{{ attempt.score|floatformat:0 }}</span> •
+                                        {{ attempt.modified|timesince }} ago
+                                        {% endif %}
+                                    </small>
+                                </div>
+
+                                <i class="bi bi-chevron-right text-secondary small"></i>
                             </div>
-
-                            <div><i class="bi bi-chevron-right text-muted small"></i></div>
-                        </a>
-                        {% empty %}
-                        <div class="p-4 text-center text-muted">
-                            <small>No recent activity.</small>
                         </div>
-                        {% endfor %}
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-4 text-secondary">
+                        <small>No recent activity yet.</small>
                     </div>
-                    <div class="card-footer bg-white text-center p-3 border-top">
-                        <a href="{% url 'dashboard_recent_attempts' %}" class="text-decoration-none small fw-bold">View
-                            Full History</a>
-                    </div>
+                    {% endfor %}
                 </div>
-            </div>
 
+                {% if recent_attempts %}
+                <div class="mt-4 text-center">
+                    <a href="{% url 'dashboard_recent_attempts' %}"
+                        class="btn btn-link text-secondary text-decoration-none fw-bold small">
+                        View Full History <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
         </div>
+
     </div>
 </div>
+
+<style>
+    .ls-1 {
+        letter-spacing: 1px;
+    }
+
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+</style>
 {% endblock %}
