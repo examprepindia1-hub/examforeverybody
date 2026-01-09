@@ -4,192 +4,283 @@
 {% block title %}Marketplace | ExamForEverybody{% endblock %}
 
 {% block content %}
-<div class="bg-light py-5">
+<div class="bg-white py-5">
     <div class="container px-4 px-lg-5">
-        <!-- Header -->
+        <!-- Main Header -->
         <div class="mb-5">
             <h1 class="fw-bold text-dark display-5">Marketplace</h1>
-            <p class="text-secondary lead mb-0">Explore our comprehensive collection of mock tests, study materials, and
-                courses designed to help you excel.</p>
+            <p class="text-secondary lead mb-0">Explore our comprehensive collection of courses, test series, and study
+                materials designed to help you excel in competitive exams.</p>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-4 d-flex flex-column-reverse flex-lg-row">
             <!-- Sidebar Filters -->
             <div class="col-lg-3">
-                <div class="bg-white rounded-4 shadow-sm p-4 sticky-top" style="top: 100px; z-index: 900;">
-
-                    <!-- Search Mobile (Visible only on small screens if needed, but main search is usually main col) -->
-
-                    <!-- Exam Categories -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold text-dark mb-3">Exam Categories</h6>
-                        <div class="d-flex flex-column gap-2">
-                            <a href="{% url 'marketplace:item_list' %}"
-                                class="d-flex align-items-center justify-content-between text-decoration-none {% if not current_category %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i
-                                        class="bi {% if not current_category %}bi-check-square-fill{% else %}bi-square{% endif %}"></i>
-                                    <span>All Categories</span>
-                                </div>
-                            </a>
-                            {% for cat in categories %}
-                            <a href="?category={{ cat.slug }}{% if request.GET.s %}&s={{ request.GET.s }}{% endif %}"
-                                class="d-flex align-items-center justify-content-between text-decoration-none {% if current_category == cat.slug %}text-primary fw-bold{% else %}text-secondary{% endif %}">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i
-                                        class="bi {% if current_category == cat.slug %}bi-check-square-fill{% else %}bi-square{% endif %}"></i>
-                                    <span>{{ cat.display_name }}</span>
-                                </div>
-                                <span class="small bg-light px-2 py-1 rounded">{{ cat.count }}</span>
-                            </a>
-                            {% endfor %}
-                        </div>
+                <div class="pe-lg-4">
+                    <!-- Filters Header & Clear -->
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h5 class="fw-bold text-dark mb-0">Filters</h5>
+                        <!-- Clear Filters Button -->
+                        <a href="{% url 'marketplace:item_list' %}"
+                            class="btn btn-white bg-white border rounded-pill px-3 py-1 small shadow-sm text-dark fw-semibold"
+                            style="font-size: 0.85rem;">Clear All Filters</a>
                     </div>
 
-                    <hr class="text-muted opacity-25 my-4">
+                    <form method="get" id="filterForm">
+                        {% if request.GET.s %}<input type="hidden" name="s" value="{{ request.GET.s }}">{% endif %}
 
-                    <!-- Content Type -->
-                    <div class="mb-4">
-                        <h6 class="fw-bold text-dark mb-3">Content Type</h6>
-                        <form method="get" id="filterForm">
-                            {% if current_category %}
-                            <input type="hidden" name="category" value="{{ current_category }}">
-                            {% endif %}
-                            {% if request.GET.s %}
-                            <input type="hidden" name="s" value="{{ request.GET.s }}">
-                            {% endif %}
+                        <!-- Price Range -->
+                        <div class="mb-5">
+                            <h6 class="fw-bold text-dark mb-3">Price Range</h6>
+                            <div class="d-flex w-100 gap-2 align-items-center">
+                                <input type="number" name="min_price" value="{{ min_price }}"
+                                    class="form-control rounded-3 border bg-white" placeholder="0"
+                                    onchange="this.form.submit()">
+                                <span class="text-muted">-</span>
+                                <input type="number" name="max_price" value="{{ max_price }}"
+                                    class="form-control rounded-3 border bg-white" placeholder="500"
+                                    onchange="this.form.submit()">
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mt-1 px-1">
+                                <span>$0</span>
+                                <span>$1000+</span>
+                            </div>
+                        </div>
 
-                            <div class="d-flex flex-column gap-2">
-                                {% for type in item_types %}
-                                <label class="d-flex align-items-center justify-content-between cursor-pointer">
-                                    <div class="d-flex align-items-center gap-2 text-secondary">
-                                        <input type="checkbox" name="type" value="{{ type.code }}"
-                                            class="form-check-input mt-0" {% if type.code in selected_types %} checked
-                                            {% endif %} onchange="this.form.submit()">
-                                        <span>{{ type.label }}</span>
+                        <!-- Exam Categories (Checkboxes) -->
+                        <div class="mb-5">
+                            <h6 class="fw-bold text-dark mb-3">Exam Categories</h6>
+                            <div class="d-flex flex-column gap-3">
+                                {% for cat in categories %}
+                                <div class="form-check d-flex justify-content-between align-items-center ps-0">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input class="form-check-input rounded-1 border-2 mt-0" type="checkbox"
+                                            name="category" value="{{ cat.slug }}" id="cat{{ forloop.counter }}" 
+                                            {% if cat.slug in selected_categories %}checked{% endif %}
+                                            onchange="this.form.submit()" style="width: 1.25em; height: 1.25em;">
+                                        <label class="form-check-label text-dark pt-1" for="cat{{ forloop.counter }}">
+                                            {{ cat.display_name }}
+                                        </label>
                                     </div>
-                                    <span class="small bg-light px-2 py-1 rounded text-secondary">
-                                        {{ type.count }}</span>
-                                </label>
+                                    <span class="text-secondary small">({{ cat.count }})</span>
+                                </div>
                                 {% endfor %}
                             </div>
-                        </form>
-                    </div>
+                        </div>
 
+                        <!-- Instructors -->
+                        <div class="mb-5">
+                            <h6 class="fw-bold text-dark mb-3">Instructors</h6>
+                            <div class="d-flex flex-column gap-3">
+                                {% for user in instructors %}
+                                <div class="form-check d-flex justify-content-between align-items-center ps-0">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input class="form-check-input rounded-1 border-2 mt-0" type="checkbox"
+                                            name="instructor" value="{{ user.id }}" id="inst{{ user.id }}" 
+                                            {% if user.id in selected_instructors %}checked{% endif %} onchange="this.form.submit()"
+                                            style="width: 1.25em; height: 1.25em;">
+                                        <label class="form-check-label text-dark pt-1" for="inst{{ user.id }}">
+                                            {% if user.first_name and user.last_name %}
+                                            {{ user.first_name }} {{ user.last_name }}
+                                            {% else %}
+                                            {{ user.username }}
+                                            {% endif %}
+                                        </label>
+                                    </div>
+                                    <span class="text-secondary small">({{ user.count }})</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Additional Filters -->
+                        <div class="mb-5">
+                            <h6 class="fw-bold text-dark mb-3">Additional Filters</h6>
+                            <div class="d-flex flex-column gap-3">
+                                <div class="form-check d-flex justify-content-between align-items-center ps-0">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input class="form-check-input rounded-1 border-2 mt-0" type="checkbox"
+                                            name="additional" value="free" id="filterFree" 
+                                            {% if 'free' in selected_additional %}checked{% endif %} onchange="this.form.submit()"
+                                            style="width: 1.25em; height: 1.25em;">
+                                        <label class="form-check-label text-dark pt-1" for="filterFree">Free
+                                            Courses</label>
+                                    </div>
+                                </div>
+                                <div class="form-check d-flex justify-content-between align-items-center ps-0">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input class="form-check-input rounded-1 border-2 mt-0" type="checkbox"
+                                            name="additional" value="certificate" id="filterCert"
+                                            {% if 'certificate' in selected_additional %}checked{% endif %} onchange="this.form.submit()"
+                                            style="width: 1.25em; height: 1.25em;">
+                                        <label class="form-check-label text-dark pt-1" for="filterCert">Certificate
+                                            Available</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
                 </div>
             </div>
 
             <!-- Main Content -->
             <div class="col-lg-9">
-                <!-- Search & Toolbar -->
-                <div class="d-flex flex-column flex-md-row gap-3 justify-content-between mb-4">
-                    <form class="flex-grow-1 position-relative" action="." method="get">
-                        {% if current_category %}
-                        <input type="hidden" name="category" value="{{ current_category }}">
-                        {% endif %}
+                <!-- Search & Sort -->
+                <div class="d-flex flex-column gap-4 mb-4">
+                    <!-- Search Bar -->
+                    <form class="position-relative w-100" action="." method="get">
+                        {% for cat in selected_categories %}
+                        <input type="hidden" name="category" value="{{ cat }}">
+                        {% endfor %}
                         <i
-                            class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
+                            class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary lead"></i>
                         <input type="text" name="s"
-                            class="form-control form-control-lg ps-5 rounded-pill border-0 shadow-sm"
-                            placeholder="Search courses, tests, or categories..." value="{{ search_query }}">
+                            class="form-control form-control-lg ps-5 rounded-3 border bg-white py-3"
+                            placeholder="Search courses, instructors, or categories..." value="{{ search_query }}">
                     </form>
 
-                    <div class="dropdown">
-                        <button
-                            class="btn btn-white btn-lg shadow-sm rounded-pill border-0 dropdown-toggle px-4 text-secondary"
-                            type="button" data-bs-toggle="dropdown">
-                            Most Popular
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow rounded-4 p-2">
-                            <li><a class="dropdown-item rounded-2" href="#">Newest First</a></li>
-                            <li><a class="dropdown-item rounded-2" href="#">Price: Low to High</a></li>
-                            <li><a class="dropdown-item rounded-2" href="#">Price: High to Low</a></li>
-                        </ul>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-secondary">
+                            Showing <span class="fw-bold text-dark">{{ items|length }}</span> results
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-white border rounded-3 px-3 py-2 dropdown-toggle text-dark"
+                                type="button" data-bs-toggle="dropdown">
+                                Most Popular
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow rounded-3">
+                                <li><a class="dropdown-item" href="#">Newest First</a></li>
+                                <li><a class="dropdown-item" href="#">Price: Low to High</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mb-3 text-secondary">
-                    Showing <span class="fw-bold text-dark">{{ items|length }}</span> results
-                </div>
-
                 <!-- Items Grid -->
-                <!-- Use 'items' from context (ListView) -->
                 {% if items %}
                 <div class="row g-4">
                     {% for item in items %}
-                    <div class="col-md-6 col-xl-4">
-                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift transition-all">
+                    <div class="col-md-6 col-lg-4">
+                        <div
+                            class="card h-100 border rounded-4 overflow-hidden position-relative hover-lift transition-all">
                             <!-- Thumbnail -->
                             <div class="position-relative">
                                 {% if item.thumbnail_image %}
                                 <img src="{{ item.thumbnail_image.url }}" class="card-img-top object-fit-cover"
                                     alt="{{ item.title }}" style="height: 180px;">
                                 {% else %}
-                                <div class="bg-primary bg-opacity-10 d-flex align-items-center justify-content-center"
+                                <div class="bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center"
                                     style="height: 180px;">
-                                    <i class="bi bi-mortarboard text-primary display-4"></i>
+                                    <i class="bi bi-mortarboard text-secondary display-4 opacity-50"></i>
                                 </div>
                                 {% endif %}
 
                                 <!-- Badges -->
-                                <div class="position-absolute top-0 start-0 p-3">
-                                    {% if item.price == 0 %}
-                                    <span class="badge bg-success fw-bold px-3 py-2 rounded-pill shadow-sm">Free</span>
-                                    {% endif %}
+                                <div class="position-absolute top-0 start-0 p-3 w-100 d-flex justify-content-between">
+                                    <!-- Bestseller (Left) -->
+                                    <div>
+                                        {% if item.is_bestseller %}
+                                        <span
+                                            class="badge bg-warning text-dark border-0 rounded-pill px-3 py-2 fw-semibold small shadow-sm">Bestseller</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Free (Right) -->
+                                    <div>
+                                        {% if item.price == 0 %}
+                                        <span
+                                            class="badge bg-success border-0 rounded-pill px-3 py-2 fw-semibold small shadow-sm">Free</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Body -->
-                            <div class="card-body p-3 d-flex flex-column">
-                                <div class="text-uppercase text-primary fw-bold small mb-2"
-                                    style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                            <div class="card-body p-3 d-flex flex-column gap-2">
+                                <!-- Category Tag (Orange) -->
+                                <div class="text-primary-orange fw-bold small text-uppercase" style="color: #fd7e14;">
+                                    {% if item.categories.all %}
+                                    {{ item.categories.first.display_name }}
+                                    {% else %}
                                     {{ item.get_item_type_display }}
+                                    {% endif %}
                                 </div>
-                                <h5 class="card-title fw-bold text-dark mb-2 text-truncate-2"
-                                    style="min-height: 2.8em;">
+
+                                <!-- Title -->
+                                <h5 class="card-title fw-bold text-dark lh-sm text-truncate-2 mb-1"
+                                    style="min-height: 2.5em;">
                                     <a href="{{ item.get_absolute_url }}"
                                         class="text-decoration-none text-dark stretched-link">{{ item.title }}</a>
                                 </h5>
 
-                                <!-- Optional: Rating -->
-                                <div class="d-flex align-items-center gap-1 mb-3">
-                                    <i class="bi bi-star-fill text-warning small"></i>
-                                    <span class="fw-bold text-dark small">4.8</span>
-                                    <span class="text-muted small">(120)</span>
+                                <!-- Instructor -->
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center overflow-hidden"
+                                        style="width: 24px; height: 24px;">
+                                        {% if item.instructor and item.instructor.avatar %}
+                                        <img src="{{ item.instructor.avatar.url }}"
+                                            class="w-100 h-100 object-fit-cover">
+                                        {% else %}
+                                        <i class="bi bi-person-fill text-muted" style="font-size: 0.8rem;"></i>
+                                        {% endif %}
+                                    </div>
+                                    <span class="text-muted small">
+                                        {% if item.instructor %}
+                                        {{ item.instructor.first_name }} {{ item.instructor.last_name }}
+                                        {% else %}
+                                        Dr. Vikram Kumar
+                                        {% endif %}
+                                    </span>
                                 </div>
 
-                                <div class="mt-auto">
-                                    <hr class="text-muted opacity-25 my-3">
+                                <!-- Rating -->
+                                <div class="d-flex align-items-center gap-1 mb-2">
+                                    <i class="bi bi-star-fill text-warning" style="font-size: 0.8rem;"></i>
+                                    <span class="fw-bold text-dark small">4.9</span>
+                                    <span class="text-muted small">(2,134 reviews)</span>
+                                </div>
 
-                                    <!-- Meta -->
-                                    <div
-                                        class="d-flex align-items-center justify-content-between mb-3 text-secondary small">
+                                <hr class="text-muted opacity-25 my-1">
+
+                                <!-- Meta Stats -->
+                                <div class="d-flex align-items-center gap-3 text-secondary small py-2">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <i class="bi bi-clock"></i>
                                         {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
-                                        <div class="d-flex align-items-center gap-1">
-                                            <i class="bi bi-clock"></i> {{ item.mock_test_details.duration_minutes }}m
-                                        </div>
-                                        <div class="d-flex align-items-center gap-1">
-                                            <i class="bi bi-people"></i> {{ item.get_total_enrollments }}
-                                        </div>
+                                        {{ item.mock_test_details.duration_minutes }}m
                                         {% else %}
-                                        <div class="d-flex align-items-center gap-1">
-                                            <i class="bi bi-infinity"></i> Lifetime
-                                        </div>
+                                        50 hours
                                         {% endif %}
                                     </div>
-
-                                    <!-- Price -->
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        {% if item.price > 0 %}
-                                        <h5 class="fw-bold text-dark mb-0">${{ item.price }}</h5>
-                                        <!-- <small class="text-muted text-decoration-line-through ms-2">$99.99</small> -->
+                                    <div class="d-flex align-items-center gap-1">
+                                        <i class="bi bi-journal-text"></i>
+                                        {% if item.item_type == 'MOCK_TEST' %}
+                                        1 Test
                                         {% else %}
-                                        <h5 class="fw-bold text-success mb-0">Free</h5>
+                                        75 lessons
                                         {% endif %}
-
-                                        <!-- View Details (Symbolic, since stretched-link covers card) -->
-                                        <i class="bi bi-arrow-right text-primary"></i>
                                     </div>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <i class="bi bi-people"></i>
+                                        {% if item.base_enrollment_count > 0 %}
+                                        {{ item.get_total_enrollments|floatformat:0 }} students
+                                        {% else %}
+                                        18,920 students
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="d-flex align-items-center gap-3 text-secondary small fw-semibold mt-auto">
+                                    <span class="text-success">Beginner</span>
+                                    {% if item.has_certificate %}
+                                    <span class="d-flex align-items-center gap-1"><i
+                                            class="bi bi-patch-check-fill text-primary"></i> Certificate</span>
+                                    {% else %}
+                                    <span class="d-flex align-items-center gap-1"><i class="bi bi-phone"></i> Mobile
+                                        App</span>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -204,29 +295,24 @@
                         <ul class="pagination">
                             {% if page_obj.has_previous %}
                             <li class="page-item">
-                                <a class="page-link border-0 shadow-sm rounded-circle mx-1 d-flex align-items-center justify-content-center"
-                                    href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}"
-                                    style="width: 40px; height: 40px;">
+                                <a class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center text-dark"
+                                    href="?page={{ page_obj.previous_page_number }}" style="width: 40px; height: 40px;">
                                     <i class="bi bi-chevron-left"></i>
                                 </a>
                             </li>
                             {% endif %}
-
                             {% for i in paginator.page_range %}
                             <li class="page-item {% if page_obj.number == i %}active{% endif %}">
-                                <a class="page-link border-0 shadow-sm rounded-circle mx-1 d-flex align-items-center justify-content-center"
-                                    href="?page={{ i }}{% if current_category %}&category={{ current_category }}{% endif %}"
-                                    style="width: 40px; height: 40px;">
+                                <a class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center {% if page_obj.number == i %}bg-dark text-white{% else %}text-dark{% endif %}"
+                                    href="?page={{ i }}" style="width: 40px; height: 40px;">
                                     {{ i }}
                                 </a>
                             </li>
                             {% endfor %}
-
                             {% if page_obj.has_next %}
                             <li class="page-item">
-                                <a class="page-link border-0 shadow-sm rounded-circle mx-1 d-flex align-items-center justify-content-center"
-                                    href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}"
-                                    style="width: 40px; height: 40px;">
+                                <a class="page-link border-0 rounded-circle mx-1 d-flex align-items-center justify-content-center text-dark"
+                                    href="?page={{ page_obj.next_page_number }}" style="width: 40px; height: 40px;">
                                     <i class="bi bi-chevron-right"></i>
                                 </a>
                             </li>
@@ -238,26 +324,20 @@
 
                 {% else %}
                 <div class="text-center py-5">
-                    <div class="mb-3">
-                        <i class="bi bi-search text-secondary display-1 opacity-25"></i>
-                    </div>
-                    <h4 class="fw-bold text-dark">No items found</h4>
-                    <p class="text-secondary">Try adjusting your filters or search query.</p>
-                    <a href="{% url 'marketplace:item_list' %}" class="btn btn-primary rounded-pill px-4">Clear
-                        Filters</a>
+                    <div class="mb-3"><i class="bi bi-search display-1 text-light"></i></div>
+                    <h4 class="fw-bold">No results found</h4>
+                    <p class="text-secondary">Try adjusting your filters or price range.</p>
                 </div>
                 {% endif %}
-
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* Custom overrides for this page */
     .form-check-input:checked {
-        background-color: var(--bs-primary);
-        border-color: var(--bs-primary);
+        background-color: var(--bs-dark);
+        border-color: var(--bs-dark);
     }
 
     .text-truncate-2 {
@@ -269,11 +349,20 @@
     }
 
     .hover-lift:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
     }
 
     .transition-all {
         transition: all 0.3s ease;
+    }
+
+    .page-link {
+        background: #f8f9fa;
+    }
+
+    .page-link:hover {
+        background: #e9ecef;
     }
 </style>
 {% endblock %}

@@ -40,9 +40,12 @@ class MarketplaceItem(TimeStampedModel):
     price_usd = models.DecimalField(_("Price (USD)"), max_digits=10, decimal_places=2, default=0.00, help_text="Price for users outside India")
     # Relations
     categories = models.ManyToManyField(Category, related_name='items', blank=True)
+    instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='marketplace_items', help_text=_("The creator/instructor of this item"))
     
-    # Status
+    # Status & Flags
     is_active = models.BooleanField(default=False, help_text=_("Is this item listed for sale?"))
+    has_certificate = models.BooleanField(default=False, help_text=_("Does completing this provide a certificate?"))
+    is_bestseller = models.BooleanField(default=False, help_text=_("Show Bestseller badge?"))
 
     def __str__(self):
         return self.title

@@ -8,6 +8,9 @@ from mocktests.models import UserTestAttempt, TestQuestion
 
 from django.db.models import Count, Q
 from core.models import Category
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class ItemListView(ListView):
     model = MarketplaceItem
@@ -19,10 +22,10 @@ class ItemListView(ListView):
         qs = MarketplaceItem.objects.filter(is_active=True)
         qs = qs.prefetch_related('categories', 'testimonials', 'mock_test_details')
         
-        # 1. Category Filter
-        category_slug = self.request.GET.get('category')
-        if category_slug:
-            qs = qs.filter(categories__slug=category_slug)
+        # 1. Category Filter (Multi-select)
+        categories = self.request.GET.getlist('category')
+        if categories:
+            qs = qs.filter(categories__slug__in=categories)
         
         # 2. Search Filter
         query = self.request.GET.get('s')
@@ -33,6 +36,26 @@ class ItemListView(ListView):
         item_types = self.request.GET.getlist('type') # Checkbox allow multiple
         if item_types:
             qs = qs.filter(item_type__in=item_types)
+
+        # 4. Instructor Filter
+        instructors = self.request.GET.getlist('instructor')
+        if instructors:
+            qs = qs.filter(instructor__id__in=instructors)
+
+        # 5. Additional Filters (Free, Certificate, etc.)
+        additional_filters = self.request.GET.getlist('additional')
+        if 'free' in additional_filters:
+            qs = qs.filter(price=0)
+        if 'certificate' in additional_filters:
+            qs = qs.filter(has_certificate=True)
+
+        # 6. Price Range Filter
+        min_price = self.request.GET.get('min_price')
+        max_price = self.request.GET.get('max_price')
+        if min_price:
+            qs = qs.filter(price__gte=min_price)
+        if max_price:
+            qs = qs.filter(price__lte=max_price)
             
         return qs.distinct().order_by('-created')
 
@@ -59,9 +82,22 @@ class ItemListView(ListView):
             for t in type_counts
         ]
 
-        context['current_category'] = self.request.GET.get('category')
+        # Sidebar: Instructors with counts
+        context['instructors'] = User.objects.filter(
+            marketplace_items__is_active=True
+        ).annotate(
+            count=Count('marketplace_items', filter=Q(marketplace_items__is_active=True))
+        ).distinct().order_by('first_name')
+
+
+
+        context['selected_categories'] = self.request.GET.getlist('category')
         context['search_query'] = self.request.GET.get('s', '')
         context['selected_types'] = self.request.GET.getlist('type')
+        context['selected_instructors'] = [int(i) for i in self.request.GET.getlist('instructor') if i.isdigit()]
+        context['selected_additional'] = self.request.GET.getlist('additional')
+        context['min_price'] = self.request.GET.get('min_price', '')
+        context['max_price'] = self.request.GET.get('max_price', '')
         
         return context
 
