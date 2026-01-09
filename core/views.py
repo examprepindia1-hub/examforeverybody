@@ -235,36 +235,37 @@ def leaderboard(request, slug=None):
         mock_test_details__attempts__status='SUBMITTED'
     ).distinct().order_by('title')
 
-    # 1. Fetch Data via Logic Helper
+    # 1. Fetch Data (Already enriched with rank, percentile, streak from utils)
     leaderboard_data = get_leaderboard_data(test_slug=selected_slug)
 
-    # 5. Add Rank
-    for index, entry in enumerate(leaderboard_data):
-        entry['rank'] = index + 1
-
-    # 6. Top 20 Logic + Current User
-    # We want to show top 20. If user is authenticated and NOT in top 20, 
-    # we append them as the 21st item (or just at the end).
+    # 2. Partition Data: Top 20 + User
+    # The requirement is to show Top 20. If current user is not in Top 20, they should be the 21st item.
     
-    final_leaderboard = leaderboard_data[:20]
+    top_20 = leaderboard_data[:20]
+    final_leaderboard = list(top_20) # Copy to allow appending
     
+    current_user_stats = None
     if request.user.is_authenticated:
-        user_id = request.user.id
-        # Check if user is already in top 20
-        user_in_top_20 = any(entry['user_id'] == user_id for entry in final_leaderboard)
+        # Find user in the full list
+        user_entry = next((item for item in leaderboard_data if item['user_id'] == request.user.id), None)
         
-        if not user_in_top_20:
-            # Find user in the full list
-            user_entry = next((entry for entry in leaderboard_data if entry['user_id'] == user_id), None)
-            if user_entry:
+        if user_entry:
+            current_user_stats = user_entry
+            # Check if user is in top 20
+            is_in_top_20 = any(item['user_id'] == request.user.id for item in top_20)
+            if not is_in_top_20:
                 final_leaderboard.append(user_entry)
 
-    # 7. No Pagination needed for Top 20 view (or simplified)
-    # Paginator is removed as we intentionally limit the view.
-    
+    # For the template, we still partition for the "Top 3 Cards" vs "Table" view.
+    # The table should show records from index 3 up to 20 (or 21).
+    top_three = final_leaderboard[:3]
+    rankings = final_leaderboard[3:] 
+
     context = {
-        'leaderboard': final_leaderboard,
+        'top_three': top_three,
+        'rankings': rankings,
+        'user_stats': current_user_stats, # For the Personal Gradient Card
         'available_tests': available_tests,
-        
+        'selected_slug': selected_slug, 
     }
     return render(request, 'core/leaderboard.html', context)

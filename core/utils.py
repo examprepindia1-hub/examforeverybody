@@ -119,6 +119,28 @@ def get_leaderboard_data(test_slug=None):
     # 4. Sort by Score Descending
     leaderboard_data.sort(key=lambda x: x['total_score'], reverse=True)
     
+    # 5. Enrich with Rank, Percentile, Streak (Mock), Improvement (Mock)
+    total_users = len(leaderboard_data)
+    import random # Imported here for mock logic, move to top if preferred or keep local
+    
+    for index, entry in enumerate(leaderboard_data):
+        rank = index + 1
+        entry['rank'] = rank
+        
+        # Percentile Calculation (Higher is better)
+        # Formula: (Total - Rank) / Total * 100
+        if total_users > 1:
+            percentile = ((total_users - index) / total_users) * 100
+        else:
+            percentile = 100.0
+        entry['percentile'] = round(percentile, 1)
+        
+        # MOCK DATA for Visuals (as per plan limitations)
+        # In a real app, this would query historical daily activity
+        entry['streak'] = random.randint(3, 45) 
+        entry['improvement'] = random.randint(5, 25) # e.g. 12%
+        
+    
     return leaderboard_data
 
 def get_user_rank(user_id, test_slug=None):

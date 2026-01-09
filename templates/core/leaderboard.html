@@ -3,129 +3,315 @@
 {% load i18n %}
 
 {% block content %}
-<section class="section-pad bg-light-section position-relative overflow-hidden">
-    <div class="container position-relative z-1">
-        <div class="text-center mb-5">
-            <span class="badge badge-modern bg-primary-subtle text-primary mb-3">
-                <i class="bi bi-trophy-fill me-1"></i> {% if selected_test %}
-                {{ selected_test.title }}
-                Ranking
-                {% else %}
-                {% trans "Global Rankings" %}
-                {% endif %}
-            </span>
-            <h1 class="display-4 fw-bold mb-3">
-                {% if selected_test %}
-                {{ selected_test.title }}
-                {% else %}
-                {% trans "Wall of Fame" %}
-                {% endif %}
-            </h1>
+<style>
+    :root {
+        /* Matches the deep blue to orange/gold gradient in the screenshot */
+        --hero-gradient: linear-gradient(90deg, #2E3B8F 0%, #A66D2E 60%, #FCA311 100%);
+        --card-radius: 16px;
+    }
 
-         
+    body {
+        background-color: #f8f9fa;
+        /* Clean white/light-gray background */
+    }
+
+    /* --- Hero Card Styling --- */
+    .hero-card {
+        background: var(--hero-gradient);
+        color: white;
+        border-radius: var(--card-radius);
+        box-shadow: 0 10px 30px rgba(46, 59, 143, 0.2);
+    }
+
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+    }
+
+    .rank-badge-hero {
+        background: #F4A261;
+        /* The sandy orange color from the screenshot */
+        background: linear-gradient(135deg, #FFC064 0%, #F58C28 100%);
+        border-radius: 12px;
+        padding: 10px 20px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .improvement-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+
+    /* --- Top Performer Cards --- */
+    .performer-card {
+        border: 1px solid #eee;
+        border-radius: var(--card-radius);
+        background: white;
+        transition: transform 0.2s;
+    }
+
+    .performer-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .streak-pill {
+        background-color: #f3f4f6;
+        color: #4b5563;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .percentile-text {
+        color: #10B981;
+        /* Bright green match */
+        font-weight: 700;
+    }
+
+    /* Typography Tweaks */
+    .fs-score {
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .text-handle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+
+    .text-handle-dark {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+</style>
+
+<section class="py-5">
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h1 class="fw-bold mb-1 display-6">Leaderboard</h1>
+                <p class="text-secondary mb-0">Track your performance and compete with top exam aspirants</p>
+            </div>
+
+            <div class="dropdown d-none d-md-block">
+                <button class="btn btn-white border shadow-sm rounded-pill px-4 fw-bold dropdown-toggle" type="button"
+                    data-bs-toggle="dropdown">
+                    {% if selected_test %}{{ selected_test.title }}{% else %}All Exams{% endif %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                    <li><a class="dropdown-item" href="{% url 'leaderboard' %}">All Exams</a></li>
+                    {% for test in available_tests %}
+                    <li><a class="dropdown-item" href="{% url 'leaderboard_slug' test.slug %}">{{ test.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="glass-panel p-4 bg-white shadow-sm">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="py-3 ps-4" style="width: 80px;">{% trans "Rank" %}</th>
-                                    <th class="py-3">{% trans "Student" %}</th>
-                                    <th class="py-3 text-center">{% trans "Tests Attempted" %}</th>
-                                    <th class="py-3 pe-4 text-end">{% trans "Total Score" %}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for entry in leaderboard %}
-                                <tr
-                                    class="{% if request.user.is_authenticated and request.user.id == entry.user_id %}table-primary border-primary{% endif %} transition-all hover-lift">
-                                    <td class="ps-4 fw-bold">
-                                        {% if entry.rank == 1 %}
-                                        <span class="fs-4 text-warning">🥇</span>
-                                        {% elif entry.rank == 2 %}
-                                        <span class="fs-4 text-secondary">🥈</span>
-                                        {% elif entry.rank == 3 %}
-                                        <span class="fs-4 text-danger">🥉</span>
-                                        {% else %}
-                                        <span class="badge bg-light text-dark border rounded-pill px-3">#{{ entry.rank
-                                            }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-3 fw-bold text-white d-flex align-items-center justify-content-center"
-                                                style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0056D2, #00C6FF);">
-                                                {{ entry.display_name|first|upper }}
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold text-dark">
-                                                    {{ entry.display_name }}
-                                                    {% if request.user.is_authenticated and request.user.id == entry.user_id %}
-                                                    <span class="badge bg-primary ms-2 rounded-pill"
-                                                        style="font-size: 0.6rem; vertical-align: middle;">YOU</span>
-                                                    {% endif %}
-                                                </div>
-                                                {% if entry.rank <= 3 %} <span
-                                                    class="badge bg-warning bg-opacity-10 text-warning d-inline-block"
-                                                    style="font-size: 0.65rem;">Top Performer</span>
-                                                    {% endif %}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">
-                                            {{ entry.tests_taken }}
-                                        </span>
-                                    </td>
-                                    <td class="pe-4 text-end">
-                                        <div class="fw-bold fs-5 text-primary">{{ entry.total_score|floatformat:0 }}
-                                        </div>
-                                        <small class="text-muted">points</small>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
-                                        <i class="bi bi-bar-chart fs-1 d-block mb-3 opacity-25"></i>
-                                        {% trans "Leaderboard is updating. Check back soon!" %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination Removed for Top 20 View -->
-                    {% if leaderboard|length > 20 %}
-                    <div class="row mt-2">
-                        <div class="col-12 text-center text-muted fst-italic">
-                            <small>... Showing your rank amongst top performers ...</small>
+        {% if user_stats %}
+        <div class="hero-card p-4 p-lg-5 mb-5 position-relative overflow-hidden">
+            <div class="position-relative z-1">
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-8 d-flex align-items-center gap-3">
+                        <div class="bg-white p-1 rounded-circle flex-shrink-0" style="width: 72px; height: 72px;">
+                            <img src="{% if request.user.profile.avatar %}{{ request.user.profile.avatar.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.first_name }}+{{ request.user.last_name }}&background=random&color=fff{% endif %}"
+                                class="rounded-circle w-100 h-100 object-fit-cover" alt="User">
+                        </div>
+                        <div>
+                            <h2 class="fw-bold mb-0 text-white">{{ user_stats.display_name }}</h2>
+                            <p class="mb-0 text-handle">@{{ request.user.username }}</p>
                         </div>
                     </div>
-                    {% endif %}
+
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="d-inline-flex align-items-center rank-badge-hero text-start">
+                            <i class="bi bi-trophy-fill fs-3 me-3 text-white-50"></i>
+                            <div>
+                                <div class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem;">Your
+                                    Rank</div>
+                                <div class="fs-2 fw-bold lh-1">#{{ user_stats.rank }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="glass-panel h-100">
+                            <div class="text-white-50 small fw-bold mb-1">Score</div>
+                            <div class="fs-score">{{ user_stats.total_score|floatformat:0 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="glass-panel h-100">
+                            <div class="text-white-50 small fw-bold mb-1">Percentile</div>
+                            <div class="fs-score">{{ user_stats.percentile }}%</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="glass-panel h-100">
+                            <div class="text-white-50 small fw-bold mb-1">Total Tests</div>
+                            <div class="fs-score">{{ user_stats.tests_taken }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="glass-panel h-100">
+                            <div class="text-white-50 small fw-bold mb-1">Streak</div>
+                            <div class="fs-score d-flex align-items-center gap-2">
+                                <i class="bi bi-fire text-warning fs-5"></i> {{ user_stats.streak }} <span
+                                    class="fs-6 fw-normal text-white-50">days</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="improvement-bar py-2 px-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-arrow-up-circle-fill text-white"></i>
+                    <span class="small text-white">Improved by <strong>{{ user_stats.improvement }}%</strong> from last
+                        month</span>
                 </div>
             </div>
         </div>
+        {% endif %}
+
+        <div class="mb-5">
+            <h4 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                <i class="bi bi-trophy-fill text-warning"></i> Top Performers
+            </h4>
+
+            <div class="row g-4">
+                {% for entry in top_three %}
+                <div class="col-md-4">
+                    <div class="performer-card p-4 h-100 d-flex flex-column position-relative">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle overflow-hidden" style="width: 56px; height: 56px;">
+                                    <img src="https://ui-avatars.com/api/?name={{ entry.display_name }}&background=random"
+                                        class="w-100 h-100" alt="Avatar">
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0 fs-5 text-dark">{{ entry.display_name }}</h6>
+                                    <small class="text-handle-dark">@{{ entry.display_name|slugify }}</small>
+                                </div>
+                            </div>
+                            <div class="rounded-1 d-flex align-items-center justify-content-center text-white shadow-sm"
+                                style="width: 32px; height: 32px; 
+                                 {% if entry.rank == 1 %}background: #F59E0B;{% elif entry.rank == 2 %}background: #6B7280;{% else %}background: #B45309;{% endif %}">
+                                {% if entry.rank == 1 %}
+                                <i class="bi bi-trophy-fill small"></i>
+                                {% elif entry.rank == 2 %}
+                                <i class="bi bi-star-fill small"></i>
+                                {% else %}
+                                <i class="bi bi-award-fill small"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-end mb-4">
+                            <div>
+                                <span class="d-block text-secondary small fw-bold mb-1">Score</span>
+                                <span class="fs-3 fw-bold text-dark">{{ entry.total_score|floatformat:0 }}</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="d-block text-secondary small fw-bold mb-1">Percentile</span>
+                                <span class="fs-4 percentile-text">{{ entry.percentile }}%</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto">
+                            <div class="streak-pill">
+                                <i class="bi bi-fire text-warning"></i>
+                                {{ entry.streak|default:"12" }} day streak
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted">No top performers calculated yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div
+                class="card-header bg-white p-4 border-0 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <h5 class="fw-bold mb-0">All Rankings</h5>
+                <div class="input-group" style="max-width: 300px;">
+                    <span class="input-group-text bg-light border-0 ps-3 rounded-start-pill"><i
+                            class="bi bi-search text-secondary"></i></span>
+                    <input type="text" id="leaderboardSearch" class="form-control bg-light border-0 rounded-end-pill"
+                        placeholder="Search student...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="rankingsTable">
+                    <thead class="bg-light text-secondary text-uppercase"
+                        style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                        <tr>
+                            <th class="ps-4 py-3 border-0">Rank</th>
+                            <th class="py-3 border-0">Student</th>
+                            <th class="py-3 border-0">Score</th>
+                            <th class="py-3 border-0">Percentile</th>
+                            <th class="pe-4 py-3 border-0 text-end">Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for entry in rankings %}
+                        <tr class="{% if request.user.id == entry.user_id %}table-warning{% endif %}">
+                            <td class="ps-4 fw-bold text-dark">#{{ entry.rank }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-primary fw-bold small"
+                                        style="width: 32px; height: 32px;">
+                                        {{ entry.display_name|first|upper }}
+                                    </div>
+                                    <span class="fw-bold text-dark user-name">{{ entry.display_name }}</span>
+                                    {% if request.user.id == entry.user_id %}
+                                    <span class="badge bg-dark text-white rounded-pill px-2 py-1"
+                                        style="font-size: 0.6rem;">YOU</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="fw-bold">{{ entry.total_score|floatformat:0 }}</td>
+                            <td class="text-success fw-bold">{{ entry.percentile }}%</td>
+                            <td class="pe-4 text-end">
+                                <span class="badge bg-success-subtle text-success rounded-pill">
+                                    <i class="bi bi-arrow-up-short"></i> {{ entry.improvement }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </section>
 
-<style>
-    .avatar-circle {
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .hover-lift:hover {
-        transform: translateY(-2px);
-        z-index: 2;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    }
-
-    .table-primary {
-        background-color: rgba(0, 86, 210, 0.05) !important;
-        --bs-table-bg: transparent;
-    }
-</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('leaderboardSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function (e) {
+                const term = e.target.value.toLowerCase();
+                document.querySelectorAll('#rankingsTable tbody tr').forEach(row => {
+                    const name = row.querySelector('.user-name').textContent.toLowerCase();
+                    row.style.display = name.includes(term) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}
