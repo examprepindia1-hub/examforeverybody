@@ -49,6 +49,10 @@ class MockTestAttributes(TimeStampedModel):
     # Leaderboard Logic
     ranking_weight = models.DecimalField(max_digits=4, decimal_places=2, default=1.0, help_text=_("Multiplier for the global ranking (e.g., 1.5 for final exams)"))
 
+    # Schedule
+    start_datetime = models.DateTimeField(null=True, blank=True, help_text=_("When this test opens"))
+    end_datetime = models.DateTimeField(null=True, blank=True, help_text=_("When this test closes"))
+
     def __str__(self):
         return f"Details for: {self.item.title}"
 

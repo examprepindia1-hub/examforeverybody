@@ -2,278 +2,530 @@
 {% load static %}
 {% load i18n %}
 {% load currency_tags %}
+
 {% block title %}{{ item.title }} - ExamForEverybody{% endblock %}
-{% block meta_description %}{{ item.description|truncatewords:25 }}{% endblock %}
 
-{% block og_title %}{{ item.title }}{% endblock %}
-{% block og_description %}{{ item.description|truncatewords:30 }}{% endblock %}
-{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ item.thumbnail_image.url }}{% endblock %}
-
-{% block twitter_title %}{{ item.title }}{% endblock %}
-{% block twitter_description %}{{ item.description|truncatewords:30 }}{% endblock %}
-{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{{ item.thumbnail_image.url }}{% endblock %}
 {% block content %}
 
-<script type="application/ld+json">
-    {
-      "@context": "https://schema.org/", 
-      "@type": "Product", 
-      "name": "{{ item.title|escapejs }}",
-      "image": "{{ request.scheme }}://{{ request.get_host }}{% if item.thumbnail_image %}{{ item.thumbnail_image.url }}{% else %}/static/images/logo.svg{% endif %}",
-      "description": "{{ item.description|striptags|truncatewords:50|escapejs }}",
-      "sku": "{{ item.id }}",
-      "offers": {
-        "@type": "Offer",
-        "url": "{{ request.build_absolute_uri }}",
-        "priceCurrency": "INR",
-        "price": "{{ item.price }}",
-        "availability": "{% if item.is_active %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
-      }
-      {% if item.avg_rating %}
-      ,
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "{{ item.avg_rating }}",
-        "reviewCount": "{{ item.total_reviews }}"
-      }
-      {% endif %}
-    }
-    </script>
-
-{% if user.is_authenticated and not is_enrolled %}
-    
-    {% if latest_order_status == 'PENDING' %}
-    <div class="alert alert-warning border-0 rounded-0 mb-0 text-center py-3" role="alert">
-        <div class="container">
-            <i class="bi bi-hourglass-split fs-4 align-middle me-2"></i>
-            <span class="fw-bold">{% trans "Payment Processing..." %}</span>
-            <span class="ms-2">
-                {% trans "We have received your order request but payment is still confirming. Please wait a moment and" %} 
-                <a href="." class="fw-bold text-decoration-underline text-dark">{% trans "refresh this page" %}</a>.
-                If the status does not update, please contact support.
-            </span>
-        </div>
-    </div>
-    {% endif %}
-
-    {% if latest_order_status == 'FAILED' %}
-    <div class="alert alert-danger border-0 rounded-0 mb-0 text-center py-3" role="alert">
-        <div class="container">
-            <i class="bi bi-exclamation-circle-fill fs-4 align-middle me-2"></i>
-            <span class="fw-bold">{% trans "Payment Failed" %}</span>
-            <span class="ms-2">
-                {% trans "Your last transaction was not successful. Please try purchasing again below." %}
-            </span>
-        </div>
-    </div>
-    {% endif %}
-
-{% endif %}
-
-<div style="background-color: var(--brand-dark); color: white;" class="py-5 mb-4">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <h1 class="fw-bold text-light">{{ item.title }}</h1>
-                 <p class="lead mb-3">{{ item.description|truncatewords:30 }}</p>
-                 <div class="d-flex align-items-center mb-3">
-                    <span class="badge bg-warning text-dark me-2">
-                        {% if item.item_type == 'MOCK_TEST' %}
-                            {% trans "Mock Test" %}
-                        {% elif item.item_type == 'WORKSHOP' %}
-                            {% trans "Live Workshop" %}
+<!-- Header Section -->
+<div class="container py-4">
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="card-body p-4 p-lg-5 bg-white">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start">
+                <div>
+                    <h1 class="fw-bold text-dark display-6 mb-3">{{ item.title }}</h1>
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
+                        <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill fw-bold">
+                            <i class="bi bi-bar-chart-fill me-1"></i> {{ item.mock_test_details.get_level_display }}
+                        </span>
                         {% endif %}
-                    </span>
-                     {% if item.categories.first %}
-                        <span class="badge border border-light text-light">{{ item.categories.first.display_name }}</span>
-                     {% endif %}
-                 </div>
+                        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-bold">
+                            <i class="bi bi-tag-fill me-1"></i> {{ item.get_item_type_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="text-lg-end mt-4 mt-lg-0">
+                    <div class="text-lg-end mt-4 mt-lg-0">
+                        <small class="text-secondary d-block fw-bold mb-1">Prize Pool</small>
+                        <div class="text-dark fw-bold display-6">$5,000</div>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+
+    <!-- Main Content & Sidebar -->
+    <div class="row g-4">
+
+        <!-- Left Column -->
+        <div class="col-lg-8">
+
+            {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
+            {% with details=item.mock_test_details %}
+            {% now "U" as current_timestamp %}
+            <!-- Logic to determine timer state -->
+            <!-- We pass data attributes for JS to handle -->
+            {% if details.start_datetime or details.end_datetime %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 d-none" id="countdown-wrapper"
+                data-start="{{ details.start_datetime|date:'c' }}" data-end="{{ details.end_datetime|date:'c' }}">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <i class="bi bi-clock text-primary display-6"></i>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0" id="timer-label">Test Starts In</h6>
+                        <small class="text-secondary">{{ item.title }}</small>
+                    </div>
+                </div>
+
+                <div class="row g-3 text-center justify-content-center" id="countdown-digits">
+                    <!-- JS will populate: Days, Hours, Minutes, Seconds -->
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const wrapper = document.getElementById('countdown-wrapper');
+                    if (!wrapper) return;
+
+                    const startStr = wrapper.dataset.start;
+                    const endStr = wrapper.dataset.end;
+                    const labelEl = document.getElementById('timer-label');
+                    const digitsEl = document.getElementById('countdown-digits');
+
+                    if (!startStr && !endStr) return;
+
+                    function updateTimer() {
+                        const now = new Date().getTime();
+                        let targetTime = null;
+                        let label = "";
+
+                        const startDate = startStr ? new Date(startStr).getTime() : null;
+                        const endDate = endStr ? new Date(endStr).getTime() : null;
+
+                        if (startDate && now < startDate) {
+                            targetTime = startDate;
+                            label = "Test Starts In";
+                        } else if (endDate && now < endDate) {
+                            targetTime = endDate;
+                            label = "Test Ends In";
+                        } else {
+                            // Expired or Started with no end date
+                            if (startDate && !endDate) {
+                                // Just started, no end date
+                                wrapper.remove();
+                                return;
+                            }
+                            if (endDate && now >= endDate) {
+                                wrapper.innerHTML = '<div class="alert alert-warning mb-0 fw-bold"><i class="bi bi-exclamation-circle me-2"></i> This test has ended.</div>';
+                                wrapper.classList.remove('d-none');
+                                return;
+                            }
+                            wrapper.remove();
+                            return;
+                        }
+
+                        wrapper.classList.remove('d-none');
+                        labelEl.innerText = label;
+
+                        const distance = targetTime - now;
+
+                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        const timeUnits = [
+                            { value: days, label: 'Days' },
+                            { value: hours, label: 'Hours' },
+                            { value: minutes, label: 'Minutes' },
+                            { value: seconds, label: 'Seconds' }
+                        ];
+
+                        let html = '';
+                        timeUnits.forEach(unit => {
+                            html += `
+                                        <div class="col-3">
+                                            <div class="bg-light rounded-3 p-3">
+                                                <div class="display-6 fw-bold text-dark">${String(unit.value).padStart(2, '0')}</div>
+                                                <small class="text-secondary fw-bold text-uppercase" style="font-size: 0.7rem;">${unit.label}</small>
+                                            </div>
+                                        </div>
+                                    `;
+                        });
+                        digitsEl.innerHTML = html;
+                    }
+
+                    setInterval(updateTimer, 1000);
+                    updateTimer(); // Initial call
+                });
+            </script>
+            {% endif %}
+            {% endwith %}
+            {% endif %}
+
+            <!-- Tabs Navigation -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom p-0">
+                    <ul class="nav nav-tabs border-0" id="itemTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold py-3 px-4 border-0 text-dark" id="description-tab"
+                                data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab"
+                                aria-controls="description" aria-selected="true">
+                                <i class="bi bi-info-circle me-2"></i> Description
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold py-3 px-4 border-0 text-secondary" id="eligibility-tab"
+                                data-bs-toggle="tab" data-bs-target="#eligibility" type="button" role="tab"
+                                aria-controls="eligibility" aria-selected="false">
+                                <i class="bi bi-check-circle me-2"></i> Eligibility
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold py-3 px-4 border-0 text-secondary" id="syllabus-tab"
+                                data-bs-toggle="tab" data-bs-target="#syllabus" type="button" role="tab"
+                                aria-controls="syllabus" aria-selected="false">
+                                <i class="bi bi-book me-2"></i> Syllabus
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold py-3 px-4 border-0 text-secondary" id="pricing-tab"
+                                data-bs-toggle="tab" data-bs-target="#pricing" type="button" role="tab"
+                                aria-controls="pricing" aria-selected="false">
+                                <i class="bi bi-currency-dollar me-2"></i> Pricing
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <div class="tab-content" id="itemTabsContent">
+
+                        <!-- Description Tab -->
+                        <div class="tab-pane fade show active" id="description" role="tabpanel"
+                            aria-labelledby="description-tab">
+
+                            {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
+                            <h5 class="fw-bold text-dark mb-4">Test Format</h5>
+                            <div class="row g-4 mb-5">
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-clock text-primary fs-3 me-3"></i>
+                                        <div>
+                                            <small class="text-secondary d-block"
+                                                style="font-size: 0.75rem;">Duration</small>
+                                            <span class="fw-bold text-dark">
+                                                {{ item.mock_test_details.duration_minutes }} mins</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-file-text text-primary fs-3 me-3"></i>
+                                        <div>
+                                            <small class="text-secondary d-block"
+                                                style="font-size: 0.75rem;">Questions</small>
+                                            <span class="fw-bold text-dark">{{ total_questions|default:"0" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-bar-chart text-primary fs-3 me-3"></i>
+                                        <div>
+                                            <small class="text-secondary d-block" style="font-size: 0.75rem;">Total
+                                                Marks</small>
+                                            <span class="fw-bold text-dark">{{ total_marks|default:"0" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-exclamation-triangle text-danger fs-3 me-3"></i>
+                                        <div>
+                                            <small class="text-secondary d-block" style="font-size: 0.75rem;">Negative
+                                                Marking</small>
+                                            <span class="fw-bold text-dark">
+                                                <span class="fw-bold text-dark">
+                                                    {% if item.mock_test_details.has_negative_marking %}Yes{% else
+                                                    %}No{% endif %}
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if item.item_type == 'MOCK_TEST' and item.mock_test_details.sections.exists %}
+                            <h5 class="fw-bold text-dark mb-4">Section-wise Breakdown</h5>
+                            <div class="d-flex flex-column gap-3 mb-5">
+                                {% for section in item.mock_test_details.sections.all %}
+                                <div class="bg-light rounded-3 p-3 d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <i class="bi bi-book text-muted"></i>
+                                        <span class="fw-medium text-dark">{{ section.title }}</span>
+                                    </div>
+                                    <div class="text-muted small">
+                                        <span class="me-3">{{ section.questions.count }} Questions</span>
+                                        <!-- Note: Marks per section logic would require model method or calculation in view, simplified here -->
+                                        <!-- <span class="fw-bold text-dark">... Marks</span> -->
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <h5 class="fw-bold text-dark mb-3">About this Item:</h5>
+                            <div class="text-muted mb-5">
+                                {{ item.description|linebreaks }}
+                            </div>
+
+                            <hr class="my-5">
+
+                            <!-- Reviews in Tab -->
+                            <h5 class="fw-bold text-dark mb-4">User Reviews ({{ review_count }})</h5>
+
+                            {% if reviews %}
+                            {% for review in reviews %}
+                            <div class="d-flex gap-3 mb-4">
+                                <div class="rounded-circle bg-secondary bg-opacity-10 d-flex justify-content-center align-items-center flex-shrink-0 fw-bold text-secondary"
+                                    style="width: 50px; height: 50px; font-size: 1.2rem;">
+                                    {{ review.user.first_name|first|upper|default:"U" }}
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0">
+                                        {% if review.user.first_name %}{{ review.user.first_name }}
+                                        {{ review.user.last_name }}{% else %}{{ review.user.username }}{% endif %}
+                                    </h6>
+                                    <small class="text-muted">{{ review.created|date:"F j, Y" }}</small>
+                                    <div class="text-warning my-1 small">
+                                        {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %} <i class="bi bi-star-fill"></i>
+                                            {% else %}
+                                            <i class="bi bi-star"></i>
+                                            {% endif %}
+                                            {% endfor %}
+                                    </div>
+                                    <p class="text-secondary small mb-0">{{ review.text }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="text-muted">No reviews yet.</p>
+                            {% endif %}
+
+                        </div>
+
+                        <!-- Eligibility Tab (Placeholder content as no model field for this) -->
+                        <div class="tab-pane fade" id="eligibility" role="tabpanel" aria-labelledby="eligibility-tab">
+                            <h5 class="fw-bold text-dark mb-4">Eligibility Criteria</h5>
+                            <p class="text-muted">Please refer to the official exam guidelines for eligibility details.
+                            </p>
+                            {% if item.description %}
+                            <div class="text-muted small">{{ item.description|truncatewords:50 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Syllabus Tab -->
+                        <div class="tab-pane fade" id="syllabus" role="tabpanel" aria-labelledby="syllabus-tab">
+                            <h5 class="fw-bold text-dark mb-4">Detailed Syllabus</h5>
+                            {% if item.item_type == 'MOCK_TEST' and item.mock_test_details.instructions %}
+                            <div class="text-muted mb-4">{{ item.mock_test_details.instructions|safe }}</div>
+                            {% else %}
+                            <p class="text-muted">Syllabus details are included in the test description.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Pricing Tab -->
+                        <div class="tab-pane fade" id="pricing" role="tabpanel" aria-labelledby="pricing-tab">
+                            <div class="d-flex justify-content-center">
+                                <div class="card border border-primary border-2 shadow-sm rounded-4 p-4 text-center"
+                                    style="max-width: 400px; width: 100%;">
+                                    {% if item.price_usd > 0 %}
+                                    <div class="text-muted small mb-1">International: ${{ item.price_usd }}</div>
+                                    {% endif %}
+
+                                    <div class="display-4 fw-bold text-dark mb-2">{% show_price item %}</div>
+
+                                    <hr class="w-100 my-4">
+
+                                    <h6 class="fw-bold text-dark mb-3">What's Included</h6>
+                                    <ul class="list-unstyled text-start text-secondary small d-flex flex-column gap-2 mb-4 mx-auto"
+                                        style="max-width: 250px;">
+                                        <li><i class="bi bi-check2 text-success me-2"></i> {{ item.get_item_type_display
+                                            }} Access</li>
+                                        <li><i class="bi bi-check2 text-success me-2"></i> Instant Result Declaration
+                                        </li>
+                                        <li><i class="bi bi-check2 text-success me-2"></i> Performance Analysis</li>
+                                    </ul>
+
+                                    {% if is_enrolled %}
+                                    <div class="d-grid">
+                                        {% if item.item_type == 'MOCK_TEST' %}
+                                        {% if is_future_test %}
+                                        <button class="btn btn-secondary btn-lg w-100 fw-bold" disabled>Starts
+                                            Soon</button>
+                                        {% elif is_expired_test %}
+                                        <button class="btn btn-secondary btn-lg w-100 fw-bold" disabled>Test
+                                            Ended</button>
+                                        {% else %}
+                                        <a href="{% url 'start_test' item.slug %}"
+                                            class="btn btn-success btn-lg w-100 fw-bold">Start Test</a>
+                                        {% endif %}
+                                        {% else %}
+                                        <a href="#" class="btn btn-primary btn-lg w-100 fw-bold">Access Content</a>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <div class="d-grid">
+                                        {% if user.is_authenticated %}
+                                        <form action="{% url 'initiate_purchase' item.slug %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Enroll
+                                                Now</button>
+                                        </form>
+                                        {% else %}
+                                        <a href="{% url 'login' %}?next={{ request.path }}"
+                                            class="btn btn-primary btn-lg w-100 fw-bold">Login to Enroll</a>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column (Sidebar) -->
+        <div class="col-lg-4">
+
+            <!-- Actions Card -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+                <div class="d-flex gap-2 mb-4">
+                    {% if not is_enrolled %}
+                    {% if user.is_authenticated %}
+                    <form action="{% url 'initiate_purchase' item.slug %}" method="post" class="flex-grow-1">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                            <i class="bi bi-credit-card me-2"></i> Pay & Register - {% show_price item %}
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}"
+                        class="btn btn-primary w-100 py-2 fw-bold flex-grow-1">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Login to Register
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    {% if item.item_type == 'MOCK_TEST' %}
+                    {% if is_future_test %}
+                    <button class="btn btn-secondary w-100 py-2 fw-bold flex-grow-1" disabled>
+                        <i class="bi bi-clock me-2"></i> Starts Soon
+                    </button>
+                    {% elif is_expired_test %}
+                    <button class="btn btn-secondary w-100 py-2 fw-bold flex-grow-1" disabled>
+                        <i class="bi bi-exclamation-circle me-2"></i> Test Ended
+                    </button>
+                    {% else %}
+                    <a href="{% url 'start_test' item.slug %}" class="btn btn-success w-100 py-2 fw-bold flex-grow-1">
+                        <i class="bi bi-play-fill me-2"></i> Start Test
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <button class="btn btn-success w-100 py-2 fw-bold flex-grow-1" disabled>
+                        <i class="bi bi-check-circle me-2"></i> Enrolled
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary flex-grow-1 fw-medium"><i class="bi bi-bookmark me-2"></i>
+                        Save</button>
+                    <button class="btn btn-outline-secondary flex-grow-1 fw-medium"><i class="bi bi-share me-2"></i>
+                        Share</button>
+                </div>
+            </div>
+
+            {% if quick_stats %}
+            <!-- Quick Stats -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-center text-lg-start">
+                <h5 class="fw-bold text-dark mb-4">Quick Stats</h5>
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-people text-primary fs-4"></i>
+                            <small class="text-secondary fw-bold">Total Attempts</small>
+                        </div>
+                        <span class="fw-bold text-dark">{{ quick_stats.total_attempts }}</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-bar-chart text-warning fs-4"></i>
+                            <small class="text-secondary fw-bold">Average Score</small>
+                        </div>
+                        <span class="fw-bold text-dark">{{ quick_stats.avg_score }}</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-trophy text-success fs-4"></i>
+                            <small class="text-secondary fw-bold">Top Score</small>
+                        </div>
+                        <span class="fw-bold text-dark">{{ quick_stats.top_score }}</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-check-circle text-warning fs-4"></i>
+                            <small class="text-secondary fw-bold">Pass Rate</small>
+                        </div>
+                        <span class="fw-bold text-dark">{{ quick_stats.pass_rate }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if related_items %}
+            <!-- Related Tests -->
+            <h5 class="fw-bold text-dark mb-3">Related Items</h5>
+            <div class="d-flex flex-column gap-3">
+                {% for related in related_items %}
+                <a href="{{ related.get_absolute_url }}" class="text-decoration-none">
+                    <div class="card border shadow-sm rounded-4 p-3 hover-lift transition-all cursor-pointer h-100">
+                        <h6 class="fw-bold text-dark mb-2">{{ related.title }}</h6>
+                        <div class="d-flex align-items-center gap-3 text-secondary small">
+                            <span><i class="bi bi-tag-fill text-primary me-1"></i>
+                                {{ related.get_item_type_display }}</span>
+                            {% if related.item_type == 'MOCK_TEST' and related.mock_test_details %}
+                            <span><i class="bi bi-clock me-1"></i>
+                                {{ related.mock_test_details.duration_minutes }}m</span>
+                            {% endif %}
+                            <span class="fw-bold text-success ms-auto">{% show_price related %}</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        </div>
+
     </div>
 </div>
 
-<div class="container mb-5">
-    <div class="row">
-        
-        <div class="col-lg-8 order-2 order-lg-1">
-             
-             <h3 class="mb-3 fw-bold" style="color: var(--brand-dark);">{% trans "About this" %} {{ item.get_item_type_display }}</h3>
-             <div class="mb-5">
-                 {{ item.description|linebreaks }}
-             </div>
+<style>
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s ease;
+    }
 
-             {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
-                <div class="card mb-4 border-0 bg-light">
-                    <div class="card-body">
-                        <h4 class="fw-bold mb-3">{% trans "Test Details" %}</h4>
-                        <ul class="list-unstyled">
-                            <li class="mb-2"><i class="bi bi-bar-chart-fill text-primary me-2"></i> <strong>{% trans "Level:" %}</strong> {{ item.mock_test_details.get_level_display }}</li>
-                            <li class="mb-2"><i class="bi bi-clock-fill text-primary me-2"></i> <strong>{% trans "Duration:" %}</strong> {{ item.mock_test_details.duration_minutes }} {% trans "minutes" %}</li>
-                        </ul>
-                    </div>
-                </div>
+    .nav-tabs .nav-link:hover {
+        color: var(--brand-primary);
+    }
 
-             {% elif item.item_type == 'WORKSHOP' and item.workshop_details %}
-                <div class="card mb-4 border-0 bg-light">
-                    <div class="card-body">
-                        <h4 class="fw-bold mb-3">{% trans "Workshop Details" %}</h4>
-                         <ul class="list-unstyled">
-                            <li class="mb-2"><i class="bi bi-person-video3 text-primary me-2"></i> <strong>{% trans "Instructor:" %}</strong> {{ item.workshop_details.instructor.get_full_name }}</li>
-                            <li class="mb-2"><i class="bi bi-hourglass-split text-primary me-2"></i> <strong>{% trans "Total Duration:" %}</strong> {{ item.workshop_details.total_duration_hours }} {% trans "hours" %}</li>
-                        </ul>
-                        <h5 class="mt-4 fw-bold">{% trans "Agenda / Description" %}</h5>
-                        <p>{{ item.workshop_details.description_long|linebreaks }}</p>
-                    </div>
-                </div>
-             {% endif %}
+    .nav-tabs .nav-link.active {
+        color: var(--brand-primary) !important;
+        border-bottom: 3px solid var(--brand-primary);
+        background: transparent;
+    }
 
-            <hr class="my-5">
-            <h3 class="mb-4 fw-bold" style="color: var(--brand-dark);">
-                 {% trans "Student Reviews" %}
-            </h3>
+    .hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+    }
 
-            <div class="d-flex align-items-center mb-4">
-                 <h1 class="fw-bold mb-0 me-3" style="color: var(--brand-dark);">
-                     {{ avg_rating|default:"0.0"|floatformat:1 }}
-                 </h1>
-                 <div>
-                     <div class="star-rating-static mb-1">
-                        {% with rating_int=avg_rating|default:0|floatformat:0|add:0 %}
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= rating_int %}
-                                    <i class="bi bi-star-fill"></i>
-                                {% else %}
-                                    <i class="bi bi-star"></i>
-                                {% endif %}
-                            {% endfor %}
-                        {% endwith %}
-                     </div>
-                     <p class="text-muted small mb-0">
-                         {{ review_count }} {% trans "ratings" %}
-                     </p>
-                 </div>
-            </div>
+    .transition-all {
+        transition: all 0.3s ease;
+    }
 
-            <div class="reviews-list">
-                 {% for review in reviews %}
-                 <div class="review-card">
-                     <div class="d-flex mb-3">
-                         <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 review-avatar">
-                             {{ review.user.email|first|upper }}
-                         </div>
-                         <div>
-                             <h6 class="fw-bold mb-1">
-                                 {% if review.user.get_full_name %}
-                                     {{ review.user.get_full_name }}
-                                 {% else %}
-                                     {{ review.user.email|truncatechars:10 }}
-                                 {% endif %}
-                             </h6>
-                             <div class="d-flex align-items-center">
-                                 <div class="star-rating-static me-2 small">
-                                     {% for i in "12345" %}
-                                         {% if forloop.counter <= review.rating %}
-                                             <i class="bi bi-star-fill"></i>
-                                         {% else %}
-                                             <i class="bi bi-star"></i>
-                                         {% endif %}
-                                     {% endfor %}
-                                 </div>
-                                 <span class="review-date">
-                                     {{ review.created|date:"M d, Y" }}
-                                 </span>
-                             </div>
-                         </div>
-                     </div>
-                     <p class="mb-0 text-secondary">{{ review.text|linebreaksbr }}</p>
-                 </div>
-                 {% empty %}
-                 <p class="text-muted py-3">
-                     {% trans "No reviews yet. Be the first to review this item!" %}
-                 </p>
-                 {% endfor %}
-            </div>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
 
-        </div>
-
-        <div class="col-lg-4 order-1 order-lg-2 mb-4 position-relative">
-            <div class="card shadow-sm sticky-lg-top hero-card-floating" style="top: 2rem; z-index: 100;">
-                
-                {% if item.thumbnail_image %}
-                    <img src="{{ item.thumbnail_image.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 200px; object-fit: cover;">
-                {% else %}
-                    <div class="bg-secondary" style="height: 200px;"></div>
-                {% endif %}
-                
-                <div class="card-body p-4">
-                    
-                    {% if is_enrolled %}
-                        <div class="text-center mb-4">
-                            <span class="badge bg-success-subtle text-success border border-success mb-3 px-3 py-2 rounded-pill">
-                                <i class="bi bi-check-circle-fill me-1"></i> {% trans "Enrolled" %}
-                            </span>
-                            <h3 class="fw-bold text-success">{% trans "You own this." %}</h3>
-                            <p class="text-muted small">{% trans "Ready to continue your learning?" %}</p>
-                        </div>
-
-                        <div class="d-grid">
-                            {% if item.item_type == 'MOCK_TEST' %}
-    <a href="{% url 'start_test' item.slug %}" class="btn btn-success btn-lg w-100 shadow-sm">
-        <i class="bi bi-play-circle-fill me-2"></i> {% trans "Start Test" %}
-    </a>
-{% elif item.item_type == 'WORKSHOP' %}
-    <a href="#" class="btn btn-primary btn-lg w-100 shadow-sm">
-        <i class="bi bi-camera-video-fill me-2"></i> {% trans "Join Session" %}
-    </a>
-{% endif %}
-                        </div>
-
-                    {% else %}
-                        <div class="mb-4">
-                            {% if PAYMENTS_ACTIVE %}
-                                {% if exam.price > 0 %}
-                                        <h2 class="fw-bold text-primary">{% show_price item %}</h2>
-                                    {% endif %}
-                                
-                            {% else %}
-                                <h2 class="fw-bold text-success">
-                                    FREE
-                                    <small class="text-muted text-decoration-line-through fs-6 ms-2">{% show_price item %}</small>
-                                </h2>
-                                <span class="badge bg-warning text-dark mb-2">Beta Access</span>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-grid">
-                            {% if user.is_authenticated %}
-                                <form action="{% url 'initiate_purchase' item.slug %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-primary-ud btn-lg w-100">
-                                        {% if exam.price > 0 %}
-                                            {% trans "Buy Now" %}
-                                        {% else %}
-                                            {% trans "Enroll for Free" %}
-                                        {% endif %}
-                                    </button>
-                                </form>
-                            {% else %}
-                                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-primary btn-lg">
-                                    {% trans "Log in to Enroll" %}
-                                </a>
-                            {% endif %}
-                        </div>                        
-                    {% endif %}
-                    <hr>
-                    <h6 class="fw-bold">{% trans "This includes:" %}</h6>
-                    <ul class="list-unstyled small text-muted">
-                        <li class="mb-2"><i class="bi bi-check-lg text-success me-2"></i> {% trans "Full lifetime access" %}</li>
-                        {% if item.item_type == 'MOCK_TEST' %}
-                             <li><i class="bi bi-check-lg text-success me-2"></i> {% trans "Detailed performance analytics" %}</li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-    </div> </div> {% endblock %}
+{% endblock %}

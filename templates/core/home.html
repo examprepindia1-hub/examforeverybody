@@ -2,702 +2,617 @@
 {% load static %}
 {% load i18n %}
 {% load currency_tags %}
+
 {% block content %}
 
-<section class="hero-banner-ud" style="background-image: url('{{ MEDIA_URL }}banners/home_hero.png'); background-size: cover; background-position: center; min-height: 500px; display: flex; align-items: center;">
-    <div class="container">
-        <div class="col-lg-6">
-            <div class="hero-card-floating bg-white p-5 rounded-3 shadow-lg" style="max-width: 550px;">
-                <h1 class="fw-bold mb-3 text-dark">{% trans "Master Your Critical Exam." %}</h1>
-                <p class="lead mb-4 text-muted">
-                    {% trans "Trusted mock tests and live workshops for SAT, JEE, IELTS, and more. Start your journey to success today." %}
+<!-- 1. HERO SECTION -->
+<section class="py-5 bg-white d-flex align-items-center" style="min-height: 70vh;">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h1 class="display-3 fw-bold text-dark mb-4" style="line-height: 1.2;">
+                    Master Your Competitive Exams with <br>
+                    <span class="text-dark">ExamForEverybody</span>
+                </h1>
+                <p class="lead text-secondary mb-5 mx-auto" style="max-width: 800px; font-size: 1.25rem;">
+                    Practice with free mock tests, compete for scholarships, and access premium courses designed by
+                    experts to help you achieve your academic dreams.
                 </p>
-               <form class="d-flex position-relative shadow-sm rounded-pill overflow-hidden border" action="{% url 'search' %}" method="get">
-    <input class="form-control border-0 ps-4 py-3" type="search" name="q" placeholder="What do you want to learn?" required>
-    <button class="btn btn-primary px-4 fw-bold" type="submit">
-        <i class="bi bi-search"></i>
-    </button>
-</form>
+                <!-- Buttons optimized for mobile stacking -->
+                <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                    <a href="{% url 'marketplace:item_list' %}"
+                        class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm hover-lift transition-all">
+                        <i class="bi bi-book me-2"></i> Browse Courses
+                    </a>
+                    <a href="#"
+                        class="btn btn-dark btn-lg rounded-3 px-4 py-3 fw-bold d-flex align-items-center justify-content-center">
+                        <i class="bi bi-trophy me-2"></i> Explore Scholarships
+                    </a>
+                    <a href="{% url 'explore' %}"
+                        class="btn btn-outline-dark btn-lg rounded-3 px-4 py-3 fw-bold d-flex align-items-center justify-content-center">
+                        <i class="bi bi-book me-2"></i> Browse Courses
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </section>
-<section class="py-5 bg-light">
+
+<!-- 2. EXPLORE CATEGORIES SECTION -->
+<section class="py-5 bg-light-section">
     <div class="container">
-        <div class="row align-items-center mb-4">
-            <div class="col-md-8">
-                <h2 class="fw-bold section-title mb-1">Explore Top Categories</h2>
-                <p class="text-muted">Find the right path for your career goals.</p>
+        <!-- Header Row -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-5">
+            <div>
+                <h2 class="fw-bold display-6 mb-2 text-dark">Explore Top Categories</h2>
+                <p class="text-secondary lead mb-0">Find the right path for your career goals.</p>
             </div>
-            <div class="col-md-4 text-md-end">
-                <a href="#" class="btn btn-outline-dark rounded-pill px-4 fw-bold">All Categories</a>
-            </div>
+            <a href="{% url 'marketplace:item_list' %}"
+                class="btn btn-outline-dark rounded-pill px-4 fw-semibold mt-3 mt-md-0">
+                All Categories
+            </a>
         </div>
 
-        <div class="row g-3">
-            {% for cat in categories %}
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="{% url 'category_detail' cat.slug %}" class="card h-100 border-0 shadow-sm category-card text-decoration-none">
-                    <div class="card-body d-flex align-items-center p-3">
-                        
-                        <div class="cat-icon-box me-3 rounded-circle d-flex align-items-center justify-content-center fw-bold text-white" 
-                             style="width: 45px; height: 45px; background-color: var(--brand-primary); font-size: 1.2rem;">
-                            {{ cat.display_name|first|upper }}
-                        </div>
-                        
-                        <div>
-                            <h6 class="fw-bold text-dark mb-0">{{ cat.display_name }}</h6>
-                            <small class="text-muted" style="font-size: 0.75rem;">Explore Topics</small>
-                        </div>
+        <!-- Categories Grid -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
 
-                        <div class="ms-auto text-muted opacity-25">
-                            <i class="bi bi-chevron-right"></i>
+            <!-- Category Card 1 -->
+            <!-- Category Card 1 -->
+            <div class="col">
+                <a href="{% url 'marketplace:item_list' %}?category=sat-prep" class="text-decoration-none">
+                    <div
+                        class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border h-100 hover-lift transition-all">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 48px; height: 48px; font-size: 1.25rem; font-weight: bold;">
+                            S
                         </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-0">SAT Prep</h6>
+                            <small class="text-muted">Explore Topics</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted ms-2"></i>
                     </div>
                 </a>
             </div>
-            {% empty %}
-            <div class="col-12 text-center py-4">
-                <p class="text-muted">No categories defined yet.</p>
+
+            <!-- Category Card 2 -->
+            <!-- Category Card 2 -->
+            <div class="col">
+                <a href="{% url 'marketplace:item_list' %}?category=ielts-academic" class="text-decoration-none">
+                    <div
+                        class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border h-100 hover-lift transition-all">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 48px; height: 48px; font-size: 1.25rem; font-weight: bold;">
+                            I
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-0">IELTS Academic</h6>
+                            <small class="text-muted">Explore Topics</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted ms-2"></i>
+                    </div>
+                </a>
             </div>
-            {% endfor %}
+
+            <!-- Category Card 3 -->
+            <!-- Category Card 3 -->
+            <div class="col">
+                <a href="{% url 'marketplace:item_list' %}?category=entrance-exams" class="text-decoration-none">
+                    <div
+                        class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border h-100 hover-lift transition-all">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 48px; height: 48px; font-size: 1.25rem; font-weight: bold;">
+                            E
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-0">Entrance Exams</h6>
+                            <small class="text-muted">Explore Topics</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted ms-2"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Category Card 4 -->
+            <!-- Category Card 4 -->
+            <div class="col">
+                <a href="{% url 'marketplace:item_list' %}?category=academics" class="text-decoration-none">
+                    <div
+                        class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border h-100 hover-lift transition-all">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 48px; height: 48px; font-size: 1.25rem; font-weight: bold;">
+                            A
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-0">Academics</h6>
+                            <small class="text-muted">Explore Topics</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted ms-2"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Category Card 5 -->
+            <!-- Category Card 5 -->
+            <div class="col">
+                <a href="{% url 'marketplace:item_list' %}?category=jee-mainsadv" class="text-decoration-none">
+                    <div
+                        class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border h-100 hover-lift transition-all">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 48px; height: 48px; font-size: 1.25rem; font-weight: bold;">
+                            J
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-0">JEE Mains/Adv</h6>
+                            <small class="text-muted">Explore Topics</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted ms-2"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Category Card 6 -->
+            <!-- Category Card 6 -->
+            <div class="col">
+                <a href="{% url 'marketplace:item_list' %}?category=languages" class="text-decoration-none">
+                    <div
+                        class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border h-100 hover-lift transition-all">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 48px; height: 48px; font-size: 1.25rem; font-weight: bold;">
+                            L
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-0">Languages</h6>
+                            <small class="text-muted">Explore Topics</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted ms-2"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Category Card 7 -->
+            <!-- Category Card 7 -->
+            <div class="col">
+                <a href="{% url 'marketplace:item_list' %}?category=neet-prep" class="text-decoration-none">
+                    <div
+                        class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border h-100 hover-lift transition-all">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 48px; height: 48px; font-size: 1.25rem; font-weight: bold;">
+                            N
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-0">NEET Prep</h6>
+                            <small class="text-muted">Explore Topics</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted ms-2"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Category Card 8 -->
+            <!-- Category Card 8 -->
+            <div class="col">
+                <a href="{% url 'marketplace:item_list' %}?category=upsc-civil" class="text-decoration-none">
+                    <div
+                        class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm border h-100 hover-lift transition-all">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 48px; height: 48px; font-size: 1.25rem; font-weight: bold;">
+                            U
+                        </div>
+                        <div class="ms-3 flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-0">UPSC / Civil</h6>
+                            <small class="text-muted">Explore Topics</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted ms-2"></i>
+                    </div>
+                </a>
+            </div>
+
         </div>
     </div>
 </section>
-<section class="py-5" style="background-color: #f8f9fa;">
-    <div class="container">
-        
-        <div class="row align-items-end mb-4">
-            <div class="col-md-8">
-                <h5 class="text-warning text-uppercase fw-bold small ls-1 mb-2">
-                    <i class="bi bi-fire me-1"></i> {% trans "Hot right now" %}
-                </h5>
-                <h2 class="fw-bold section-title mb-2">{% trans "Trending Exams" %}</h2>
-                <p class="text-muted mb-0" style="max-width: 600px;">
-                    {% trans "Join thousands of students acing these exams. These are the most popular choices among your peers this week." %}
-                </p>
+
+<!-- 3. HOW IT WORKS SECTION -->
+<section class="py-5 bg-white">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold display-6 mb-3 text-dark">How It Works</h2>
+            <p class="text-secondary lead">Start your exam preparation journey in four simple steps</p>
+        </div>
+
+        <div class="row position-relative text-center mt-5">
+            <!-- Connecting Line (Hidden on mobile) -->
+            <div class="d-none d-lg-block position-absolute start-0 w-100 bg-light"
+                style="height: 2px; top: 40px; z-index: 0;"></div>
+
+            <div class="col-lg-3 position-relative z-1 mb-5 mb-lg-0">
+                <div class="step-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 shadow-lg"
+                    style="width: 80px; height: 80px; font-size: 2rem;">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <div class="step-number bg-warning text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                    style="width: 35px; height: 35px; font-size: 1.1rem;">1</div>
+                <h5 class="fw-bold text-dark mb-2">Create Your Account</h5>
+                <p class="text-secondary small px-3">Sign up for free and set up your profile with your exam preferences
+                    and goals.</p>
             </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <button class="btn btn-outline-secondary rounded-circle me-2 shadow-sm" onclick="scrollCarousel(-1)" style="width: 45px; height: 45px;">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-                <button class="btn btn-outline-dark rounded-circle shadow-sm" onclick="scrollCarousel(1)" style="width: 45px; height: 45px;">
-                    <i class="bi bi-chevron-right"></i>
-                </button>
+
+            <div class="col-lg-3 position-relative z-1 mb-5 mb-lg-0">
+                <div class="step-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 shadow-lg"
+                    style="width: 80px; height: 80px; font-size: 2rem;">
+                    <i class="bi bi-search"></i>
+                </div>
+                <div class="step-number bg-warning text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                    style="width: 35px; height: 35px; font-size: 1.1rem;">2</div>
+                <h5 class="fw-bold text-dark mb-2">Choose Your Test</h5>
+                <p class="text-secondary small px-3">Browse through free mock tests or paid scholarship tests based on
+                    your target exam.</p>
+            </div>
+
+            <div class="col-lg-3 position-relative z-1 mb-5 mb-lg-0">
+                <div class="step-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 shadow-lg"
+                    style="width: 80px; height: 80px; font-size: 2rem;">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <div class="step-number bg-warning text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                    style="width: 35px; height: 35px; font-size: 1.1rem;">3</div>
+                <h5 class="fw-bold text-dark mb-2">Take the Test</h5>
+                <p class="text-secondary small px-3">Attempt the test in a real exam-like environment with timer and
+                    question navigation.</p>
+            </div>
+
+            <div class="col-lg-3 position-relative z-1 mb-0 mb-lg-0">
+                <div class="step-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 shadow-lg"
+                    style="width: 80px; height: 80px; font-size: 2rem;">
+                    <i class="bi bi-bar-chart-fill"></i>
+                </div>
+                <div class="step-number bg-warning text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+                    style="width: 35px; height: 35px; font-size: 1.1rem;">4</div>
+                <h5 class="fw-bold text-dark mb-2">Track Your Progress</h5>
+                <p class="text-secondary small px-3">Get detailed performance analysis, compare with peers, and improve
+                    your weak areas.</p>
             </div>
         </div>
-     
-        <div class="position-relative">
-            <div class="d-flex gap-4 overflow-auto pb-4 scroll-smooth no-scrollbar" id="trendingCarousel" style="scroll-snap-type: x mandatory;">
-                
-                {% for exam in popular_exams %}
-                <div class="col-10 col-md-5 col-lg-3 flex-shrink-0" style="scroll-snap-align: start;">
-                    <div class="card h-100 border-0 shadow-sm hero-card-floating position-relative hover-lift" style="transition: transform 0.2s;">
-                        
-                        <div class="position-absolute top-0 start-0 m-3 z-2">
-                            <span class="badge bg-warning text-dark shadow-sm fw-bold">
-                                <i class="bi bi-trending-up me-1"></i> #{{ forloop.counter }} Trending
-                            </span>
-                        </div>
+    </div>
+</section>
 
-                        <div class="ratio ratio-16x9 overflow-hidden rounded-top">
-                            {% if exam.thumbnail_image %}
-                                <img src="{{ exam.thumbnail_image.url }}" class="object-fit-cover" alt="{{ exam.title }}">
-                            {% else %}
-                                <div class="bg-secondary d-flex align-items-center justify-content-center text-white">
-                                    <i class="bi bi-journal-bookmark fs-1"></i>
+<!-- 4. STATS SECTION -->
+<section class="py-5" style="background-color: #1a3c96;">
+    <div class="container py-4">
+        <div class="row text-center gy-4">
+            <div class="col-6 col-md-3 border-end border-opacity-25 border-light">
+                <div class="text-white mb-3 fs-2 opacity-75"><i class="bi bi-people-fill"></i></div>
+                <h2 class="fw-bold text-white mb-1 display-5">500K+</h2>
+                <div class="text-white-50 fw-medium">Active Students</div>
+            </div>
+            <div class="col-6 col-md-3 border-end border-opacity-25 border-light">
+                <div class="text-white mb-3 fs-2 opacity-75"><i class="bi bi-file-earmark-text-fill"></i></div>
+                <h2 class="fw-bold text-white mb-1 display-5">10K+</h2>
+                <div class="text-white-50 fw-medium">Mock Tests</div>
+            </div>
+            <div class="col-6 col-md-3 border-end border-opacity-25 border-light">
+                <div class="text-white mb-3 fs-2 opacity-75"><i class="bi bi-trophy-fill"></i></div>
+                <h2 class="fw-bold text-white mb-1 display-5">$2M+</h2>
+                <div class="text-white-50 fw-medium">Scholarships Awarded</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-white mb-3 fs-2 opacity-75"><i class="bi bi-graph-up-arrow"></i></div>
+                <h2 class="fw-bold text-white mb-1 display-5">95%</h2>
+                <div class="text-white-50 fw-medium">Success Rate</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 5. SUCCESS STORIES SECTION -->
+<section class="py-5 bg-white">
+    <div class="container py-4 text-center">
+        <h2 class="fw-bold display-6 mb-3 text-dark">Success Stories</h2>
+        <p class="text-secondary lead mb-5 mx-auto" style="max-width: 700px;">Hear from students who achieved their
+            dreams with ExamForEverybody</p>
+
+        <!-- Carousel / Grid -->
+        <div id="testimonialsCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <!-- Slide 1 -->
+                <div class="carousel-item active">
+                    <div class="row g-4 justify-content-center">
+                        <div class="col-md-4">
+                            <div class="card border shadow-sm rounded-4 h-100 p-4 text-start hover-lift">
+                                <div class="d-flex align-items-center mb-4">
+                                    <img src="https://randomuser.me/api/portraits/women/44.jpg"
+                                        class="rounded-circle me-3 border border-2 border-white shadow-sm"
+                                        style="width: 60px; height: 60px; object-fit: cover;" alt="Student">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Priya Sharma</h5>
+                                        <small class="text-secondary d-block">JEE Main 2025</small>
+                                        <div class="d-flex text-warning small mt-1 align-items-center">
+                                            <i class="bi bi-trophy-fill me-1"></i> <span
+                                                class="fw-bold text-dark">Score: 98.5%</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="card-body p-4 d-flex flex-column">
-                            <h5 class="card-title fw-bold text-dark mb-2 text-truncate" title="{{ exam.title }}">
-                                {{ exam.title }}
-                            </h5>
-
-                            <div class="d-flex align-items-center text-muted small mb-3">
-                                <span class="me-3">
-                                    <i class="bi bi-bar-chart-fill me-1 text-primary"></i>
-                                    {{ exam.mock_test_details.get_level_display }}
-                                </span>
-                                <span>
-                                    <i class="bi bi-people-fill me-1 text-primary"></i>
-                                    {{ exam.get_total_enrollments }} {% trans "Enrolled" %}
-                                </span>
+                                <div class="mb-3 text-warning">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="text-muted fst-italic mb-2">"ExamForEverybody mock tests helped me identify my
+                                    weak areas and improve my time management. The detailed solutions were incredibly
+                                    helpful!"</p>
+                                <div class="mt-auto pt-3 border-top">
+                                    <small class="text-secondary fw-bold">Rank: AIR 245</small>
+                                </div>
                             </div>
-
-                            <div class="mt-auto d-flex align-items-center justify-content-between border-top pt-3">
-                                <div>
-                                    {% if exam.price > 0 %}
-                                        <span class="fw-bold text-dark fs-5">{% show_price exam %}</span>
-                                    {% else %} 
-                                        <span class="fw-bold text-success fs-5">FREE</span>
-                                    {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border shadow-sm rounded-4 h-100 p-4 text-start hover-lift">
+                                <div class="d-flex align-items-center mb-4">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg"
+                                        class="rounded-circle me-3 border border-2 border-white shadow-sm"
+                                        style="width: 60px; height: 60px; object-fit: cover;" alt="Student">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Rahul Verma</h5>
+                                        <small class="text-secondary d-block">NEET 2025</small>
+                                        <div class="d-flex text-warning small mt-1 align-items-center">
+                                            <i class="bi bi-trophy-fill me-1"></i> <span
+                                                class="fw-bold text-dark">Score: 680/720</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                
-                                <a href="{% url 'marketplace:item_detail' exam.slug %}" class="btn btn-primary rounded-pill px-4 fw-bold btn-sm">
-                                    {% trans "View Details" %}
-                                </a>
+                                <div class="mb-3 text-warning">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="text-muted fst-italic mb-2">"The scholarship tests gave me the competitive
+                                    edge I needed. Won $5,000 and got admission to my dream medical college!"</p>
+                                <div class="mt-auto pt-3 border-top">
+                                    <small class="text-secondary fw-bold">Rank: AIR 1,234</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border shadow-sm rounded-4 h-100 p-4 text-start hover-lift">
+                                <div class="d-flex align-items-center mb-4">
+                                    <img src="https://randomuser.me/api/portraits/women/65.jpg"
+                                        class="rounded-circle me-3 border border-2 border-white shadow-sm"
+                                        style="width: 60px; height: 60px; object-fit: cover;" alt="Student">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Anjali Patel</h5>
+                                        <small class="text-secondary d-block">CAT 2025</small>
+                                        <div class="d-flex text-warning small mt-1 align-items-center">
+                                            <i class="bi bi-trophy-fill me-1"></i> <span
+                                                class="fw-bold text-dark">Score: 99.2%ile</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 text-warning">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-half"></i>
+                                </div>
+                                <p class="text-muted fst-italic mb-2">"The courses and mock tests on ExamForEverybody
+                                    are top-notch. They helped me crack CAT with a 99+ percentile!"</p>
+                                <div class="mt-auto pt-3 border-top">
+                                    <small class="text-secondary fw-bold">Top 1% Scorer</small>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                {% empty %}
-                <div class="col-12 text-center py-5 bg-white rounded shadow-sm">
-                    <p class="text-muted mb-0">{% trans "Data is accumulating. Check back soon for trending exams!" %}</p>
-                </div>
-                {% endfor %}
 
+                <!-- Slide 2 -->
+                <div class="carousel-item">
+                    <div class="row g-4 justify-content-center">
+                        <div class="col-md-4">
+                            <div class="card border shadow-sm rounded-4 h-100 p-4 text-start hover-lift">
+                                <div class="d-flex align-items-center mb-4">
+                                    <img src="https://randomuser.me/api/portraits/men/86.jpg"
+                                        class="rounded-circle me-3 border border-2 border-white shadow-sm"
+                                        style="width: 60px; height: 60px; object-fit: cover;" alt="Student">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">David Kim</h5>
+                                        <small class="text-secondary d-block">SAT Prep</small>
+                                        <div class="d-flex text-warning small mt-1 align-items-center">
+                                            <i class="bi bi-trophy-fill me-1"></i> <span
+                                                class="fw-bold text-dark">Score: 1550</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 text-warning">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="text-muted fst-italic mb-2">"The adaptive learning platform is a game changer.
+                                    It pinpointed exactly where I was losing marks."</p>
+                                <div class="mt-auto pt-3 border-top">
+                                    <small class="text-secondary fw-bold">Top 1% Scorer</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border shadow-sm rounded-4 h-100 p-4 text-start hover-lift">
+                                <div class="d-flex align-items-center mb-4">
+                                    <img src="https://randomuser.me/api/portraits/women/12.jpg"
+                                        class="rounded-circle me-3 border border-2 border-white shadow-sm"
+                                        style="width: 60px; height: 60px; object-fit: cover;" alt="Student">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Sarah Jenkins</h5>
+                                        <small class="text-secondary d-block">GMAT</small>
+                                        <div class="d-flex text-warning small mt-1 align-items-center">
+                                            <i class="bi bi-trophy-fill me-1"></i> <span
+                                                class="fw-bold text-dark">Score: 760</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 text-warning">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i>
+                                </div>
+                                <p class="text-muted fst-italic mb-2">"I was stuck at 680 for months. One month of
+                                    focused practice here pushed me to 760."</p>
+                                <div class="mt-auto pt-3 border-top">
+                                    <small class="text-secondary fw-bold">Top 5% Scorer</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border shadow-sm rounded-4 h-100 p-4 text-start hover-lift">
+                                <div class="d-flex align-items-center mb-4">
+                                    <img src="https://randomuser.me/api/portraits/men/55.jpg"
+                                        class="rounded-circle me-3 border border-2 border-white shadow-sm"
+                                        style="width: 60px; height: 60px; object-fit: cover;" alt="Student">
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-0">Michael Chen</h5>
+                                        <small class="text-secondary d-block">GRE</small>
+                                        <div class="d-flex text-warning small mt-1 align-items-center">
+                                            <i class="bi bi-trophy-fill me-1"></i> <span
+                                                class="fw-bold text-dark">Score: 330</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 text-warning">
+                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                                        class="bi bi-star-half"></i>
+                                </div>
+                                <p class="text-muted fst-italic mb-2">"The vocabulary builder and quant shortcuts were
+                                    exactly what I needed for my target score."</p>
+                                <div class="mt-auto pt-3 border-top">
+                                    <small class="text-secondary fw-bold">Top 10% Scorer</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="position-absolute top-0 end-0 h-100 w-5 d-none d-lg-block" 
-                 style="background: linear-gradient(to left, #f8f9fa, transparent); pointer-events: none;">
+
+            <div class="d-flex justify-content-center mt-5 gap-2">
+                <button
+                    class="btn btn-primary rounded-circle shadow p-0 d-flex align-items-center justify-content-center"
+                    style="width: 50px; height: 50px;" type="button" data-bs-target="#testimonialsCarousel"
+                    data-bs-slide="prev">
+                    <i class="bi bi-chevron-left fs-4"></i>
+                </button>
+                <button
+                    class="btn btn-primary rounded-circle shadow p-0 d-flex align-items-center justify-content-center"
+                    style="width: 50px; height: 50px;" type="button" data-bs-target="#testimonialsCarousel"
+                    data-bs-slide="next">
+                    <i class="bi bi-chevron-right fs-4"></i>
+                </button>
             </div>
         </div>
     </div>
 </section>
 
-
-
+<!-- Custom Styles for Page Specific Elements -->
 <style>
-    .category-card {
-        transition: all 0.3s ease;
-        background: white;
-    }
-    .category-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
-        border-color: var(--brand-primary) !important; 
-    }
-    .category-card:hover .cat-icon-box {
-        transform: scale(1.1);
-        transition: transform 0.3s;
-    }
-    /* Optional: Varying gradients for icons if you want random colors, 
-       can be done via JS or backend logic. Sticking to brand color for consistency. */
-</style>
-
-
-<section class="section-pad bg-white">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-5">
-            <h2 class="fw-bold section-title m-0">{% trans "Explore All Mock Tests" %}</h2>
-            <a href="{% url 'explore' %}" class="btn btn-link text-decoration-none fw-bold">{% trans "View full catalog" %} <i class="bi bi-arrow-right"></i></a>
-        </div>
-
-        <div class="row g-4">
-            {% for item in featured_tests %}
-            <div class="col-12 col-md-6 col-lg-3 d-flex align-items-stretch">
-                <div class="card w-100 border-0 shadow-sm hover-lift transition-all">
-                    <a href="{% url 'marketplace:item_detail' slug=item.slug %}" class="text-decoration-none text-reset d-flex flex-column h-100">
-                        <div class="ratio ratio-16x9 overflow-hidden rounded-top">
-                            {% if item.thumbnail_image %}
-                                <img src="{{ item.thumbnail_image.url }}" class="object-fit-cover" alt="{{ item.title }}">
-                            {% else %}
-                                <div class="bg-light d-flex align-items-center justify-content-center text-muted">
-                                    <i class="bi bi-image fs-1"></i>
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="card-body d-flex flex-column p-3">
-                            <h6 class="card-title fw-bold mb-1 line-clamp-2">{{ item.title }}</h6>
-                            <p class="text-muted small mb-2">
-                                {% if item.categories.first %}{{ item.categories.first.display_name }}{% else %}General{% endif %}
-                            </p>
-                            
-                            <div class="d-flex align-items-center mb-3 small justify-content-between">
-                                <div>
-                                    <span class="fw-bold text-warning me-1">{{ item.avg_rating|default:0|floatformat:1 }}</span>
-                                <div class="text-warning me-1">
-                                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
-                                </div>
-                                </div>
-                                <span>
-                                    <i class="bi bi-people-fill me-1 text-primary"></i>
-                                    {{ item.get_total_enrollments }} {% trans "Enrolled" %}
-                                </span>
-                            </div>
-
-                            <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
-                                {% if exam.price > 0 %}
-                                        <span class="fw-bold text-dark fs-5">{% show_price exam %}</span>
-                                    {% else %} 
-                                        <span class="fw-bold text-success fs-5">FREE</span>
-                                    {% endif %}
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-            {% empty %}
-            <div class="col-12 text-center py-5">
-                <p class="text-muted">{% trans "No mock tests available at the moment." %}</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-<!-- 
-<section class="section-pad bg-light">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-4">
-            <div>
-                <h2 class="fw-bold m-0">{% trans "Upcoming Workshops" %}</h2>
-                <p class="text-muted mb-0">{% trans "Interactive live sessions with experts" %}</p>
-            </div>
-             <a href="#" class="btn btn-outline-dark rounded-pill px-4">{% trans "View Schedule" %}</a>
-        </div>
-        <div class="row g-4">
-            {% for item in upcoming_workshops %}
-            <div class="col-12 col-md-6 col-lg-3 d-flex align-items-stretch">
-                <div class="card w-100 border-0 shadow-sm hover-lift">
-                    <a href="{% url 'marketplace:item_detail' slug=item.slug %}" class="text-decoration-none text-reset d-flex flex-column h-100">
-                         <div class="ratio ratio-16x9 overflow-hidden rounded-top">
-                             {% if item.thumbnail_image %}
-                                <img src="{{ item.thumbnail_image.url }}" class="object-fit-cover" alt="{{ item.title }}">
-                             {% else %}
-                                <div class="bg-secondary d-flex align-items-center justify-content-center text-white">
-                                    <i class="bi bi-camera-video fs-1"></i>
-                                </div>
-                             {% endif %}
-                         </div>
-
-                         <div class="card-body d-flex flex-column p-3">
-                            <h6 class="card-title fw-bold mb-2">{{ item.title }}</h6>
-                            
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-2 py-1 rounded-pill small">
-                                    <span class="spinner-grow spinner-grow-sm me-1" role="status" style="width: 0.5rem; height: 0.5rem;"></span>
-                                    {% trans "LIVE" %}
-                                </span>
-                            </div>
-                            
-                            <div class="mt-auto pt-2 border-top">
-                                <span class="fw-bold">₹{{ item.price }}</span>
-                            </div>
-                         </div>
-                    </a>
-                </div>
-            </div>
-            {% empty %}
-            <div class="col-12 text-center py-5">
-                <div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-6">
-            
-            <h3 class="fw-bold text-dark mb-2">No Workshops Scheduled</h3>
-                    <p class="text-muted mb-4 mx-auto" style="max-width: 400px;">
-                        We are currently curating our next series of expert-led sessions. Check back soon for updates!
-                    </p>
-
-        </div>
-    </div>
-</div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section> -->
-
-<section class="py-5 border-top bg-light overflow-hidden">
-<style>
-    /* MASONRY LAYOUT LOGIC - PURE CSS */
-    .masonry-container {
-        column-count: 1; /* Mobile: 1 column flow */
-        column-gap: 1.5rem; /* Gap between columns */
-        orphans: 1;
-        widows: 1;
-    }
-
-    /* Tablet: 2 Columns */
-    @media (min-width: 768px) {
-        .masonry-container {
-            column-count: 2;
-        }
-    }
-
-    /* Desktop: 3 Columns */
-    @media (min-width: 1200px) {
-        .masonry-container {
-            column-count: 3;
-        }
-    }
-
-    /* CARD STYLING */
-    .testimonial-brick {
-        /* CRITICAL: Prevents card from splitting across columns */
-        break-inside: avoid-column; 
-        -webkit-column-break-inside: avoid;
-        page-break-inside: avoid;
-        
-        margin-bottom: 1.5rem; /* Vertical spacing between bricks within a column */
+    .hover-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
-        /* Ensure background is white by default */
-        background-color: #fff; 
     }
 
-    .testimonial-brick:hover {
+    .hover-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .bg-light-section {
+        background-color: #f6f9fc;
+        /* Slightly blue-tinted gray */
+        border-top: 1px solid #e9ecef;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .step-circle {
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .step-circle:hover {
+        transform: scale(1.15);
+    }
+
+    .hover-lift {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-lift:hover {
         transform: translateY(-5px);
-        box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
-        border-color: transparent;
-    }
-
-    .quote-icon {
-        font-size: 1.5rem;
-        opacity: 0.2;
     }
 </style>
 
-<div class="container py-5" style="background-color: #f8f9fa;"> 
-    <div class="text-center mb-5">
-        <h2 class="fw-bold text-dark">Loved by Students Globally</h2>
-        <p class="text-muted col-lg-6 mx-auto">From JEE aspirants in Kota to SAT takers in California, see how students are hitting their target scores.</p>
-    </div>
+<!-- 6. GLOBAL COMMUNITY MAP SECTION -->
+<section class="map-section py-5 d-flex align-items-center justify-content-center text-center">
+    <div class="map-overlay"></div>
 
-    <div class="masonry-container">
-
-        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex align-items-center">
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="Liam">
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Liam Thompson</h6>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill">SAT 1540</span>
-                    </div>
-                </div>
-                <i class="bi bi-quote quote-icon text-primary"></i>
-            </div>
-            <div class="mb-3 text-warning small">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-            </div>
-            <p class="text-muted small mb-0">"I've used Khan Academy and Princeton Review, but this platform's UI is the closest thing to the actual Digital SAT Bluebook app. I used to panic about the on-screen timer, but practicing here fixed my pacing issues completely. The 'Hard' module simulations are brutal but necessary."</p>
-        </div>
-
-        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px;">P</div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Pranav Mehta</h6>
-                        <span class="badge bg-danger-subtle text-danger rounded-pill">JEE Mains 99.4%ile</span>
-                    </div>
-                </div>
-                <i class="bi bi-quote quote-icon text-danger"></i>
-            </div>
-             <div class="mb-3 text-warning small">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-            </div>
-            <p class="text-muted small mb-0">"Honest review: The 'Hard' difficulty level for Physics is actually harder than the real JEE Mains 2024 paper. If you can solve Rotational Motion questions here, the actual exam feels like a walk in the park. The error analysis dashboard showed me I was losing marks in Optics, which I fixed in a week."</p>
-        </div>
-
-        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex align-items-center">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="Elena">
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Elena Rossi</h6>
-                        <span class="badge bg-success-subtle text-success rounded-pill">IELTS Band 8.0</span>
-                    </div>
-                </div>
-                <i class="bi bi-quote quote-icon text-success"></i>
-            </div>
-             <div class="mb-3 text-warning small">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
-            </div>
-            <p class="text-muted small mb-0">"I needed a 7.5 for my Canada PR application. The automated feedback on the Writing Task 2 was a lifesaver. It didn't just give me a score; it highlighted exactly where my vocabulary was repetitive. I finally understood what the examiners were looking for."</p>
-        </div>
-
-        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px;">A</div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Anjali V.</h6>
-                        <span class="badge bg-success-subtle text-success rounded-pill">NEET UG</span>
-                    </div>
-                </div>
-            </div>
-             <div class="mb-3 text-warning small">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
-            </div>
-            <p class="text-muted small mb-0">"Finally, a platform that sticks to NCERT! Other sites give useless out-of-syllabus questions. The 'Enable Negative Marking' toggle forced me to stop guessing answers. My accuracy went from 70% to 92% in Biology."</p>
-        </div>
-
-        <div class="card testimonial-brick rounded-4 shadow-sm p-4"> 
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex align-items-center">
-                    <img src="https://randomuser.me/api/portraits/women/12.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="Sarah">
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Sarah Jenkins</h6>
-                        <span class="badge bg-secondary-subtle text-secondary rounded-pill">Parent</span>
-                    </div>
-                </div>
-            </div>
-             <div class="mb-3 text-warning small">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-            </div>
-            <p class="text-muted small mb-0">"Bought the yearly pass for my daughter. I love the weekly performance email—I don't have to nag her to study because I can see exactly how many tests she's taken. Much cheaper than a private tutor and surprisingly effective."</p>
-        </div>
-
-        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex align-items-center">
-                     <img src="https://randomuser.me/api/portraits/women/91.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="User">
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Anika Weber</h6>
-                        <span class="badge bg-info-subtle text-info rounded-pill">GRE Germany</span>
-                    </div>
-                </div>
-            </div>
-             <div class="mb-3 text-warning small">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
-            </div>
-            <p class="text-muted small mb-0">"As a non-native English speaker, the GRE Verbal section terrified me. Rote memorization wasn't working. The contextual vocabulary builder tool on this platform is superior—it teaches how words are used in academic passages. Managed a 162V!"</p>
-        </div>
-
-        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex align-items-center">
-                     <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px;">R</div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Rajesh K.</h6>
-                        <span class="badge bg-dark-subtle text-dark rounded-pill">GMAT Focus</span>
-                    </div>
-                </div>
-            </div>
-             <div class="mb-3 text-warning small">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-            </div>
-            <p class="text-muted small mb-0">"Most platforms haven't updated for the GMAT Focus edition yet, but this one has. The Data Insights drills are exactly what I needed. The graph interpretation questions were spot on. Hit my target score of 715."</p>
-        </div>
-
-        <div class="card testimonial-brick rounded-4 shadow-sm p-4">
-            <div class="d-flex justify-content-between mb-3">
-                <div class="d-flex align-items-center">
-                    <img src="https://randomuser.me/api/portraits/women/65.jpg" class="rounded-circle me-3" style="width: 48px; height: 48px;" alt="Wei">
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark">Wei Chen</h6>
-                        <span class="badge bg-info-subtle text-info rounded-pill">TOEFL 112</span>
-                    </div>
-                </div>
-                <i class="bi bi-quote quote-icon text-info"></i>
-            </div>
-             <div class="mb-3 text-warning small">
-                <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
-            </div>
-            <p class="text-muted small mb-0">"The listening section covers various accents (British, Australian, American) just like the real test. Great for exposure! I also loved the 'Answer Reveal' feature after every attempt—helps correct mistakes instantly."</p>
-        </div>
-        
-    </div>
-</div>
-</section>
-
-
-<section class="py-5 position-relative overflow-hidden text-white" style="background-color: #737680; min-height: 500px;">
-    
-    <div class="position-absolute top-0 start-0 w-100 h-100" 
-         style="opacity: 0.15; background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;">
-    </div>
-
-    <div class="container  z-2 h-100 d-flex flex-column justify-content-center align-items-center text-center py-5">
-        <span class="badge  bg-opacity-25  border border-info px-3 py-2 rounded-pill mb-3" style="background-color: var(--brand-dark);">
+    <div class="container position-relative z-2 py-5">
+        <span class="badge bg-white bg-opacity-10 border border-info px-3 py-2 rounded-pill mb-3 text-info">
             <i class="bi bi-globe-americas me-2"></i>GLOBAL COMMUNITY
         </span>
-        <h2 class="display-5 text-white fw-bold mb-4">Learning has no borders</h2>
-        <p class="lead text-bold mb-5" style="max-width: 600px;">
-            Join over <strong>15,000+ students</strong> from <strong>25+ countries</strong> preparing for their future on ExamForEverybody.
+        <h2 class="display-5 fw-bold mb-4 text-white">Learning has no borders</h2>
+        <p class="lead text-white-50 mb-5 mx-auto" style="max-width: 600px;">
+            Join over <strong>15,000+ students</strong> from <strong>25+ countries</strong> preparing for their future
+            on ExamForEverybody.
         </p>
 
         <div class="row w-100 justify-content-center g-4 mt-2">
-            <div class="col-4 col-md-2">
+            <div class="col-4 col-md-3">
                 <h3 class="fw-bold mb-0 text-white">50k+</h3>
-                <small class="text-white-50">Tests Taken</small>
+                <small class="text-info text-uppercase fw-bold letter-spacing-1">Tests Taken</small>
             </div>
-            <div class="col-4 col-md-2">
+            <div class="col-4 col-md-3">
                 <h3 class="fw-bold mb-0 text-white">120+</h3>
-                <small class="text-white-50">Happy Students</small>
+                <small class="text-info text-uppercase fw-bold letter-spacing-1">Happy Students</small>
             </div>
-            <div class="col-4 col-md-2">
+            <div class="col-4 col-md-3">
                 <h3 class="fw-bold mb-0 text-white">4.8/5</h3>
-                <small class="text-white-50">Average Rating</small>
+                <small class="text-info text-uppercase fw-bold letter-spacing-1">Average Rating</small>
             </div>
         </div>
 
-        <div class="mt-5" style="position: relative; z-index: 100;">
-            <a href="{% url 'student_signup' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg fw-bold" style="background-color: var(--brand-dark);">
+        <div class="mt-5">
+            <a href="{% url 'student_signup' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg fw-bold">
                 Join the Community
             </a>
         </div>
     </div>
 
-    <div class="map-dot" style="top: 35%; left: 22%;"></div> <div class="map-dot" style="top: 38%; left: 26%;"></div> <div class="map-dot" style="top: 65%; left: 30%;"></div> <div class="map-dot" style="top: 30%; left: 50%;"></div> <div class="map-dot" style="top: 32%; left: 52%;"></div> <div class="map-dot" style="top: 45%; left: 68%;"></div> <div class="map-dot" style="top: 48%; left: 70%;"></div> <div class="map-dot" style="top: 40%; left: 80%;"></div> <div class="map-dot" style="top: 75%; left: 85%;"></div> </section>
+    <!-- Map Dots (Approximate Locations) -->
+    <div class="map-dot" style="top: 35%; left: 22%; animation-delay: 0s;"></div>
+    <div class="map-dot" style="top: 38%; left: 26%; animation-delay: 0.5s;"></div>
+    <div class="map-dot" style="top: 65%; left: 30%; animation-delay: 1s;"></div>
+    <div class="map-dot" style="top: 30%; left: 50%; animation-delay: 0.2s;"></div>
+    <div class="map-dot" style="top: 32%; left: 52%; animation-delay: 0.7s;"></div>
+    <div class="map-dot" style="top: 45%; left: 68%; animation-delay: 1.2s;"></div>
+    <div class="map-dot" style="top: 48%; left: 70%; animation-delay: 0.4s;"></div>
+    <div class="map-dot" style="top: 40%; left: 80%; animation-delay: 0.9s;"></div>
+    <div class="map-dot" style="top: 75%; left: 85%; animation-delay: 1.5s;"></div>
+</section>
 
-<style>
-    .map-dot {
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        background-color: var(--brand-dark); /* Cyan */
-        border-radius: 50%;
-        box-shadow: 0 0 0 rgba(13, 202, 240, 0.4);
-        animation: pulse-blue 2s infinite;
-        z-index: 1;
-    }
-
-    /* Animation for the pulsing effect */
-    @keyframes pulse-blue {
-        0% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(13, 202, 240, 0.7);
-        }
-        70% {
-            transform: scale(1);
-            box-shadow: 0 0 0 15px rgba(13, 202, 240, 0);
-        }
-        100% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(13, 202, 240, 0);
-        }
-    }
-</style>
-<style>
-    /* --- Marquee Animation --- */
-    .marquee-wrapper {
-        width: 100%;
-        overflow: hidden;
-        white-space: nowrap;
-        position: relative;
-    }
-    .marquee-content {
-        display: inline-flex;
-    }
-    .review-card {
-        width: 350px;
-        background: white;
-        border-radius: 16px;
-        flex-shrink: 0;
-    }
-    .scroll-left { animation: scrollLeft 40s linear infinite; }
-    .scroll-right { animation: scrollRight 45s linear infinite; }
-
-    @keyframes scrollLeft {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-    }
-    @keyframes scrollRight {
-        0% { transform: translateX(-50%); }
-        100% { transform: translateX(0); }
-    }
-
-    /* --- Map Pins & Tooltips --- */
-    .map-pin {
-        position: absolute;
-        z-index: 10;
-        cursor: pointer;
-    }
-    .pin-pulse {
-        width: 12px; height: 12px;
-        background: #0dcaf0;
-        border-radius: 50%;
-        box-shadow: 0 0 0 rgba(13, 202, 240, 0.4);
-        animation: pulse 2s infinite;
-    }
-    .pin-tooltip {
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(10px);
-        background: white;
-        padding: 8px 12px;
-        border-radius: 8px;
-        width: 160px;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        pointer-events: none;
-    }
-    .pin-tooltip::after {
-        content: ''; position: absolute; top: 100%; left: 50%; margin-left: -5px;
-        border-width: 5px; border-style: solid; border-color: white transparent transparent transparent;
-    }
-    
-    /* Show Tooltip on Hover */
-    .map-pin:hover .pin-tooltip {
-        opacity: 1;
-        visibility: visible;
-        transform: translateX(-50%) translateY(0);
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 202, 240, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(13, 202, 240, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(13, 202, 240, 0); }
-    }
-</style>
-<style>
-    .category-card {
-        border-radius: 12px;
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        background: white;
-    }
-
-    .category-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
-    }
-
-    .transition-scale {
-        transition: transform 0.5s ease;
-    }
-
-    .category-card:hover .transition-scale {
-        transform: scale(1.08);
-    }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
-    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-   .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #aaa; }
-
-    /* List Item Styling */
-    .list-group-item { border: none; border-left: 4px solid transparent; background: transparent; }
-    .list-group-item:hover { background-color: #fff; border-left-color: #dee2e6; }
-    
-    /* Active State */
-    .list-group-item.active {
-        background-color: #fff;
-        color: var(--brand-primary);
-        border-color: transparent;
-        border-left-color: var(--brand-primary);
-        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-        z-index: 2;
-    }
-    .list-group-item.active .icon-wrapper { background-color: var(--brand-primary) !important; color: white !important; }
-    .list-group-item.active .subtitle-text { color: var(--brand-primary) !important; opacity: 0.8; }
-
-    /* Card Hover Effect */
-    .hover-card { transition: all 0.3s ease; }
-    .hover-card:hover {
-        transform: translateY(-5px);
-        background-color: #fff !important;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-        border-color: var(--brand-primary) !important;
-    }
-</style>
-
-<script>
-    function scrollCarousel(direction) {
-        const container = document.getElementById('trendingCarousel');
-        const cardWidth = container.querySelector('.col-10').offsetWidth + 24; // Card width + gap
-        container.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
-    }
-</script>
+<!-- 7. CALL TO ACTION SECTION -->
+<section class="py-5 bg-white">
+    <div class="container py-4">
+        <div class="p-5 rounded-4 shadow text-center bg-white border"
+            style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(248,249,250,1) 100%);">
+            <h2 class="display-5 fw-bold text-dark mb-4">Ready to Start Your Success Journey?</h2>
+            <p class="lead text-secondary mb-5 mx-auto" style="max-width: 700px;">
+                Join thousands of students who are already preparing smarter with ExamForEverybody. Start with a free
+                mock test today!
+            </p>
+            <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                <a href="{% url 'explore' %}"
+                    class="btn btn-primary btn-lg rounded-3 px-5 py-3 fw-bold d-flex align-items-center justify-content-center">
+                    <i class="bi bi-rocket-takeoff-fill me-2"></i> Start Free Test Now
+                </a>
+                <a href="{% url 'explore' %}"
+                    class="btn btn-outline-dark btn-lg rounded-3 px-5 py-3 fw-bold d-flex align-items-center justify-content-center">
+                    <i class="bi bi-mortarboard-fill me-2"></i> View All Courses
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 
 {% endblock %}

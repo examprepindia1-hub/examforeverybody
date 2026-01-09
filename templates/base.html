@@ -3,120 +3,150 @@
 
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}Join ExamForEverybody for the comprehensive mock tests, workshops, and study notes. Master SAT, JEE, and IELTS with our expert-curated content.{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}Mock Tests, Online Exams, SAT, GRE, JEE, NEET{% endblock %}">
+    <meta name="description"
+        content="{% block meta_description %}Join ExamForEverybody for the comprehensive mock tests, workshops, and study notes. Master SAT, JEE, and IELTS with our expert-curated content.{% endblock %}">
+    <meta name="keywords"
+        content="{% block meta_keywords %}Mock Tests, Online Exams, SAT, GRE, JEE, NEET{% endblock %}">
 
     <title>{% block title %}ExamForEverybody | Best SAT, JEE & IELTS Mock Tests{% endblock %}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:title" content="{% block og_title %}ExamForEverybody{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}Join thousands of students mastering their exams.{% endblock %}">
-    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}/static/images/logo.svg{% endblock %}">
+    <meta property="og:description"
+        content="{% block og_description %}Join thousands of students mastering their exams.{% endblock %}">
+    <meta property="og:image"
+        content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}/static/images/logo.svg{% endblock %}">
 
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
     <meta property="twitter:title" content="{% block twitter_title %}ExamForEverybody{% endblock %}">
-    <meta property="twitter:description" content="{% block twitter_description %}Join thousands of students mastering their exams.{% endblock %}">
-    <meta property="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}/static/images/logo.svg{% endblock %}">
+    <meta property="twitter:description"
+        content="{% block twitter_description %}Join thousands of students mastering their exams.{% endblock %}">
+    <meta property="twitter:image"
+        content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}/static/images/logo.svg{% endblock %}">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q5KRSWN811"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-  gtag('config', 'G-Q5KRSWN811');
-</script>
+        gtag('config', 'G-Q5KRSWN811');
+    </script>
 </head>
-<body class="d-flex flex-column min-vh-100">
-     <div id="global-loader" class="d-none">
+
+<body class="d-flex flex-column min-vh-100 bg-light">
+    <div id="global-loader" class="d-none">
         <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <p class="loader-text">Processing...</p>
     </div>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand d-flex align-items-center p-0 me-4" href="{% url 'home' %}">
-                 <text x="70" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#0056D2">e4e</text> </svg>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top py-3 border-bottom shadow-sm">
+        <div class="container-fluid px-4 px-lg-5">
+            <!-- Logo -->
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+                <div class="bg-primary text-white rounded px-2 py-1 fw-bold fs-5 d-flex align-items-center justify-content-center"
+                    style="height: 40px; width: 40px;">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <span class="fw-bold fs-4 text-dark" style="font-family: 'Source Sans Pro', sans-serif;">e4e</span>
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="mainNav">
-               <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-    <li class="nav-item">
-        <a class="nav-link fw-semibold" href="{% url 'explore' %}">Browse Exams</a>
-    </li>
-   <li><a class="nav-link fw-semibold" href="{% url 'blog:post_list' %}">Blog & News</a></li>
-</ul>
+                <!-- Center Links -->
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-semibold text-secondary gap-lg-4">
+                    <li class="nav-item">
+                        <a class="nav-link px-0 {% if request.path == '/' %}active text-white bg-primary bg-opacity-10 rounded-pill px-3 py-1{% endif %}"
+                            href="{% url 'home' %}">
+                            <i class="bi bi-house-door me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-0 text-dark" href="{% url 'marketplace:item_list' %}?type=MOCK_TEST">
+                            <i class="bi bi-file-earmark-text me-1"></i> Tests
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-0 text-dark" href="{% url 'marketplace:item_list' %}">
+                            <i class="bi bi-bag me-1"></i> Marketplace
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-0 text-dark" href="{% url 'leaderboard' %}">
+                            <i class="bi bi-trophy me-1"></i> Leaderboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-0 text-dark" href="{% url 'explore' %}">
+                            <i class="bi bi-mortarboard me-1"></i> Mock Test
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-0 text-dark" href="{% url 'blog:post_list' %}">
+                            <i class="bi bi-book me-1"></i> Blogs
+                        </a>
+                    </li>
+                </ul>
 
-                <form class="d-flex flex-grow-1 mx-lg-4 my-2 my-lg-0 position-relative" action="{% url 'search' %}" method="get">
-    <input class="form-control search-input w-100" type="search" name="q" placeholder="Search for exams, skills..." required>
-    <button class="btn-search" type="submit">
-        <i class="bi bi-search"></i>
-    </button>
-</form>
-
-                <ul class="navbar-nav ms-auto align-items-center">
-                   
-                    <li class="nav-item dropdown me-3 d-none d-lg-block">
-                        
-    <!-- <a class="nav-link dropdown-toggle d-flex align-items-center p-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--brand-dark);" title="{% trans 'Select Language' %}">
-        <i class="bi bi-globe fs-5"></i>
-    </a> -->
-    <ul class="dropdown-menu dropdown-menu-end animate slideIn">
-        <li><h6 class="dropdown-header text-uppercase small">{% trans "Language" %}</h6></li>
-        
-        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'en' %}active{% endif %}" href="#" onclick="changeLanguage('en'); return false;">English</a></li>
-        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'es' %}active{% endif %}" href="#" onclick="changeLanguage('es'); return false;">Español</a></li>
-        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'fr' %}active{% endif %}" href="#" onclick="changeLanguage('fr'); return false;">Français</a></li>
-        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'de' %}active{% endif %}" href="#" onclick="changeLanguage('de'); return false;">Deutsch</a></li>
-        <li><a class="dropdown-item {% if LANGUAGE_CODE == 'zh-hans' %}active{% endif %}" href="#" onclick="changeLanguage('zh-hans'); return false;">中文 (Simplified)</a></li>
-    </ul>
-</li>
-
+                <!-- Right Auth -->
+                <ul class="navbar-nav align-items-center">
                     {% if user.is_authenticated %}
-                        <li class="nav-item me-3">
-                            <a href="{% url 'home' %}" class="nav-link fw-semibold">{% trans "My Dashboard" %}</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link" href="#" data-bs-toggle="dropdown">
-                                <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                                </div>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-                <li><div class="dropdown-header text-muted small">Account</div></li>
-                
-                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person me-2"></i>My Profile</a></li>
-                <li><a class="dropdown-item" href="{% url 'order_history' %}"><i class="bi bi-receipt me-2"></i>Order History</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Log Out</button>
-                    </form>
-                </li>
-            </ul>
-                        </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link p-0" href="#" data-bs-toggle="dropdown">
+                            <div class="avatar-circle bg-light text-primary rounded-circle d-flex align-items-center justify-content-center border"
+                                style="width: 40px; height: 40px;">
+                                {% if user.first_name %}
+                                {{ user.first_name|first|upper }}
+                                {% else %}
+                                <i class="bi bi-person-fill"></i>
+                                {% endif %}
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2 rounded-3"
+                            style="min-width: 200px;">
+                            <li>
+                                <div class="dropdown-header text-dark fw-bold">{{
+                                    user.get_full_name|default:user.username }}</div>
+                            </li>
+                            <li><a class="dropdown-item rounded-2" href="{% url 'home' %}"><i
+                                        class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                            <li><a class="dropdown-item rounded-2" href="{% url 'profile' %}"><i
+                                        class="bi bi-person-gear me-2"></i>Profile</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger rounded-2"><i
+                                            class="bi bi-box-arrow-right me-2"></i>Log Out</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
                     {% else %}
-                       <li class="nav-item me-2">
-        <a href="{% url 'login' %}" class="nav-link fw-semibold" style="color: var(--brand-dark);">{% trans "Log in" %}</a>
-    </li>
-    <li class="nav-item">
-        <a href="{% url 'student_signup' %}" class="btn btn-primary-ud">{% trans "Sign up" %}</a>
-    </li>
+                    <li class="nav-item me-2">
+                        <a href="{% url 'login' %}" class="btn btn-link text-decoration-none text-dark fw-bold">Log
+                            in</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'student_signup' %}" class="btn btn-primary rounded-pill px-4 fw-bold">Sign
+                            up</a>
+                    </li>
                     {% endif %}
                 </ul>
             </div>
@@ -125,177 +155,236 @@
 
     <main class="flex-grow-1">
         {% if messages %}
-            <div class="container mt-3">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+            {% endfor %}
+        </div>
         {% endif %}
-        
+
         {% block content %}{% endblock %}
     </main>
 
-    
-
-<footer class="site-footer">
-  <div class="footer-container">
-
-    <div class="footer-col">
-      <h3 class="text-white mb-3">e4e</h3>
-      <p class="footer-about-text">
-        We are Democratizing education by providing accessible, high-quality exam preparation tools and resources for students of all levels.
-      </p>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/profile.php?id=61583987616606" target="_blank"><i class="bi bi-facebook"></i></a> <a href="https://x.com/exam4everybody" target="_blank"><i class="bi bi-twitter"></i></a>
-        <a href="https://www.linkedin.com/company/110181074/admin/dashboard/" target="_blank"><i class="bi bi-linkedin"></i></a>
-        <a href="https://www.instagram.com/exam4everybody/" target="_blank"><i class="bi bi-instagram"></i></a>
-      </div>
-    </div>
-
-    <div class="footer-col">
-      <h3 class="text-white mb-3">Platform</h3>
-      <ul class="footer-links">
-        <li><a href="#">All Exams</a></li>
-        <li><a href="#">Study Materials</a></li>
-        <li><a href="#">Mock Tests</a></li>
-        <li><a href="#">Pricing Plans</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h3>Company & Support</h3> <ul class="footer-links">
-    <li><a href="{% url 'about_us' %}">About Us</a></li>
-    <li><a href="{% url 'careers' %}">Careers / Hiring</a></li>
-    <li><a href="{% url 'blog:post_list' %}">Blog & News</a></li>
-    <li><a href="{% url 'faq' %}">Help Center / FAQs</a></li>
-    <li><a href="{% url 'contact_support' %}">Contact Support</a></li>
-  </ul>
-    </div>
-
-    <div class="footer-col">
-      <h3 class="text-white mb-3">Contact Us</h3>
-      <address class="footer-address">
-        <p><i class="bi bi-geo-alt-fill text-success me-2"></i> 
-           20, BLOCK:H-1/A, Sector-63,<br>
-           Noida-201301, UP, India
-        </p>
-        <p><i class="bi bi-envelope-fill text-success me-2"></i> support@examforeverybody.com</p>
-        <p><i class="bi bi-telephone-fill text-success me-2"></i> +91 7597832143</p>
-      </address>
-    </div>
-
-  </div>
-
-  <div class="footer-container-bottom">
-      <div class="footer-bottom">
-        <p class="mb-0 text-secondary">&copy; 2026 ExamForEverybody. All rights reserved.</p>
-       <div class="footer-bottom-links">
-    <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
-    <a href="{% url 'terms_of_service' %}">Terms of Service</a>
-    <a href="{% url 'cookie_policy' %}">Cookie Policy</a>
-</div>
-      </div>
-  </div>
-</footer>
 
 
 
-   <form action="{% url 'set_language' %}" method="post" id="language-form" class="d-none">
-    {% csrf_token %}
-    <input name="next" type="hidden" value="{{ request.get_full_path }}">
-    <input name="language" type="hidden" value="" id="language-input">
-</form>
+    <footer class="bg-white pt-5 pb-3 border-top mt-auto">
+        <div class="container">
+            <div class="row gy-4 mb-5">
+                <!-- Brand Column -->
+                <div class="col-lg-3 col-md-6">
+                    <a href="{% url 'home' %}" class="d-flex align-items-center mb-3 text-decoration-none">
+                        <div class="bg-primary text-white rounded px-2 py-1 fw-bold fs-5 d-flex align-items-center justify-content-center me-2"
+                            style="height: 36px; width: 36px;">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        <span class="fs-4 fw-bold text-dark"
+                            style="font-family: 'Source Sans Pro', sans-serif;">e4e</span>
+                    </a>
+                    <p class="text-secondary small mb-4">
+                        Your trusted partner for competitive exam preparation. Join thousands achieving
+                        their dreams.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                                class="bi bi-facebook"></i></a>
+                        <a href="#" class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                                class="bi bi-twitter"></i></a>
+                        <a href="#" class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                                class="bi bi-instagram"></i></a>
+                        <a href="#" class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                                class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
 
-<script>
-    function changeLanguage(langCode) {
-        // Set the language code in the hidden input
-        document.getElementById('language-input').value = langCode;
-        // Submit the form
-        document.getElementById('language-form').submit();
-    }
-</script>
+                <!-- Column 2: Exams -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <h6 class="fw-bold text-dark mb-3">Exams</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary small">
+                        <li><a href="{% url 'explore' %}" class="text-secondary text-decoration-none hover-link">JEE
+                                Main</a></li>
+                        <li><a href="{% url 'explore' %}"
+                                class="text-secondary text-decoration-none hover-link">NEET</a></li>
+                        <li><a href="{% url 'explore' %}" class="text-secondary text-decoration-none hover-link">CAT</a>
+                        </li>
+                        <li><a href="{% url 'explore' %}"
+                                class="text-secondary text-decoration-none hover-link">UPSC</a></li>
+                        <li><a href="{% url 'explore' %}"
+                                class="text-secondary text-decoration-none hover-link">GATE</a></li>
+                    </ul>
+                </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const loader = document.getElementById('global-loader');
-        let activeRequests = 0;
+                <!-- Column 3: Resources -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <h6 class="fw-bold text-dark mb-3">Resources</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary small">
+                        <li><a href="{% url 'explore' %}" class="text-secondary text-decoration-none hover-link">Mock
+                                Tests</a></li>
+                        <li><a href="{% url 'explore' %}"
+                                class="text-secondary text-decoration-none hover-link">Courses</a></li>
+                        <li><a href="{% url 'blog:post_list' %}"
+                                class="text-secondary text-decoration-none hover-link">Study Materials</a>
+                        </li>
+                        <li><a href="{% url 'leaderboard' %}"
+                                class="text-secondary text-decoration-none hover-link">Leaderboard</a></li>
+                        <li><a href="{% url 'blog:post_list' %}"
+                                class="text-secondary text-decoration-none hover-link">Blog</a></li>
+                    </ul>
+                </div>
 
-        // --- CORE FUNCTIONS ---
+                <!-- Column 4: Company -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <h6 class="fw-bold text-dark mb-3">Company</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary small">
+                        <li><a href="#" class="text-secondary text-decoration-none hover-link">About Us</a>
+                        </li>
+                        <li><a href="#" class="text-secondary text-decoration-none hover-link">Contact</a>
+                        </li>
+                        <li><a href="#" class="text-secondary text-decoration-none hover-link">Privacy
+                                Policy</a></li>
+                        <li><a href="#" class="text-secondary text-decoration-none hover-link">Terms of
+                                Service</a></li>
+                        <li><a href="#" class="text-secondary text-decoration-none hover-link">Careers</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
 
-        window.showLoader = function() {
-            activeRequests++;
-            loader.classList.remove('d-none');
-        };
+            <!-- Bottom Copyright -->
+            <div class="border-top pt-4 pb-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
+                <div class="text-secondary small mb-3 mb-md-0">
+                    <i
+                        class="bi bi-lightning-charge-fill bg-white border rounded-circle p-1 me-2 text-warning shadow-sm"></i>
+                    &copy; 2026 ExamForEverybody. All rights reserved.
+                </div>
+                <div class="d-flex gap-4">
+                    <a href="#" class="text-secondary text-decoration-none small fw-semibold">Privacy
+                        Policy</a>
+                    <a href="#" class="text-secondary text-decoration-none small fw-semibold">Terms of
+                        Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-        window.hideLoader = function(force = false) {
-            if (force) {
-                activeRequests = 0;
-            } else {
-                activeRequests--;
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Remove Loader after delay - ensures smooth transition
+            const loader = document.getElementById('global-loader'); // Changed from 'loader' to 'global-loader'
+            if (loader) {
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 500);
+                }, 500);
             }
-            
-            if (activeRequests <= 0) {
-                activeRequests = 0;
-                loader.classList.add('d-none');
-            }
-        };
-
-        // --- 1. API INTERCEPTOR (For AJAX/Fetch calls) ---
-        // This keeps the loader visible as long as any API call is active
-        const originalFetch = window.fetch;
-        window.fetch = function(input, init) {
-    // If the request options has 'skipLoader: true', don't show the overlay
-    if (init && init.skipLoader) {
-        return originalFetch.apply(this, arguments);
-    }
-
-    showLoader();
-    return originalFetch.apply(this, arguments)
-        .finally(() => {
-            hideLoader();
         });
-};
 
-        // --- 2. PAGE NAVIGATION HANDLER ---
-        // Shows loader when user clicks a valid internal link
-        document.addEventListener('click', function(e) {
-            const link = e.target.closest('a');
-            
-            // Check if it's a valid link that causes a page reload
-            if (link && link.href && !link.target && !link.hasAttribute('download') && 
-                !e.ctrlKey && !e.metaKey && !link.href.includes('#')) {
-                
-                // Only show if linking to the same domain
-                if (link.hostname === window.location.hostname) {
-                    // Force show (reset counter to ensure it shows immediately)
-                    activeRequests = 0; 
+        // Language Switcher Function
+        function changeLanguage(langCode) {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = "{% url 'set_language' %}";
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+            form.appendChild(csrfInput);
+
+            const langInput = document.createElement('input');
+            langInput.type = 'hidden';
+            langInput.name = 'language';
+            langInput.value = langCode;
+            form.appendChild(langInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const loader = document.getElementById('global-loader');
+            let activeRequests = 0;
+
+            // --- CORE FUNCTIONS ---
+
+            window.showLoader = function () {
+                activeRequests++;
+                loader.classList.remove('d-none');
+            };
+
+            window.hideLoader = function (force = false) {
+                if (force) {
+                    activeRequests = 0;
+                } else {
+                    activeRequests--;
+                }
+
+                if (activeRequests <= 0) {
+                    activeRequests = 0;
+                    loader.classList.add('d-none');
+                }
+            };
+
+            // --- 1. API INTERCEPTOR (For AJAX/Fetch calls) ---
+            // This keeps the loader visible as long as any API call is active
+            const originalFetch = window.fetch;
+            window.fetch = function (input, init) {
+                // If the request options has 'skipLoader: true', don't show the overlay
+                if (init && init.skipLoader) {
+                    return originalFetch.apply(this, arguments);
+                }
+
+                showLoader();
+                return originalFetch.apply(this, arguments)
+                    .finally(() => {
+                        hideLoader();
+                    });
+            };
+
+            // --- 2. PAGE NAVIGATION HANDLER ---
+            // Shows loader when user clicks a valid internal link
+            document.addEventListener('click', function (e) {
+                const link = e.target.closest('a');
+
+                // Check if it's a valid link that causes a page reload
+                if (link && link.href && !link.target && !link.hasAttribute('download') &&
+                    !e.ctrlKey && !e.metaKey && !link.href.includes('#')) {
+
+                    // Only show if linking to the same domain
+                    if (link.hostname === window.location.hostname) {
+                        // Force show (reset counter to ensure it shows immediately)
+                        activeRequests = 0;
+                        showLoader();
+                    }
+                }
+            });
+
+            // --- 3. FORM SUBMISSION HANDLER ---
+            document.addEventListener('submit', function (e) {
+                const form = e.target;
+                // Don't show if the form is target="_blank"
+                if (!form.target) {
+                    activeRequests = 0;
                     showLoader();
                 }
-            }
-        });
+            });
 
-        // --- 3. FORM SUBMISSION HANDLER ---
-        document.addEventListener('submit', function(e) {
-            const form = e.target;
-            // Don't show if the form is target="_blank"
-            if (!form.target) {
-                activeRequests = 0;
-                showLoader();
-            }
+            // Safety: Hide loader when the page is fully loaded via Back Button (bfcache)
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    hideLoader(true);
+                }
+            });
         });
-
-        // Safety: Hide loader when the page is fully loaded via Back Button (bfcache)
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
-                hideLoader(true);
-            }
-        });
-    });
-</script>
+    </script>
 </body>
 
 </html>
