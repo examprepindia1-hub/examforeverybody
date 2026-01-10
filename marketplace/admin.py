@@ -1,6 +1,19 @@
 from django.contrib import admin
 from core.models import Category
 from .models import MarketplaceItem, Testimonial
+# Import Course and Workshop attributes
+from courses.models import CourseAttributes
+from workshops.models import WorkshopAttributes
+
+class CourseAttributesInline(admin.StackedInline):
+    model = CourseAttributes
+    can_delete = False
+    verbose_name_plural = 'Video Course Details'
+
+class WorkshopAttributesInline(admin.StackedInline):
+    model = WorkshopAttributes
+    can_delete = False
+    verbose_name_plural = 'Workshop Details'
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -15,6 +28,7 @@ class MarketplaceItemAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description')
     prepopulated_fields = {'slug': ('title',)}
     autocomplete_fields = ['categories']
+    inlines = [CourseAttributesInline, WorkshopAttributesInline]
 
 @admin.register(Testimonial)
 class TestimonialAdmin(admin.ModelAdmin):

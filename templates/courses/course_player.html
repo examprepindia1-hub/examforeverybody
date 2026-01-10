@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ item.title }} - Learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid bg-dark text-white py-3">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'marketplace:item_detail' item.slug %}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <h5 class="mb-0 fw-bold">{{ item.title }}</h5>
+        </div>
+        <div>
+            {% if course.course_level %}
+            <span class="badge bg-secondary">{{ course.get_course_level_display }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-4" style="background: #f8f9fa; min-height: 85vh;">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Sidebar: Modules & Lessons -->
+            <div class="col-lg-4 order-lg-2">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-bottom p-3">
+                        <h6 class="fw-bold mb-0 text-dark">Course Content</h6>
+                    </div>
+                    <div class="card-body p-0 overflow-auto" style="max-height: 70vh;">
+                        <div class="accordion accordion-flush" id="courseAccordion">
+                            {% for module in modules %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading{{ module.id }}">
+                                    <button
+                                        class="accordion-button {% if not current_lesson or current_lesson.module != module %}collapsed{% endif %}"
+                                        type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapse{{ module.id }}"
+                                        aria-expanded="{% if current_lesson and current_lesson.module == module %}true{% else %}false{% endif %}"
+                                        aria-controls="collapse{{ module.id }}">
+                                        {{ module.title }}
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ module.id }}"
+                                    class="accordion-collapse collapse {% if current_lesson and current_lesson.module == module %}show{% endif %}"
+                                    aria-labelledby="heading{{ module.id }}" data-bs-parent="#courseAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div class="list-group list-group-flush">
+                                            {% for lesson in module.lessons.all %}
+                                            <a href="?lesson={{ lesson.id }}"
+                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if current_lesson == lesson %}active bg-primary bg-opacity-10 text-primary border-primary{% endif %}">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    {% if lesson.video_url %}
+                                                    <i
+                                                        class="bi bi-play-circle{% if current_lesson == lesson %}-fill{% endif %}"></i>
+                                                    {% else %}
+                                                    <i
+                                                        class="bi bi-file-text{% if current_lesson == lesson %}-fill{% endif %}"></i>
+                                                    {% endif %}
+                                                    <small>{{ lesson.title }}</small>
+                                                </div>
+                                                {% if lesson.duration_minutes > 0 %}
+                                                <small class="text-muted">{{ lesson.duration_minutes }}m</small>
+                                                {% endif %}
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="p-4 text-center text-muted">
+                                <small>No modules found.</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content: Video Player -->
+            <div class="col-lg-8 order-lg-1">
+                {% if current_lesson %}
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                    {% if current_lesson.video_url %}
+                    <div class="ratio ratio-16x9 bg-black">
+                        <iframe src="{{ current_lesson.video_url }}" title="{{ current_lesson.title }}"
+                            allowfullscreen></iframe>
+                    </div>
+                    {% endif %}
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold text-dark mb-2">{{ current_lesson.title }}</h4>
+                        <p class="text-secondary small mb-0">Module: {{ current_lesson.module.title }}</p>
+                    </div>
+                </div>
+
+                <!-- Notes / Description -->
+                {% if current_lesson.rich_text_content %}
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <h5 class="fw-bold text-dark mb-3">Lesson Notes</h5>
+                    <div class="text-secondary">
+                        {{ current_lesson.rich_text_content|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div class="alert alert-info rounded-4 border-0 shadow-sm">
+                    <i class="bi bi-info-circle me-2"></i> No lesson selected or course is empty.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -353,8 +353,14 @@
                                         <a href="{% url 'start_test' item.slug %}"
                                             class="btn btn-success btn-lg w-100 fw-bold">Start Test</a>
                                         {% endif %}
+                                        {% elif item.item_type == 'VIDEO_COURSE' %}
+                                        <a href="{% url 'courses:course_player' item.slug %}"
+                                            class="btn btn-primary btn-lg w-100 fw-bold">Access Course</a>
+                                        {% elif item.item_type == 'WORKSHOP' %}
+                                        <a href="{% url 'workshops:workshop_access' item.slug %}"
+                                            class="btn btn-primary btn-lg w-100 fw-bold">Access Workshop</a>
                                         {% else %}
-                                        <a href="#" class="btn btn-primary btn-lg w-100 fw-bold">Access Content</a>
+                                        <button class="btn btn-success btn-lg w-100 fw-bold" disabled>Enrolled</button>
                                         {% endif %}
                                     </div>
                                     {% else %}

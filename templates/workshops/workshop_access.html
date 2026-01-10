@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ item.title }} - Workshop Access{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a href="{% url 'marketplace:item_detail' item.slug %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <h1 class="h3 fw-bold mb-0">{{ item.title }}</h1>
+            </div>
+
+            <!-- Workshop Details Card -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="d-flex align-items-center gap-2 text-primary mb-3">
+                        <i class="bi bi-calendar-event-fill fs-4"></i>
+                        <h5 class="fw-bold mb-0">Workshop Details</h5>
+                    </div>
+
+                    {% if workshop %}
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <label class="text-secondary small fw-bold">SCHEDULED AT</label>
+                            <p class="fw-bold text-dark fs-5 mt-1">{{ workshop.scheduled_at|date:"l, F j, Y" }} <br> {{
+                                workshop.scheduled_at|date:"g:i A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-secondary small fw-bold">DURATION</label>
+                            <p class="fw-bold text-dark fs-5 mt-1">{{ workshop.duration_hours }} Hours</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success border-0 rounded-4 p-4 mb-4">
+                        <h6 class="fw-bold alert-heading"><i class="bi bi-camera-video-fill me-2"></i> Join the Session
+                        </h6>
+                        <p class="mb-3">Here is your exclusive link to join the workshop. Please join 5 minutes early.
+                        </p>
+                        {% if workshop.meeting_link %}
+                        <a href="{{ workshop.meeting_link }}" target="_blank" class="btn btn-success fw-bold px-4 py-2">
+                            Join Meeting <i class="bi bi-box-arrow-up-right ms-2"></i>
+                        </a>
+                        {% else %}
+                        <button class="btn btn-secondary fw-bold px-4 py-2" disabled>Link Available Soon</button>
+                        {% endif %}
+                    </div>
+
+                    {% if workshop.recording_link %}
+                    <div class="bg-light rounded-4 p-4 mt-4">
+                        <h6 class="fw-bold text-dark"><i class="bi bi-play-btn-fill me-2"></i> Session Recording</h6>
+                        <p class="text-secondary small mb-3">Missed the live session? Watch the recording here.</p>
+                        <a href="{{ workshop.recording_link }}" target="_blank"
+                            class="btn btn-outline-primary btn-sm fw-bold">
+                            Watch Recording
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i> Workshop details are missing. Please contact
+                        support.
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

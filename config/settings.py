@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'billing.apps.BillingConfig',
     'enrollments.apps.EnrollmentsConfig',
     'blog.apps.BlogConfig',
+    'courses.apps.CoursesConfig', # New Video Courses App
     'paypal.standard.ipn',
     'django.contrib.sites',
     'django.contrib.sitemaps',
