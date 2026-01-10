@@ -3,11 +3,12 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            
+
             <div class="text-center mb-5">
                 <h5 class="text-uppercase text-muted fw-bold ls-1 mb-4">SAT Score Report</h5>
-                
-                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-dark text-white mb-5 shadow-lg" style="width: 220px; height: 220px; border: 8px solid #f8f9fa;">
+
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-dark text-white mb-5 shadow-lg"
+                    style="width: 220px; height: 220px; border: 8px solid #f8f9fa;">
                     <div>
                         <div class="display-2 fw-bold">{{ attempt.score|floatformat:0 }}</div>
                         <div class="text-white-50 small">TOTAL SCORE</div>
@@ -18,7 +19,8 @@
                     <div class="col-md-6">
                         <div class="card h-100 border-0 shadow-sm p-4">
                             <h6 class="text-primary fw-bold">Reading & Writing</h6>
-                            <h2 class="fw-bold">{% widthratio attempt.score 2 1 %} <span class="text-muted fs-6 fw-normal">/ 800</span></h2>
+                            <h2 class="fw-bold">{% widthratio attempt.score 2 1 %} <span
+                                    class="text-muted fs-6 fw-normal">/ 800</span></h2>
                             <div class="progress mt-2" style="height: 6px;">
                                 <div class="progress-bar bg-primary" style="width: 80%"></div>
                             </div>
@@ -27,7 +29,8 @@
                     <div class="col-md-6">
                         <div class="card h-100 border-0 shadow-sm p-4">
                             <h6 class="text-success fw-bold">Math</h6>
-                            <h2 class="fw-bold">{% widthratio attempt.score 2 1 %} <span class="text-muted fs-6 fw-normal">/ 800</span></h2>
+                            <h2 class="fw-bold">{% widthratio attempt.score 2 1 %} <span
+                                    class="text-muted fs-6 fw-normal">/ 800</span></h2>
                             <div class="progress mt-2" style="height: 6px;">
                                 <div class="progress-bar bg-success" style="width: 75%"></div>
                             </div>
@@ -35,8 +38,10 @@
                     </div>
                 </div>
 
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-dark rounded-pill px-5 fw-bold">Back to Dashboard</a>
-                <a href="{% url 'leaderboard_slug' test.item.slug %}" class="btn btn-outline-dark rounded-pill px-5 fw-bold">View Leaderboard</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-dark rounded-pill px-5 fw-bold">Back to
+                    Dashboard</a>
+                <a href="{% url 'leaderboard_slug' attempt.test.item.slug %}"
+                    class="btn btn-outline-dark rounded-pill px-5 fw-bold">View Leaderboard</a>
             </div>
 
             <hr class="my-5">
@@ -50,18 +55,19 @@
                 {% for item in analysis_list %}
                 <div class="accordion-item border-0 mb-2">
                     <h2 class="accordion-header" id="headingSat{{ item.question.id }}">
-                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSat{{ item.question.id }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} bg-white"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#collapseSat{{ item.question.id }}">
                             <div class="d-flex align-items-center w-100">
                                 <div class="me-3 text-center" style="width: 40px;">
                                     {% if item.status == 'CORRECT' %}
-                                        <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                    <i class="bi bi-check-circle-fill text-success fs-4"></i>
                                     {% elif item.status == 'WRONG' %}
-                                        <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+                                    <i class="bi bi-x-circle-fill text-danger fs-4"></i>
                                     {% else %}
-                                        <i class="bi bi-dash-circle-fill text-secondary fs-4 opacity-50"></i>
+                                    <i class="bi bi-dash-circle-fill text-secondary fs-4 opacity-50"></i>
                                     {% endif %}
                                 </div>
-                                
+
                                 <div class="flex-grow-1 pe-3 overflow-hidden">
                                     <div class="d-flex align-items-baseline">
                                         <span class="fw-bold text-dark me-2">Q{{ forloop.counter }}.</span>
@@ -73,41 +79,47 @@
                             </div>
                         </button>
                     </h2>
-                    
-                    <div id="collapseSat{{ item.question.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#satAccordion">
+
+                    <div id="collapseSat{{ item.question.id }}"
+                        class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                        data-bs-parent="#satAccordion">
                         <div class="accordion-body bg-white p-4 pt-0 border-top-0">
                             <div class="py-3">
                                 <p class="lead fs-6 text-dark fw-medium">
                                     {{ item.question.question_text|safe|linebreaksbr }}
                                 </p>
                                 {% if item.question.images.first %}
-                                    <img src="{{ item.question.images.first.image.url }}" class="img-fluid rounded border mt-2" style="max-height: 250px;">
+                                <img src="{{ item.question.images.first.image.url }}"
+                                    class="img-fluid rounded border mt-2" style="max-height: 250px;">
                                 {% endif %}
                             </div>
 
                             {% if item.question.question_type == 'NUMERIC' %}
-                                <div class="card bg-light border-0 p-3 mb-4">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Your Answer</small>
-                                            <div class="fs-5 fw-bold {% if item.status == 'CORRECT' %}text-success{% else %}text-danger{% endif %}">
-                                                {{ item.user_answer.text_answer|default:"(No Answer)" }}
-                                            </div>
+                            <div class="card bg-light border-0 p-3 mb-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted text-uppercase fw-bold"
+                                            style="font-size: 0.75rem;">Your Answer</small>
+                                        <div
+                                            class="fs-5 fw-bold {% if item.status == 'CORRECT' %}text-success{% else %}text-danger{% endif %}">
+                                            {{ item.user_answer.text_answer|default:"(No Answer)" }}
                                         </div>
-                                        <div class="col-md-6">
-                                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Correct Answer</small>
-                                            <div class="fs-5 fw-bold text-primary">
-                                                {{ item.question.correct_answer_value|default:"--" }}
-                                            </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted text-uppercase fw-bold"
+                                            style="font-size: 0.75rem;">Correct Answer</small>
+                                        <div class="fs-5 fw-bold text-primary">
+                                            {{ item.question.correct_answer_value|default:"--" }}
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
                             {% else %}
-                                <div class="row g-3 mb-4">
-                                    {% for option in item.question.options.all %}
-                                    <div class="col-md-6">
-                                        <div class="p-3 rounded border h-100 position-relative d-flex align-items-center
+                            <div class="row g-3 mb-4">
+                                {% for option in item.question.options.all %}
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded border h-100 position-relative d-flex align-items-center
                                             {% if option.is_correct %}
                                                 bg-success bg-opacity-10 border-success
                                             {% elif item.selected_option == option and not option.is_correct %}
@@ -115,37 +127,43 @@
                                             {% else %}
                                                 bg-light border-0
                                             {% endif %}">
-                                            
-                                            <div class="me-3 fs-5">
-                                                {% if option.is_correct %}
-                                                    <i class="bi bi-check-circle-fill text-success"></i>
-                                                {% elif item.selected_option == option %}
-                                                    <i class="bi bi-x-circle-fill text-danger"></i>
-                                                {% else %}
-                                                    <i class="bi bi-circle text-secondary opacity-25"></i>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            <div class="lh-sm">
-                                                <span class="{% if option.is_correct %}text-success fw-bold{% elif item.selected_option == option %}text-danger fw-bold{% else %}text-secondary{% endif %}">
-                                                    {{ option.option_text }}
-                                                </span>
-                                            </div>
-                                            
+
+                                        <div class="me-3 fs-5">
                                             {% if option.is_correct %}
-                                                <span class="position-absolute top-0 end-0 badge bg-success m-2" style="font-size: 0.6rem;">CORRECT</span>
-                                            {% endif %}
-                                            {% if item.selected_option == option %}
-                                                <span class="position-absolute top-0 end-0 badge bg-{% if option.is_correct %}success{% else %}danger{% endif %} m-2 me-5" style="font-size: 0.6rem;">YOU</span>
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                            {% elif item.selected_option == option %}
+                                            <i class="bi bi-x-circle-fill text-danger"></i>
+                                            {% else %}
+                                            <i class="bi bi-circle text-secondary opacity-25"></i>
                                             {% endif %}
                                         </div>
+
+                                        <div class="lh-sm">
+                                            <span
+                                                class="{% if option.is_correct %}text-success fw-bold{% elif item.selected_option == option %}text-danger fw-bold{% else %}text-secondary{% endif %}">
+                                                {{ option.option_text }}
+                                            </span>
+                                        </div>
+
+                                        {% if option.is_correct %}
+                                        <span class="position-absolute top-0 end-0 badge bg-success m-2"
+                                            style="font-size: 0.6rem;">CORRECT</span>
+                                        {% endif %}
+                                        {% if item.selected_option == option %}
+                                        <span
+                                            class="position-absolute top-0 end-0 badge bg-{% if option.is_correct %}success{% else %}danger{% endif %} m-2 me-5"
+                                            style="font-size: 0.6rem;">YOU</span>
+                                        {% endif %}
                                     </div>
-                                    {% endfor %}
                                 </div>
+                                {% endfor %}
+                            </div>
                             {% endif %}
                             {% if item.question.explanation %}
-                            <div class="p-4 rounded-3" style="background-color: #e8f4fd; border-left: 5px solid #0d6efd;">
-                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-lightbulb-fill me-2"></i>Explanation</h6>
+                            <div class="p-4 rounded-3"
+                                style="background-color: #e8f4fd; border-left: 5px solid #0d6efd;">
+                                <h6 class="fw-bold text-primary mb-2"><i
+                                        class="bi bi-lightbulb-fill me-2"></i>Explanation</h6>
                                 <div class="text-secondary small">
                                     {{ item.question.explanation|safe|linebreaks }}
                                 </div>
@@ -161,10 +179,10 @@
     </div>
 </div>
 <script>
-window.MathJax = {
-  tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
-  svg: { fontCache: 'global' }
-};
+    window.MathJax = {
+        tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+        svg: { fontCache: 'global' }
+    };
 </script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 {% endblock %}

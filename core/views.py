@@ -172,6 +172,12 @@ def dashboard_recent_attempt_view(request):
     }
     return render(request, 'core/dashboard_recent_attempt.html', context)
 
+def refund_policy(request):
+    return render(request, 'core/refund_policy.html')
+
+def shipping_policy(request):
+    return render(request, 'core/shipping_policy.html')
+
 def privacy_policy(request):
     return render(request, 'core/privacy_policy.html')
 

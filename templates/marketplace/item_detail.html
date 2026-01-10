@@ -2,7 +2,7 @@
 {% load static %}
 {% load i18n %}
 {% load currency_tags %}
-
+{% load socialaccount %}
 {% block title %}{{ item.title }} - ExamForEverybody{% endblock %}
 
 {% block content %}
@@ -366,7 +366,7 @@
                                                 Now</button>
                                         </form>
                                         {% else %}
-                                        <a href="{% url 'login' %}?next={{ request.path }}"
+                                        <a href="{% provider_login_url 'google' %}"
                                             class="btn btn-primary btn-lg w-100 fw-bold">Login to Enroll</a>
                                         {% endif %}
                                     </div>
@@ -397,8 +397,7 @@
                         </button>
                     </form>
                     {% else %}
-                    <a href="{% url 'login' %}?next={{ request.path }}"
-                        class="btn btn-primary w-100 py-2 fw-bold flex-grow-1">
+                    <a href="{% provider_login_url 'google' %}" class="btn btn-primary w-100 py-2 fw-bold flex-grow-1">
                         <i class="bi bi-box-arrow-in-right me-2"></i> Login to Register
                     </a>
                     {% endif %}

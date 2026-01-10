@@ -47,6 +47,20 @@ class MarketplaceItem(TimeStampedModel):
     has_certificate = models.BooleanField(default=False, help_text=_("Does completing this provide a certificate?"))
     is_bestseller = models.BooleanField(default=False, help_text=_("Show Bestseller badge?"))
 
+    def save(self, *args, **kwargs):
+        # Auto-compress image on save
+        if self.thumbnail_image:
+            # Check if this is a new upload (or if we are forcing re-compression logic)
+            # Simple check: If it's not already a WebP, compress it.
+            # OR better: Check if the file is an InMemoryUploadedFile (fresh upload).
+            from core.image_utils import compress_image
+            from django.core.files.uploadedfile import InMemoryUploadedFile
+            
+            if isinstance(self.thumbnail_image.file, InMemoryUploadedFile):
+                self.thumbnail_image = compress_image(self.thumbnail_image)
+                
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
     
