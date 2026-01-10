@@ -123,6 +123,16 @@ def initiate_purchase(request, slug):
         messages.info(request, "You are already enrolled in this content.")
         return redirect('marketplace:item_detail', slug=slug)
 
+    # 1.5. Capacity Check for Workshops
+    if item.item_type == 'WORKSHOP' and hasattr(item, 'workshop_details'):
+        # Check if ANY session is full. If so, block purchase.
+        # This assumes the purchase grants access to ALL sessions.
+        from django.db.models import F
+        full_sessions = item.workshop_details.sessions.filter(current_enrolled_count__gte=F('max_capacity'))
+        if full_sessions.exists():
+             messages.error(request, "Sorry, this workshop is currently sold out.")
+             return redirect('marketplace:item_detail', slug=slug)
+
     usd_price = item.price_usd  # Assuming ~86 INR = 1 USD
     
 

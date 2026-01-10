@@ -181,30 +181,37 @@ def submit_test(request, attempt_id):
     test = attempt.test
 
     # Process if POST request OR if it's an auto-submit (via GET from take_test)
-    # But only if not already submitted to prevent re-grading
-    if request.method == 'POST' or attempt.status != UserTestAttempt.Status.SUBMITTED:
+    # Use atomic transaction and select_for_update to prevent double submissions
+    with transaction.atomic():
+        # Re-fetch with lock
+        attempt = UserTestAttempt.objects.select_for_update().get(id=attempt_id)
         
-        strategy = get_exam_strategy(test.exam_type)
-        
-        # 1. Grade & Calculate Score
-        # This calls grade_answers() internally in our new services.py
-        result_data = strategy.calculate_score(attempt)
-        
-        # 2. Finalize Attempt
-        attempt.status = UserTestAttempt.Status.SUBMITTED
-        attempt.completed_at = timezone.now()
-        attempt.score = result_data['score']
-        
-        # 3. Pass/Fail Logic
-        if isinstance(result_data.get('passed'), bool):
-             attempt.is_passed = result_data['passed']
-        else:
-             # Fallback
-             attempt.is_passed = attempt.score >= test.pass_percentage
-        
-        attempt.save()
+        if request.method == 'POST' or attempt.status != UserTestAttempt.Status.SUBMITTED:
+            # Double check status inside lock
+            if attempt.status == UserTestAttempt.Status.SUBMITTED:
+                return redirect('exam_feedback', attempt_id=attempt.id)
 
-        return redirect('exam_feedback', attempt_id=attempt.id)
+            strategy = get_exam_strategy(test.exam_type)
+            
+            # 1. Grade & Calculate Score
+            # This calls grade_answers() internally in our new services.py
+            result_data = strategy.calculate_score(attempt)
+            
+            # 2. Finalize Attempt
+            attempt.status = UserTestAttempt.Status.SUBMITTED
+            attempt.completed_at = timezone.now()
+            attempt.score = result_data['score']
+            
+            # 3. Pass/Fail Logic
+            if isinstance(result_data.get('passed'), bool):
+                 attempt.is_passed = result_data['passed']
+            else:
+                 # Fallback
+                 attempt.is_passed = attempt.score >= test.pass_percentage
+            
+            attempt.save()
+    
+            return redirect('exam_feedback', attempt_id=attempt.id)
 
     return redirect('take_test', attempt_id=attempt_id)
 

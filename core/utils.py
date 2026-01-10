@@ -46,101 +46,95 @@ def get_leaderboard_data(test_slug=None):
     Returns a sorted list of dictionaries representing the leaderboard.
     Format: [{'user_id': 1, 'display_name': 'Name', 'total_score': 100, ...}, ...]
     """
-    # 1. Base Query
-    attempts = UserTestAttempt.objects.filter(
-        status='SUBMITTED', 
-        score__isnull=False
-    )
+    """
+    Returns a sorted list of dictionaries representing the leaderboard.
+    Format: [{'user_id': 1, 'display_name': 'Name', 'total_score': 100, ...}, ...]
+    """
     
+    # ---------------------------------------------------------
+    # SCENARIO A: Test-Specific Leaderboard (Legacy Logic)
+    # ---------------------------------------------------------
     if test_slug:
-        attempts = attempts.filter(test__item__slug=test_slug)
-
-    attempts = attempts.values(
-        'user__id', 
-        'user__username', 
-        'user__first_name', 
-        'user__last_name', 
-        'test__item__title', 
-        'test__item__id', 
-        'test__item__slug',
-        'score', 
-        'created'
-    )
-
-    # 2. Process in Python (Most Recent Logic)
-    # user_id -> { test_id -> {score, date} }
-    user_latest_attempts = {}
-
-    for attempt in attempts:
-        u_id = attempt['user__id']
-        t_id = attempt['test__item__id']
-        t_slug = attempt['test__item__slug']
-        t_title = attempt['test__item__title']
-        score = float(attempt['score'])
-        created = attempt['created']
-
-        if u_id not in user_latest_attempts:
-            # Construct Privacy-Friendly Name
-            first = attempt['user__first_name']
-            last = attempt['user__last_name']
-            if first or last:
-                 display_name = f"{first} {last}".strip()
-            else:
-                 display_name = attempt['user__username'] # Fallback
-            
-            user_latest_attempts[u_id] = {
-                'display_name': display_name, 
-                'tests': {}
-            }
-
-        # Logic: Update if this attempt is newer than what we have stored
-        current_stored = user_latest_attempts[u_id]['tests'].get(t_id)
+        # Base Query
+        attempts = UserTestAttempt.objects.filter(
+            status='SUBMITTED', 
+            score__isnull=False,
+            test__item__slug=test_slug
+        ).values(
+            'user__id', 
+            'user__username', 
+            'user__first_name', 
+            'user__last_name', 
+            'score', 
+            'created'
+        )
         
-        if not current_stored or created > current_stored['created']:
-            user_latest_attempts[u_id]['tests'][t_id] = {
-                'score': score, 
-                'created': created,
-                'title': t_title,
-                'slug': t_slug
-            }
+        # Logic: Latest Attempt Only
+        user_latest = {}
+        for attempt in attempts:
+            u_id = attempt['user__id']
+            created = attempt['created']
+            
+            if u_id not in user_latest or created > user_latest[u_id]['created']:
+                 # Construct Name
+                first = attempt['user__first_name'] or ''
+                last = attempt['user__last_name'] or ''
+                display_name = f"{first} {last}".strip() or attempt['user__username']
+                
+                user_latest[u_id] = {
+                    'user_id': u_id,
+                    'display_name': display_name,
+                    'total_score': float(attempt['score']),
+                    'tests_taken': 1, # Specific test context
+                    'created': created
+                }
+        
+        # Convert to list
+        leaderboard_data = list(user_latest.values())
+        leaderboard_data.sort(key=lambda x: x['total_score'], reverse=True)
 
-    # 3. Calculate Totals
-    leaderboard_data = []
-    for u_id, data in user_latest_attempts.items():
-        total_score = sum(item['score'] for item in data['tests'].values())
-        tests_taken = len(data['tests'])
-        leaderboard_data.append({
-            'user_id': u_id,
-            'display_name': data['display_name'],
-            'total_score': total_score,
-            'tests_taken': tests_taken
-        })
+    # ---------------------------------------------------------
+    # SCENARIO B: Global Leaderboard (Optimized via Signals)
+    # ---------------------------------------------------------
+    else:
+        # Query the Denormalized Table (O(1) Speed)
+        from mocktests.models import UserRankMetric
+        
+        metrics = UserRankMetric.objects.select_related('user').order_by('-total_xp')[:50] # Top 50
+        
+        leaderboard_data = []
+        for m in metrics:
+            first = m.user.first_name or ''
+            last = m.user.last_name or ''
+            display_name = f"{first} {last}".strip() or m.user.username
+            
+            leaderboard_data.append({
+                'user_id': m.user.id,
+                'display_name': display_name,
+                'total_score': m.total_xp,
+                'tests_taken': m.tests_taken_count
+            })
 
-    # 4. Sort by Score Descending
-    leaderboard_data.sort(key=lambda x: x['total_score'], reverse=True)
-    
-    # 5. Enrich with Rank, Percentile, Streak (Mock), Improvement (Mock)
+    # ---------------------------------------------------------
+    # Shared: Enrich with Rank & Analytics
+    # ---------------------------------------------------------
     total_users = len(leaderboard_data)
-    import random # Imported here for mock logic, move to top if preferred or keep local
+    import random 
     
     for index, entry in enumerate(leaderboard_data):
-        rank = index + 1
-        entry['rank'] = rank
+        entry['rank'] = index + 1
         
-        # Percentile Calculation (Higher is better)
-        # Formula: (Total - Rank) / Total * 100
+        # Percentile
         if total_users > 1:
             percentile = ((total_users - index) / total_users) * 100
         else:
             percentile = 100.0
         entry['percentile'] = round(percentile, 1)
         
-        # MOCK DATA for Visuals (as per plan limitations)
-        # In a real app, this would query historical daily activity
+        # Mock Data (Frontend Visuals)
         entry['streak'] = random.randint(3, 45) 
-        entry['improvement'] = random.randint(5, 25) # e.g. 12%
+        entry['improvement'] = random.randint(5, 25)
         
-    
     return leaderboard_data
 
 def get_user_rank(user_id, test_slug=None):
