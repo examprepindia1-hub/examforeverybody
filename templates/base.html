@@ -67,33 +67,32 @@
                 <!-- Center Links -->
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-semibold text-secondary gap-lg-4">
                     <li class="nav-item">
-                        <a class="nav-link px-0 {% if request.path == '/' %}active text-white bg-primary bg-opacity-10 rounded-pill px-3 py-1{% endif %}"
+                        <a class="nav-link px-0 {% if request.path == '/' or request.path == '/dashboard/' %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
                             href="{% url 'home' %}">
                             <i class="bi bi-house-door me-1"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-0 text-dark" href="{% url 'marketplace:item_list' %}?type=MOCK_TEST">
-                            <i class="bi bi-file-earmark-text me-1"></i> Scholarship Tests
+                        <a class="nav-link px-0 {% if '/marketplace/' in request.path and 'type=MOCK_TEST' in request.get_full_path %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
+                            href="{% url 'marketplace:item_list' %}?type=MOCK_TEST">
+                            <i class="bi bi-mortarboard me-1"></i> Scholarship Tests
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-0 text-dark" href="{% url 'marketplace:item_list' %}">
+                        <a class="nav-link px-0 {% if '/marketplace/' in request.path and 'type=MOCK_TEST' not in request.get_full_path %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
+                            href="{% url 'marketplace:item_list' %}">
                             <i class="bi bi-bag me-1"></i> Marketplace
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-0 text-dark" href="{% url 'leaderboard' %}">
+                        <a class="nav-link px-0 {% if '/leaderboard/' in request.path %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
+                            href="{% url 'leaderboard' %}">
                             <i class="bi bi-trophy me-1"></i> Leaderboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-0 text-dark" href="{% url 'marketplace:item_list' %}?type=MOCK_TEST">
-                            <i class="bi bi-mortarboard me-1"></i> Mock Test
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-0 text-dark" href="{% url 'blog:post_list' %}">
+                        <a class="nav-link px-0 {% if '/blog/' in request.path %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
+                            href="{% url 'blog:post_list' %}">
                             <i class="bi bi-book me-1"></i> Blogs
                         </a>
                     </li>
@@ -187,13 +186,17 @@
                         their dreams.
                     </p>
                     <div class="d-flex gap-2">
-                        <a href="#" class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                        <a href="https://www.facebook.com/profile.php?id=61583987616606" target="_blank"
+                            class="btn btn-light btn-sm rounded-circle text-secondary border"><i
                                 class="bi bi-facebook"></i></a>
-                        <a href="#" class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                        <a href="https://x.com/exam4everybody" target="_blank"
+                            class="btn btn-light btn-sm rounded-circle text-secondary border"><i
                                 class="bi bi-twitter"></i></a>
-                        <a href="#" class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                        <a href="https://www.instagram.com/exam4everybody/" target="_blank"
+                            class="btn btn-light btn-sm rounded-circle text-secondary border"><i
                                 class="bi bi-instagram"></i></a>
-                        <a href="#" class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                        <a href="https://www.linkedin.com/company/110181074/" target="_blank"
+                            class="btn btn-light btn-sm rounded-circle text-secondary border"><i
                                 class="bi bi-linkedin"></i></a>
                     </div>
                 </div>
@@ -202,15 +205,17 @@
                 <div class="col-lg-3 col-md-6 col-6">
                     <h6 class="fw-bold text-dark mb-3">Exams</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-secondary small">
-                        <li><a href="{% url 'explore' %}" class="text-secondary text-decoration-none hover-link">JEE
+                        <li><a href="{% url 'marketplace:item_list' %}?search=JEE Main"
+                                class="text-secondary text-decoration-none hover-link">JEE
                                 Main</a></li>
-                        <li><a href="{% url 'explore' %}"
+                        <li><a href="{% url 'marketplace:item_list' %}?search=NEET"
                                 class="text-secondary text-decoration-none hover-link">NEET</a></li>
-                        <li><a href="{% url 'explore' %}" class="text-secondary text-decoration-none hover-link">CAT</a>
+                        <li><a href="{% url 'marketplace:item_list' %}?search=CAT"
+                                class="text-secondary text-decoration-none hover-link">CAT</a>
                         </li>
-                        <li><a href="{% url 'explore' %}"
+                        <li><a href="{% url 'marketplace:item_list' %}?search=UPSC"
                                 class="text-secondary text-decoration-none hover-link">UPSC</a></li>
-                        <li><a href="{% url 'explore' %}"
+                        <li><a href="{% url 'marketplace:item_list' %}?search=GATE"
                                 class="text-secondary text-decoration-none hover-link">GATE</a></li>
                     </ul>
                 </div>
@@ -219,11 +224,12 @@
                 <div class="col-lg-3 col-md-6 col-6">
                     <h6 class="fw-bold text-dark mb-3">Resources</h6>
                     <ul class="list-unstyled d-flex flex-column gap-2 text-secondary small">
-                        <li><a href="{% url 'explore' %}" class="text-secondary text-decoration-none hover-link">Mock
+                        <li><a href="{% url 'marketplace:item_list' %}?type=MOCK_TEST"
+                                class="text-secondary text-decoration-none hover-link">Mock
                                 Tests</a></li>
-                        <li><a href="{% url 'explore' %}"
+                        <li><a href="{% url 'marketplace:item_list' %}"
                                 class="text-secondary text-decoration-none hover-link">Courses</a></li>
-                        <li><a href="{% url 'blog:post_list' %}"
+                        <li><a href="{% url 'marketplace:item_list' %}"
                                 class="text-secondary text-decoration-none hover-link">Study Materials</a>
                         </li>
                         <li><a href="{% url 'leaderboard' %}"
