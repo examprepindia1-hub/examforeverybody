@@ -29,6 +29,59 @@ def delete_account(request):
         confirmation = request.POST.get('confirmation', '')
         if confirmation == 'DELETE':
             user = request.user
+            
+            # --- GOOGLE TOKEN REVOCATION START ---
+            try:
+                from allauth.socialaccount.models import SocialToken, SocialAccount
+                import requests
+
+                # DEBUG: List all connected accounts and tokens
+                accounts = SocialAccount.objects.filter(user=user)
+                print(f"[DEBUG] Found {accounts.count()} social accounts for user {user.id}")
+                for acc in accounts:
+                    print(f"[DEBUG] Account: {acc.provider} (ID: {acc.uid})")
+                    tokens = SocialToken.objects.filter(account=acc)
+                    print(f"[DEBUG]   Tokens count: {tokens.count()}")
+                    for t in tokens:
+                        print(f"[DEBUG]    - Token: {t.token[:10]}... (Secret: {'YES' if t.token_secret else 'NO'})")
+
+                # Find Google token
+                google_token = SocialToken.objects.filter(
+                    account__user=user, 
+                    account__provider='google'
+                ).last()
+
+                if google_token:
+                    print(f"[DEBUG] Found Google Token for user {user.id}. Access Token length: {len(google_token.token)}")
+                    
+                    # 1. Try Revoking Access Token
+                    resp = requests.post(
+                        'https://oauth2.googleapis.com/revoke',
+                        params={'token': google_token.token},
+                        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+                        timeout=5
+                    )
+                    
+                    print(f"[DEBUG] Revoke Access Token Status: {resp.status_code}, Body: {resp.text}")
+
+                    # 2. Try Revoking Refresh Token
+                    if google_token.token_secret:
+                        print(f"[DEBUG] Found Refresh Token. Revoking...")
+                        resp_refresh = requests.post(
+                            'https://oauth2.googleapis.com/revoke',
+                            params={'token': google_token.token_secret},
+                            headers={'Content-Type': 'application/x-www-form-urlencoded'},
+                            timeout=5
+                        )
+                        print(f"[DEBUG] Revoke Refresh Token Status: {resp_refresh.status_code}, Body: {resp_refresh.text}")
+                else:
+                     print(f"[DEBUG] No Google Token found for user {user.id}")
+
+            except Exception as e:
+                # preventing crash on deletion
+                print(f"[ERROR] Exception revoking Google token: {e}")
+            # --- GOOGLE TOKEN REVOCATION END ---
+
             # Log the user out first
             from django.contrib.auth import logout
             logout(request)

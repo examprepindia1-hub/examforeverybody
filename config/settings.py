@@ -230,6 +230,7 @@ ACCOUNT_PRESERVE_USERNAME_CASING = False
 
 # Use Custom Adapter to sync avatar from Google
 SOCIALACCOUNT_ADAPTER = 'users.adapters.MySocialAccountAdapter'
+SOCIALACCOUNT_STORE_TOKENS = True
 
 # Require users to confirm signup (show signup form)
 SOCIALACCOUNT_AUTO_SIGNUP = True

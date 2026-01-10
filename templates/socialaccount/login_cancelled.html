@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Login Cancelled" %}{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4 text-warning">
+                        <i class="bi bi-exclamation-circle-fill" style="font-size: 3rem;"></i>
+                    </div>
+
+                    <h2 class="fw-bold text-dark mb-3">{% trans "Login Cancelled" %}</h2>
+
+                    <p class="text-secondary mb-4">
+                        {% trans "You requested to cancel the login process. If this was a mistake, you can try again."
+                        %}
+                    </p>
+
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'account_login' %}"
+                            class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
+                            <i class="bi bi-arrow-repeat me-2"></i> {% trans "Try Again" %}
+                        </a>
+
+                        <a href="{% url 'home' %}"
+                            class="btn btn-light btn-lg rounded-pill fw-bold border text-secondary">
+                            {% trans "Return Home" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
