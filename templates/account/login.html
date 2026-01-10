@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center py-5" style="background-color: #f8fafc;">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="max-width: 450px; width: 100%;">
+        <div class="card-body p-5 text-center">
+            <!-- Brand Logo -->
+            <div class="mb-4">
+                <span class="fw-bold display-6 text-primary"
+                    style="font-family: 'Source Sans Pro', sans-serif;">e4e</span>
+            </div>
+
+            <h2 class="fw-bold text-dark mb-2">Welcome Back</h2>
+            <p class="text-secondary mb-5">Sign in to continue your learning journey</p>
+
+            {% if messages %}
+            <div class="mb-4 text-start">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show small">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Google Login Button -->
+            <div class="d-grid gap-3">
+                {% get_providers as socialaccount_providers %}
+                {% for provider in socialaccount_providers %}
+                {% if provider.id == "google" %}
+                <a title="{{ provider.name }}"
+                    class="btn btn-white border shadow-sm py-3 rounded-3 d-flex align-items-center justify-content-center gap-3 hover-lift transition-all fw-semibold text-dark position-relative overflow-hidden"
+                    href="{% provider_login_url provider.id process=" login" scope=scope auth_params=auth_params %}">
+
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" width="24" height="24">
+                    <span>Continue with Google</span>
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="mt-5 text-secondary x-small">
+                By continuing, you agree to our <a href="#" class="text-decoration-none text-primary">Terms of
+                    Service</a> and <a href="#" class="text-decoration-none text-primary">Privacy Policy</a>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

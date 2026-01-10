@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Logged Out" %}{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden text-center">
+                <div class="card-body p-5">
+                    <div class="mb-4 text-success">
+                        <i class="bi bi-check-circle-fill fs-1"></i>
+                    </div>
+
+                    <h2 class="fw-bold text-dark mb-3">{% trans "Successfully Logged Out" %}</h2>
+
+                    <p class="text-secondary mb-4">
+                        {% trans "You have been securely logged out of your account. We hope to see you again soon!" %}
+                    </p>
+
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'home' %}"
+                            class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm hover-lift">
+                            {% trans "Return to Home" %}
+                        </a>
+
+                        {% load socialaccount %}
+                        <a href="{% provider_login_url 'google' %}"
+                            class="btn btn-outline-secondary btn-lg rounded-pill fw-bold border hover-lift">
+                            {% trans "Log In Again" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

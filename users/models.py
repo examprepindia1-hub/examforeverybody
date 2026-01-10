@@ -31,6 +31,13 @@ class CustomUser(AbstractUser):
         null=True
     )
     
+    avatar_url = models.URLField(
+        max_length=500, 
+        blank=True, 
+        null=True,
+        verbose_name="Avatar URL"
+    )
+    
     # Required for custom user model setup
     REQUIRED_FIELDS = ['email', 'role']
 

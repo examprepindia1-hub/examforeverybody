@@ -93,9 +93,20 @@ INSTALLED_APPS = [
     'paypal.standard.ipn',
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    
+    # Allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -106,6 +117,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    # Add the account middleware:
+    "allauth.account.middleware.AccountMiddleware",
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -184,17 +197,35 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Social Account Settings
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APP': {
+            'client_id': env('GOOGLE_CLIENT_ID'),
+            'secret': env('GOOGLE_CLIENT_SECRET'),
+            'key': ''
+        }
+    }
+}
+
 # --- Authentication Settings (allauth) ---
 LOGIN_REDIRECT_URL = '/'         # Go home after login
-LOGOUT_REDIRECT_URL = '/'        # Go home after logout
+LOGOUT_REDIRECT_URL = '/logged-out/'        # Go to success page after logout
 
 # Use Email as the primary identifier
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
-# We don't need usernames if we are using email
-ACCOUNT_USERNAME_REQUIRED = False 
-# For development, let's not require email verification right away
+ACCOUNT_LOGIN_METHODS = {'email'} 
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_SIGNUP_FIELDS = ['email'] 
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_PRESERVE_USERNAME_CASING = False
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

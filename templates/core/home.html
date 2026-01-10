@@ -4,6 +4,7 @@
 {% load currency_tags %}
 
 {% block content %}
+{% load socialaccount %}
 
 <!-- 1. HERO SECTION -->
 <section class="py-5 bg-white d-flex align-items-center" style="min-height: 70vh;">
@@ -570,7 +571,8 @@
         </div>
 
         <div class="mt-5">
-            <a href="{% url 'student_signup' %}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg fw-bold">
+            <a href="{% provider_login_url 'google' %}"
+                class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg fw-bold">
                 Join the Community
             </a>
         </div>

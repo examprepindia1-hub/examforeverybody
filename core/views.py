@@ -269,3 +269,9 @@ def leaderboard(request, slug=None):
         'selected_slug': selected_slug, 
     }
     return render(request, 'core/leaderboard.html', context)
+
+def logout_success(request):
+    """
+    Page shown after a successful logout.
+    """
+    return render(request, 'account/logout_success.html')
