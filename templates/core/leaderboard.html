@@ -104,13 +104,17 @@
                 <p class="text-secondary mb-0">Track your performance and compete with top exam aspirants</p>
             </div>
 
-            <div class="dropdown d-none d-md-block">
+            <div class="dropdown">
                 <button class="btn btn-white border shadow-sm rounded-pill px-4 fw-bold dropdown-toggle" type="button"
                     data-bs-toggle="dropdown">
                     {% if selected_test %}{{ selected_test.title }}{% else %}All Exams{% endif %}
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2"
+                    style="max-height: 300px; overflow-y: auto;">
                     <li><a class="dropdown-item" href="{% url 'leaderboard' %}">All Exams</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
                     {% for test in available_tests %}
                     <li><a class="dropdown-item" href="{% url 'leaderboard_slug' test.slug %}">{{ test.title }}</a></li>
                     {% endfor %}
@@ -192,46 +196,37 @@
             <div class="row g-4">
                 {% for entry in top_three %}
                 <div class="col-md-4">
-                    <div class="performer-card p-4 h-100 d-flex flex-column position-relative">
-                        <div class="d-flex justify-content-between align-items-start mb-4">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="rounded-circle overflow-hidden" style="width: 56px; height: 56px;">
+                    <div class="performer-card p-3 h-100 d-flex flex-column position-relative">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle overflow-hidden" style="width: 42px; height: 42px;">
                                     <img src="https://ui-avatars.com/api/?name={{ entry.display_name }}&background=random"
                                         class="w-100 h-100" alt="Avatar">
                                 </div>
-                                <div>
-                                    <h6 class="fw-bold mb-0 fs-5 text-dark">{{ entry.display_name }}</h6>
-                                    <small class="text-handle-dark">@{{ entry.display_name|slugify }}</small>
+                                <div class="lh-1">
+                                    <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">
+                                        {{ entry.display_name }}</h6>
+                                    <small class="text-muted" style="font-size: 0.75rem;">
+                                        @{{ entry.display_name|slugify }}</small>
                                 </div>
                             </div>
-                            <div class="rounded-1 d-flex align-items-center justify-content-center text-white shadow-sm"
-                                style="width: 32px; height: 32px; 
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm"
+                                style="width: 28px; height: 28px; 
                                  {% if entry.rank == 1 %}background: #F59E0B;{% elif entry.rank == 2 %}background: #6B7280;{% else %}background: #B45309;{% endif %}">
-                                {% if entry.rank == 1 %}
-                                <i class="bi bi-trophy-fill small"></i>
-                                {% elif entry.rank == 2 %}
-                                <i class="bi bi-star-fill small"></i>
-                                {% else %}
-                                <i class="bi bi-award-fill small"></i>
-                                {% endif %}
+                                <span class="fw-bold" style="font-size: 0.75rem;">{{ entry.rank }}</span>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-end mb-4">
+                        <div class="d-flex justify-content-between align-items-end mt-auto">
                             <div>
-                                <span class="d-block text-secondary small fw-bold mb-1">Score</span>
-                                <span class="fs-3 fw-bold text-dark">{{ entry.total_score|floatformat:0 }}</span>
+                                <span class="d-block text-secondary small fw-bold mb-0"
+                                    style="font-size: 0.7rem;">Score</span>
+                                <span class="fs-4 fw-bold text-dark lh-1">{{ entry.total_score|floatformat:0 }}</span>
                             </div>
                             <div class="text-end">
-                                <span class="d-block text-secondary small fw-bold mb-1">Percentile</span>
-                                <span class="fs-4 percentile-text">{{ entry.percentile }}%</span>
-                            </div>
-                        </div>
-
-                        <div class="mt-auto">
-                            <div class="streak-pill">
-                                <i class="bi bi-fire text-warning"></i>
-                                {{ entry.streak|default:"12" }} day streak
+                                <span class="d-block text-secondary small fw-bold mb-0"
+                                    style="font-size: 0.7rem;">Percentile</span>
+                                <span class="fs-5 percentile-text lh-1">{{ entry.percentile }}%</span>
                             </div>
                         </div>
                     </div>
@@ -268,7 +263,8 @@
                     </thead>
                     <tbody class="border-top-0">
                         {% for entry in rankings %}
-                        <tr class="{% if request.user.id == entry.user_id %}table-warning{% endif %}">
+                        <tr
+                            class="{% if request.user.id == entry.user_id %}table-primary border-start border-4 border-primary{% endif %}">
                             <td class="ps-4 fw-bold text-dark">#{{ entry.rank }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-3">

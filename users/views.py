@@ -17,3 +17,27 @@ def profile(request):
         form = UserUpdateForm(instance=request.user)
     
     return render(request, 'users/profile.html', {'form': form})
+
+
+@login_required
+def delete_account(request):
+    """
+    Handle account deletion with confirmation.
+    """
+    if request.method == 'POST':
+        # Verify the user typed 'DELETE' to confirm
+        confirmation = request.POST.get('confirmation', '')
+        if confirmation == 'DELETE':
+            user = request.user
+            # Log the user out first
+            from django.contrib.auth import logout
+            logout(request)
+            # Delete the user account
+            user.delete()
+            messages.success(request, 'Your account has been permanently deleted.')
+            return redirect('home')
+        else:
+            messages.error(request, 'Please type DELETE to confirm account deletion.')
+            return redirect('profile')
+    
+    return render(request, 'users/delete_account.html')

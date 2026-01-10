@@ -7,4 +7,5 @@ urlpatterns = [
     # --- Authentication (Handled by Allauth now) ---
     # Redirect legacy profile view if needed or keep it for user updates
     path('profile/', views.profile, name='profile'),
+    path('delete-account/', views.delete_account, name='delete_account'),
 ]

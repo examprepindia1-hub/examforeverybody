@@ -235,6 +235,10 @@ def leaderboard(request, slug=None):
         mock_test_details__attempts__status='SUBMITTED'
     ).distinct().order_by('title')
 
+    selected_test = None
+    if selected_slug:
+        selected_test = available_tests.filter(slug=selected_slug).first()
+
     # 1. Fetch Data (Already enriched with rank, percentile, streak from utils)
     leaderboard_data = get_leaderboard_data(test_slug=selected_slug)
 
@@ -256,10 +260,10 @@ def leaderboard(request, slug=None):
             if not is_in_top_20:
                 final_leaderboard.append(user_entry)
 
-    # For the template, we still partition for the "Top 3 Cards" vs "Table" view.
-    # The table should show records from index 3 up to 20 (or 21).
+    # For the template, we show Top 3 cards AND the full table of Top 20.
+    # We do NOT slice off the top 3 for the table anymore.
     top_three = final_leaderboard[:3]
-    rankings = final_leaderboard[3:] 
+    rankings = final_leaderboard # Show all (1-20 + User) in the table
 
     context = {
         'top_three': top_three,
@@ -267,6 +271,7 @@ def leaderboard(request, slug=None):
         'user_stats': current_user_stats, # For the Personal Gradient Card
         'available_tests': available_tests,
         'selected_slug': selected_slug, 
+        'selected_test': selected_test, # Pass the object
     }
     return render(request, 'core/leaderboard.html', context)
 

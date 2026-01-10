@@ -206,6 +206,7 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
+            'prompt': 'select_account',
         },
         'APP': {
             'client_id': env('GOOGLE_CLIENT_ID'),
@@ -225,6 +226,12 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_SIGNUP_FIELDS = ['email'] 
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_PRESERVE_USERNAME_CASING = False
+
+# Use Custom Adapter to sync avatar from Google
+SOCIALACCOUNT_ADAPTER = 'users.adapters.MySocialAccountAdapter'
+
+# Require users to confirm signup (show signup form)
+SOCIALACCOUNT_AUTO_SIGNUP = False
 
 
 # Static files (CSS, JavaScript, Images)

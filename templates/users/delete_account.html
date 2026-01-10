@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Account" %}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-danger shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-danger text-white py-4 text-center">
+                    <i class="bi bi-exclamation-triangle-fill fs-1 mb-2"></i>
+                    <h4 class="mb-0 fw-bold text-white">{% trans "Delete Your Account" %}</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning mb-4">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <strong>{% trans "Warning:" %}</strong>
+                        {% trans "This action cannot be undone. All your data will be permanently deleted." %}
+                    </div>
+
+                    <p class="text-secondary mb-4">
+                        {% trans "By deleting your account, you will lose:" %}
+                    </p>
+
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><i class="bi bi-x-circle text-danger me-2"></i>
+                            {% trans "Your profile and personal data" %}</li>
+                        <li class="mb-2"><i class="bi bi-x-circle text-danger me-2"></i>
+                            {% trans "All your enrollments and course access" %}</li>
+                        <li class="mb-2"><i class="bi bi-x-circle text-danger me-2"></i>
+                            {% trans "Your test attempts and scores" %}</li>
+                        <li class="mb-2"><i class="bi bi-x-circle text-danger me-2"></i>
+                            {% trans "Your order history" %}</li>
+                    </ul>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="confirmation" class="form-label fw-bold text-dark">
+                                {% trans "Type DELETE to confirm:" %}
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="confirmation"
+                                name="confirmation" placeholder="DELETE" autocomplete="off" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold">
+                                <i class="bi bi-trash me-2"></i> {% trans "Permanently Delete My Account" %}
+                            </button>
+                            <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-lg">
+                                {% trans "Cancel" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
