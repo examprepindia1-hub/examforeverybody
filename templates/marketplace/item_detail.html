@@ -8,28 +8,75 @@
 {% block content %}
 
 <!-- Header Section -->
+<!-- Header Section -->
 <div class="container py-4">
-    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-        <div class="card-body p-4 p-lg-5 bg-white">
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background-color: #0f2636;">
+        <div class="card-body p-4 p-lg-5 text-white">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start">
                 <div>
-                    <h1 class="fw-bold text-dark display-6 mb-3">{{ item.title }}</h1>
-                    <div class="d-flex align-items-center gap-3 mb-2">
+                    <h1 class="fw-bold display-5 mb-3 text-white">{{ item.title }}</h1>
+                    <div class="d-flex align-items-center gap-3 mb-4">
                         {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
-                        <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill fw-bold">
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
                             <i class="bi bi-bar-chart-fill me-1"></i> {{ item.mock_test_details.get_level_display }}
                         </span>
                         {% endif %}
-                        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-bold">
+                        <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-bold">
                             <i class="bi bi-tag-fill me-1"></i> {{ item.get_item_type_display }}
                         </span>
                     </div>
+
+                    <!-- Moved Stats Row -->
+                    {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
+                    <div class="d-flex flex-wrap gap-4 gap-lg-5 pt-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center justify-content-center"
+                                style="width: 40px; height: 40px;">
+                                <i class="bi bi-clock text-warning fs-3"></i>
+                            </div>
+                            <div>
+                                <small class="text-white-50 d-block" style="font-size: 0.75rem;">Duration</small>
+                                <span class="fw-bold">{{ item.mock_test_details.duration_minutes }} mins</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center justify-content-center"
+                                style="width: 40px; height: 40px;">
+                                <i class="bi bi-file-text text-warning fs-3"></i>
+                            </div>
+                            <div>
+                                <small class="text-white-50 d-block" style="font-size: 0.75rem;">Questions</small>
+                                <span class="fw-bold">{{ total_questions|default:"0" }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center justify-content-center"
+                                style="width: 40px; height: 40px;">
+                                <i class="bi bi-bar-chart text-warning fs-3"></i>
+                            </div>
+                            <div>
+                                <small class="text-white-50 d-block" style="font-size: 0.75rem;">Total Marks</small>
+                                <span class="fw-bold">{{ total_marks|default:"0" }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center justify-content-center"
+                                style="width: 40px; height: 40px;">
+                                <i class="bi bi-exclamation-triangle text-danger fs-3"></i>
+                            </div>
+                            <div>
+                                <small class="text-white-50 d-block" style="font-size: 0.75rem;">Negative
+                                    Marking</small>
+                                <span class="fw-bold">
+                                    {% if item.mock_test_details.has_negative_marking %}Yes{% else %}No{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="text-lg-end mt-4 mt-lg-0">
-                    <div class="text-lg-end mt-4 mt-lg-0">
-                        <small class="text-secondary d-block fw-bold mb-1">Prize Pool</small>
-                        <div class="text-dark fw-bold display-6">$5,000</div>
-                    </div>
+                    <!-- Prize pool removed for mock tests -->
                 </div>
             </div>
         </div>
@@ -169,10 +216,18 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link fw-bold py-3 px-4 border-0 text-secondary" id="pricing-tab"
-                                data-bs-toggle="tab" data-bs-target="#pricing" type="button" role="tab"
-                                aria-controls="pricing" aria-selected="false">
-                                <i class="bi bi-currency-dollar me-2"></i> Pricing
+                            <button class="nav-link fw-bold py-3 px-4 border-0 text-secondary" id="sections-tab"
+                                data-bs-toggle="tab" data-bs-target="#sections" type="button" role="tab"
+                                aria-controls="sections" aria-selected="false">
+                                <i class="bi bi-list-check me-2"></i> Sections
+                            </button>
+                        </li>
+
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold py-3 px-4 border-0 text-secondary" id="reviews-tab"
+                                data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab"
+                                aria-controls="reviews" aria-selected="false">
+                                <i class="bi bi-star-half me-2"></i> Reviews ({{ review_count }})
                             </button>
                         </li>
                     </ul>
@@ -185,58 +240,38 @@
                         <div class="tab-pane fade show active" id="description" role="tabpanel"
                             aria-labelledby="description-tab">
 
-                            {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
-                            <h5 class="fw-bold text-dark mb-4">Test Format</h5>
-                            <div class="row g-4 mb-5">
-                                <div class="col-6 col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-clock text-primary fs-3 me-3"></i>
-                                        <div>
-                                            <small class="text-secondary d-block"
-                                                style="font-size: 0.75rem;">Duration</small>
-                                            <span class="fw-bold text-dark">
-                                                {{ item.mock_test_details.duration_minutes }} mins</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-file-text text-primary fs-3 me-3"></i>
-                                        <div>
-                                            <small class="text-secondary d-block"
-                                                style="font-size: 0.75rem;">Questions</small>
-                                            <span class="fw-bold text-dark">{{ total_questions|default:"0" }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-bar-chart text-primary fs-3 me-3"></i>
-                                        <div>
-                                            <small class="text-secondary d-block" style="font-size: 0.75rem;">Total
-                                                Marks</small>
-                                            <span class="fw-bold text-dark">{{ total_marks|default:"0" }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-exclamation-triangle text-danger fs-3 me-3"></i>
-                                        <div>
-                                            <small class="text-secondary d-block" style="font-size: 0.75rem;">Negative
-                                                Marking</small>
-                                            <span class="fw-bold text-dark">
-                                                <span class="fw-bold text-dark">
-                                                    {% if item.mock_test_details.has_negative_marking %}Yes{% else
-                                                    %}No{% endif %}
-                                                </span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endif %}
 
+
+                            <h5 class="fw-bold text-dark mb-3">About this Item:</h5>
+                            <div class="text-muted mb-5">
+                                {{ item.description|linebreaks }}
+                            </div>
+
+                            <hr class="my-5">
+                        </div>
+
+                        <!-- Eligibility Tab (Placeholder content as no model field for this) -->
+                        <div class="tab-pane fade" id="eligibility" role="tabpanel" aria-labelledby="eligibility-tab">
+                            <h5 class="fw-bold text-dark mb-4">Eligibility Criteria</h5>
+                            <p class="text-muted">Please refer to the official exam guidelines for eligibility details.
+                            </p>
+                            {% if item.description %}
+                            <div class="text-muted small">{{ item.description|truncatewords:50 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Syllabus Tab -->
+                        <div class="tab-pane fade" id="syllabus" role="tabpanel" aria-labelledby="syllabus-tab">
+                            <h5 class="fw-bold text-dark mb-4">Detailed Syllabus</h5>
+                            {% if item.item_type == 'MOCK_TEST' and item.mock_test_details.instructions %}
+                            <div class="text-muted mb-4">{{ item.mock_test_details.instructions|safe }}</div>
+                            {% else %}
+                            <p class="text-muted">Syllabus details are included in the test description.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Sections Tab -->
+                        <div class="tab-pane fade" id="sections" role="tabpanel" aria-labelledby="sections-tab">
                             {% if item.item_type == 'MOCK_TEST' and item.mock_test_details.sections.exists %}
                             <h5 class="fw-bold text-dark mb-4">Section-wise Breakdown</h5>
                             <div class="d-flex flex-column gap-3 mb-5">
@@ -248,24 +283,18 @@
                                     </div>
                                     <div class="text-muted small">
                                         <span class="me-3">{{ section.questions.count }} Questions</span>
-                                        <!-- Note: Marks per section logic would require model method or calculation in view, simplified here -->
-                                        <!-- <span class="fw-bold text-dark">... Marks</span> -->
                                     </div>
                                 </div>
                                 {% endfor %}
                             </div>
+                            {% else %}
+                            <p class="text-muted">No section details available.</p>
                             {% endif %}
+                        </div>
 
-                            <h5 class="fw-bold text-dark mb-3">About this Item:</h5>
-                            <div class="text-muted mb-5">
-                                {{ item.description|linebreaks }}
-                            </div>
-
-                            <hr class="my-5">
-
-                            <!-- Reviews in Tab -->
+                        <!-- Reviews Tab -->
+                        <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
                             <h5 class="fw-bold text-dark mb-4">User Reviews ({{ review_count }})</h5>
-
                             {% if reviews %}
                             {% for review in reviews %}
                             <div class="d-flex gap-3 mb-4">
@@ -294,100 +323,9 @@
                             {% else %}
                             <p class="text-muted">No reviews yet.</p>
                             {% endif %}
-
                         </div>
 
-                        <!-- Eligibility Tab (Placeholder content as no model field for this) -->
-                        <div class="tab-pane fade" id="eligibility" role="tabpanel" aria-labelledby="eligibility-tab">
-                            <h5 class="fw-bold text-dark mb-4">Eligibility Criteria</h5>
-                            <p class="text-muted">Please refer to the official exam guidelines for eligibility details.
-                            </p>
-                            {% if item.description %}
-                            <div class="text-muted small">{{ item.description|truncatewords:50 }}</div>
-                            {% endif %}
-                        </div>
 
-                        <!-- Syllabus Tab -->
-                        <div class="tab-pane fade" id="syllabus" role="tabpanel" aria-labelledby="syllabus-tab">
-                            <h5 class="fw-bold text-dark mb-4">Detailed Syllabus</h5>
-                            {% if item.item_type == 'MOCK_TEST' and item.mock_test_details.instructions %}
-                            <div class="text-muted mb-4">{{ item.mock_test_details.instructions|safe }}</div>
-                            {% else %}
-                            <p class="text-muted">Syllabus details are included in the test description.</p>
-                            {% endif %}
-                        </div>
-
-                        <!-- Pricing Tab -->
-                        <div class="tab-pane fade" id="pricing" role="tabpanel" aria-labelledby="pricing-tab">
-                            <div class="d-flex justify-content-center">
-                                <div class="card border border-primary border-2 shadow-sm rounded-4 p-4 text-center"
-                                    style="max-width: 400px; width: 100%;">
-                                    {% if item.price_usd > 0 %}
-                                    <div class="text-muted small mb-1">International: ${{ item.price_usd }}</div>
-                                    {% endif %}
-
-                                    <div class="display-4 fw-bold text-dark mb-2">{% show_price item %}</div>
-
-                                    <hr class="w-100 my-4">
-
-                                    <h6 class="fw-bold text-dark mb-3">What's Included</h6>
-                                    <ul class="list-unstyled text-start text-secondary small d-flex flex-column gap-2 mb-4 mx-auto"
-                                        style="max-width: 250px;">
-                                        <li><i class="bi bi-check2 text-success me-2"></i> {{ item.get_item_type_display
-                                            }} Access</li>
-                                        <li><i class="bi bi-check2 text-success me-2"></i> Instant Result Declaration
-                                        </li>
-                                        <li><i class="bi bi-check2 text-success me-2"></i> Performance Analysis</li>
-                                    </ul>
-
-                                    {% if is_enrolled %}
-                                    <div class="d-grid">
-                                        {% if item.item_type == 'MOCK_TEST' %}
-                                        {% if is_future_test %}
-                                        <button class="btn btn-secondary w-100 fw-bold" disabled>
-                                            Starts {{ item.workshop_details.start_time|date:"M d, H:i" }}
-                                        </button>
-                                        {% elif is_expired_test %}
-                                        <button class="btn btn-secondary w-100 fw-bold" disabled>
-                                            Test Window Closed
-                                        </button>
-                                        {% else %}
-                                        <a href="{% url 'mocktests:take_test_intro' item.slug %}"
-                                            class="btn btn-success w-100 fw-bold">Start Test</a>
-                                        {% endif %}
-
-                                        {% elif item.item_type == 'VIDEO_COURSE' %}
-                                        <!-- COURSE ACCESS -->
-                                        <a href="{% url 'courses:course_player' item.slug %}"
-                                            class="btn btn-primary w-100 fw-bold">Access Course</a>
-
-                                        {% elif item.item_type == 'WORKSHOP' %}
-                                        <!-- WORKSHOP ACCESS -->
-                                        <a href="{% url 'workshops:workshop_access' item.slug %}"
-                                            class="btn btn-primary w-100 fw-bold">Access Workshop</a>
-                                        {% else %}
-                                        <!-- GENERIC ACCESS (Fallback) -->
-                                        <button class="btn btn-success w-100 fw-bold" disabled>Enrolled</button>
-                                        {% endif %}
-                                    </div>
-                                    {% else %}
-                                    <div class="d-grid">
-                                        {% if user.is_authenticated %}
-                                        <form action="{% url 'initiate_purchase' item.slug %}" method="post">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">Enroll
-                                                Now</button>
-                                        </form>
-                                        {% else %}
-                                        <a href="{% provider_login_url 'google' %}"
-                                            class="btn btn-primary btn-lg w-100 fw-bold">Login to Enroll</a>
-                                        {% endif %}
-                                    </div>
-                                    {% endif %}
-
-                                </div>
-                            </div>
-                        </div>
 
                     </div>
                 </div>
@@ -399,110 +337,91 @@
         <div class="col-lg-4">
 
             <!-- Actions Card -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
-                <div class="d-flex gap-2 mb-4">
-                    {% if not is_enrolled %}
-                    {% if user.is_authenticated %}
-                    <form action="{% url 'initiate_purchase' item.slug %}" method="post" class="flex-grow-1">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
-                            <i class="bi bi-credit-card me-2"></i> Pay & Register - {% show_price item %}
-                        </button>
-                    </form>
-                    {% else %}
-                    <a href="{% provider_login_url 'google' %}" class="btn btn-primary w-100 py-2 fw-bold flex-grow-1">
-                        <i class="bi bi-box-arrow-in-right me-2"></i> Login to Register
-                    </a>
-                    {% endif %}
-                    {% else %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-center">
+
+                {% if is_enrolled %}
+                <!-- ENROLLED STATE -->
+                <div class="mb-4">
+                    <span
+                        class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2 mb-3">
+                        <i class="bi bi-check-circle-fill me-1"></i> Enrolled
+                    </span>
+                    <h2 class="fw-bold text-success mb-2">You own this.</h2>
+                    <p class="text-secondary mb-4">Ready to continue your learning?</p>
+
                     {% if item.item_type == 'MOCK_TEST' %}
                     {% if is_future_test %}
-                    <button class="btn btn-secondary w-100 py-2 fw-bold flex-grow-1" disabled>
+                    <button class="btn btn-secondary w-100 py-3 fw-bold fs-5 rounded-3" disabled>
                         <i class="bi bi-clock me-2"></i> Starts Soon
                     </button>
                     {% elif is_expired_test %}
-                    <button class="btn btn-secondary w-100 py-2 fw-bold flex-grow-1" disabled>
+                    <button class="btn btn-secondary w-100 py-3 fw-bold fs-5 rounded-3" disabled>
                         <i class="bi bi-exclamation-circle me-2"></i> Test Ended
                     </button>
                     {% else %}
-                    <a href="{% url 'start_test' item.slug %}" class="btn btn-success w-100 py-2 fw-bold flex-grow-1">
-                        <i class="bi bi-play-fill me-2"></i> Start Test
+                    <a href="{% url 'start_test' item.slug %}"
+                        class="btn btn-success w-100 py-3 fw-bold fs-5 rounded-3">
+                        <i class="bi bi-play-circle-fill me-2"></i> Start Test
                     </a>
                     {% endif %}
+                    {% elif item.item_type == 'VIDEO_COURSE' %}
+                    <a href="{% url 'courses:course_player' item.slug %}"
+                        class="btn btn-success w-100 py-3 fw-bold fs-5 rounded-3">
+                        <i class="bi bi-play-circle-fill me-2"></i> Access Course
+                    </a>
+                    {% elif item.item_type == 'WORKSHOP' %}
+                    <a href="{% url 'workshops:workshop_access' item.slug %}"
+                        class="btn btn-success w-100 py-3 fw-bold fs-5 rounded-3">
+                        <i class="bi bi-camera-video-fill me-2"></i> Access Workshop
+                    </a>
+                    {% elif item.item_type == 'TEXT_COURSE' %}
+                    <a href="{% url 'courses:course_player' item.slug %}"
+                        class="btn btn-success w-100 py-3 fw-bold fs-5 rounded-3">
+                        <i class="bi bi-book-half me-2"></i> Start Reading
+                    </a>
                     {% else %}
-                    <button class="btn btn-success w-100 py-2 fw-bold flex-grow-1" disabled>
+                    <button class="btn btn-success w-100 py-3 fw-bold fs-5 rounded-3" disabled>
                         <i class="bi bi-check-circle me-2"></i> Enrolled
                     </button>
                     {% endif %}
+                </div>
+
+                {% else %}
+                <!-- NOT ENROLLED STATE -->
+                <div class="mb-4 pt-3">
+                    {% if user.is_authenticated %}
+                    <form action="{% url 'initiate_purchase' item.slug %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary w-100 py-3 fw-bold rounded-pill fs-5">
+                            Enroll Now - {% show_price item %}
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% provider_login_url 'google' %}"
+                        class="btn btn-outline-primary w-100 py-3 fw-bold rounded-pill fs-5">
+                        Log in to Enroll
+                    </a>
                     {% endif %}
                 </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-secondary flex-grow-1 fw-medium"><i class="bi bi-bookmark me-2"></i>
-                        Save</button>
-                    <button class="btn btn-outline-secondary flex-grow-1 fw-medium"><i class="bi bi-share me-2"></i>
-                        Share</button>
+                {% endif %}
+
+                <hr class="w-100 my-4 opacity-10">
+
+                <div class="text-start">
+                    <h6 class="fw-bold text-dark mb-3">This includes:</h6>
+                    <ul class="list-unstyled text-secondary mb-0 d-flex flex-column gap-2">
+                        <li class="d-flex align-items-center"><i class="bi bi-check2 text-success fs-5 me-2"></i> Full
+                            lifetime access</li>
+                        <li class="d-flex align-items-center"><i class="bi bi-check2 text-success fs-5 me-2"></i>
+                            Detailed performance analytics</li>
+                    </ul>
                 </div>
+
             </div>
 
-            {% if quick_stats %}
-            <!-- Quick Stats -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4 p-4 text-center text-lg-start">
-                <h5 class="fw-bold text-dark mb-4">Quick Stats</h5>
-                <div class="d-flex flex-column gap-4">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-people text-primary fs-4"></i>
-                            <small class="text-secondary fw-bold">Total Attempts</small>
-                        </div>
-                        <span class="fw-bold text-dark">{{ quick_stats.total_attempts }}</span>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-bar-chart text-warning fs-4"></i>
-                            <small class="text-secondary fw-bold">Average Score</small>
-                        </div>
-                        <span class="fw-bold text-dark">{{ quick_stats.avg_score }}</span>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-trophy text-success fs-4"></i>
-                            <small class="text-secondary fw-bold">Top Score</small>
-                        </div>
-                        <span class="fw-bold text-dark">{{ quick_stats.top_score }}</span>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-check-circle text-warning fs-4"></i>
-                            <small class="text-secondary fw-bold">Pass Rate</small>
-                        </div>
-                        <span class="fw-bold text-dark">{{ quick_stats.pass_rate }}%</span>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
 
-            {% if related_items %}
-            <!-- Related Tests -->
-            <h5 class="fw-bold text-dark mb-3">Related Items</h5>
-            <div class="d-flex flex-column gap-3">
-                {% for related in related_items %}
-                <a href="{{ related.get_absolute_url }}" class="text-decoration-none">
-                    <div class="card border shadow-sm rounded-4 p-3 hover-lift transition-all cursor-pointer h-100">
-                        <h6 class="fw-bold text-dark mb-2">{{ related.title }}</h6>
-                        <div class="d-flex align-items-center gap-3 text-secondary small">
-                            <span><i class="bi bi-tag-fill text-primary me-1"></i>
-                                {{ related.get_item_type_display }}</span>
-                            {% if related.item_type == 'MOCK_TEST' and related.mock_test_details %}
-                            <span><i class="bi bi-clock me-1"></i>
-                                {{ related.mock_test_details.duration_minutes }}m</span>
-                            {% endif %}
-                            <span class="fw-bold text-success ms-auto">{% show_price related %}</span>
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            </div>
-            {% endif %}
+
+
 
         </div>
 

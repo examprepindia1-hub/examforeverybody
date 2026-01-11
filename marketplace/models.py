@@ -16,6 +16,7 @@ class MarketplaceItem(TimeStampedModel):
         MOCK_TEST = 'MOCK_TEST', _('Mock Test')
         WORKSHOP = 'WORKSHOP', _('Workshop')
         VIDEO_COURSE = 'VIDEO_COURSE', _('Video Course')
+        TEXT_COURSE = 'TEXT_COURSE', _('Text Course')
         NOTE = 'NOTE', _('Note')
 
     base_enrollment_count = models.IntegerField(
