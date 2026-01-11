@@ -234,6 +234,8 @@ SOCIALACCOUNT_STORE_TOKENS = True
 
 # Require users to confirm signup (show signup form)
 SOCIALACCOUNT_AUTO_SIGNUP = True
+# Custom Form with HoneyPot
+ACCOUNT_SIGNUP_FORM_CLASS = 'users.forms.StudentSignUpForm'
 
 
 # Static files (CSS, JavaScript, Images)

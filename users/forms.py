@@ -25,6 +25,31 @@ class StudentSignUpForm(UserCreationForm):
             raise forms.ValidationError("An account with this email already exists.")
         return email
 
+    # --- SPAM PROTECTION: HONEYPOT ---
+    # This field is hidden from humans. Bots will fill it out.
+    confirm_email = forms.CharField(
+        required=False, 
+        label='Confirm Email',
+        widget=forms.TextInput(attrs={'style': 'display:none !important;', 'tabindex': '-1', 'autocomplete': 'off'})
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('confirm_email'):
+            # HoneyPot filled -> Bot detected!
+            raise forms.ValidationError("Spam detected.")
+        return cleaned_data
+
+    def signup(self, request, user):
+        """
+        Required by django-allauth.
+        """
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.country = self.cleaned_data['country']
+        user.role = CustomUser.Role.STUDENT
+        user.save()
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = CustomUser.Role.STUDENT
