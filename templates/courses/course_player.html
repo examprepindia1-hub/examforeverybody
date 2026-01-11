@@ -52,13 +52,21 @@
                                             <a href="?lesson={{ lesson.id }}"
                                                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if current_lesson == lesson %}active bg-primary bg-opacity-10 text-primary border-primary{% endif %}">
                                                 <div class="d-flex align-items-center gap-2">
+
+                                                    <!-- Dynamic Icon based on Completion -->
+                                                    {% if lesson.id in completed_lesson_ids %}
+                                                    <i id="icon-{{ lesson.id }}"
+                                                        class="bi bi-check-circle-fill text-success"></i>
+                                                    {% else %}
                                                     {% if lesson.video_url %}
-                                                    <i
+                                                    <i id="icon-{{ lesson.id }}"
                                                         class="bi bi-play-circle{% if current_lesson == lesson %}-fill{% endif %}"></i>
                                                     {% else %}
-                                                    <i
+                                                    <i id="icon-{{ lesson.id }}"
                                                         class="bi bi-file-text{% if current_lesson == lesson %}-fill{% endif %}"></i>
                                                     {% endif %}
+                                                    {% endif %}
+
                                                     <small>{{ lesson.title }}</small>
                                                 </div>
                                                 {% if lesson.duration_minutes > 0 %}
@@ -80,9 +88,34 @@
                 </div>
             </div>
 
+
             <!-- Main Content: Video Player -->
             <div class="col-lg-8 order-lg-1">
                 {% if current_lesson %}
+
+                <!-- PROGRESS BAR -->
+                <div class="card border-0 shadow-sm rounded-4 mb-3 p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted fw-bold">Course Progress</small>
+                        <small class="fw-bold" id="progressText">{{ percent_complete|floatform:0 }}%</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" id="progressBar"
+                            style="width: {{ percent_complete }}%" aria-valuenow="{{ percent_complete }}"
+                            aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CERTIFICATE BUTTON -->
+                <div class="mb-3" id="certificateSection"
+                    style="display: {% if percent_complete >= 100 %}block{% else %}none{% endif %};">
+                    <a href="{% url 'certificates:download' item.slug %}"
+                        class="btn btn-warning w-100 rounded-pill fw-bold">
+                        <i class="bi bi-award-fill me-2"></i> Download Certificate
+                    </a>
+                </div>
+
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
                     {% if current_lesson.video_url %}
                     <div class="ratio ratio-16x9 bg-black">
@@ -90,9 +123,20 @@
                             allowfullscreen></iframe>
                     </div>
                     {% endif %}
-                    <div class="card-body p-4">
-                        <h4 class="fw-bold text-dark mb-2">{{ current_lesson.title }}</h4>
-                        <p class="text-secondary small mb-0">Module: {{ current_lesson.module.title }}</p>
+                    <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="fw-bold text-dark mb-2">{{ current_lesson.title }}</h4>
+                            <p class="text-secondary small mb-0">Module: {{ current_lesson.module.title }}</p>
+                        </div>
+
+                        <!-- MARK AS COMPLETE BUTTON -->
+                        <button id="toggleCompleteBtn"
+                            class="btn btn-{% if is_current_lesson_complete %}success{% else %}outline-secondary{% endif %} rounded-pill px-4"
+                            onclick="toggleLesson('{{ current_lesson.id }}')">
+                            <i class="bi bi-check-circle{% if is_current_lesson_complete %}-fill{% endif %} me-2"></i>
+                            <span id="btnText">{% if is_current_lesson_complete %}Completed{% else %}Mark Complete{%
+                                endif %}</span>
+                        </button>
                     </div>
                 </div>
 
@@ -115,4 +159,70 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleLesson(lessonId) {
+        const btn = document.getElementById('toggleCompleteBtn');
+        const icon = btn.querySelector('i');
+        const text = document.getElementById('btnText');
+
+        // Optimistic UI Update
+        btn.classList.toggle('btn-success');
+        btn.classList.toggle('btn-outline-secondary');
+
+        // API Call
+        fetch("{% url 'courses:toggle_lesson_completion' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ lesson_id: lessonId })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update Progress Bar
+                    document.getElementById('progressBar').style.width = data.percent_complete + '%';
+                    document.getElementById('progressText').innerText = Math.round(data.percent_complete) + '%';
+
+                    // Show Certificate Button if 100%
+                    if (data.percent_complete >= 100) {
+                        document.getElementById('certificateSection').style.display = 'block';
+                    } else {
+                        document.getElementById('certificateSection').style.display = 'none';
+                    }
+
+                    // Update Button State Correctly
+                    if (data.is_completed) {
+                        btn.classList.add('btn-success');
+                        btn.classList.remove('btn-outline-secondary');
+                        icon.classList.remove('bi-check-circle');
+                        icon.classList.add('bi-check-circle-fill');
+                        text.innerText = 'Completed';
+
+                        // Update Sidebar Icon
+                        const sidebarIcon = document.getElementById('icon-' + lessonId);
+                        if (sidebarIcon) {
+                            sidebarIcon.classList.remove('bi-play-circle', 'bi-file-text');
+                            sidebarIcon.classList.add('bi-check-circle-fill', 'text-success');
+                        }
+                    } else {
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-outline-secondary');
+                        icon.classList.add('bi-check-circle');
+                        icon.classList.remove('bi-check-circle-fill');
+                        text.innerText = 'Mark Complete';
+
+                        // Reset Sidebar Icon (Simple logic: revert to generic circle)
+                        const sidebarIcon = document.getElementById('icon-' + lessonId);
+                        if (sidebarIcon) {
+                            sidebarIcon.classList.remove('bi-check-circle-fill', 'text-success');
+                            sidebarIcon.classList.add('bi-play-circle');
+                        }
+                    }
+                }
+            });
+    }
+</script>
 {% endblock %}

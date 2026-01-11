@@ -25,6 +25,7 @@ urlpatterns = [
     path('paypal/', include('paypal.standard.ipn.urls')),
     path('accounts/', include('allauth.urls')),
     path('courses/', include('courses.urls', namespace='courses')),
+    path('certificates/', include('certificates.urls', namespace='certificates')),
     path('workshops/', include('workshops.urls', namespace='workshops')),
     path('', include('core.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

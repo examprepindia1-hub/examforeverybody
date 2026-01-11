@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     'paypal.standard.ipn',
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    'certificates', # New Certificate App
     
     # Allauth
     'allauth',

@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 from model_utils.models import TimeStampedModel
 from marketplace.models import MarketplaceItem
 
@@ -72,3 +73,41 @@ class CourseLesson(TimeStampedModel):
 
 
 
+
+# ==========================================
+# 2. Progress Tracking Models
+# ==========================================
+
+class UserCourseProgress(TimeStampedModel):
+    """
+    Tracks the overall progress of a user in a course.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course_progress')
+    course = models.ForeignKey(CourseAttributes, on_delete=models.CASCADE, related_name='student_progress')
+    
+    percent_complete = models.FloatField(default=0.0)
+    is_completed = models.BooleanField(default=False)
+    last_accessed = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'course')
+
+    def __str__(self):
+        return f"{self.user} - {self.course} ({self.percent_complete}%)"
+
+
+class UserLessonCompletion(TimeStampedModel):
+    """
+    Tracks individual lesson completion.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='completed_lessons')
+    lesson = models.ForeignKey(CourseLesson, on_delete=models.CASCADE, related_name='completions')
+    
+    # We don't strictly need a 'completed_at' field because TimeStampedModel gives us 'created'
+    # But we can alias it if we want explicit naming. 'created' is sufficient.
+
+    class Meta:
+        unique_together = ('user', 'lesson')
+
+    def __str__(self):
+        return f"{self.user} finished {self.lesson}"

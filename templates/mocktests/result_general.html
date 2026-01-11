@@ -103,6 +103,15 @@
                         You scored <strong>{{ attempt.score|floatformat:0 }}</strong>
                         marks out of <strong>{{ attempt.test.item.questions.count|default:"--" }}</strong>
                     </p>
+
+                    {% if attempt.is_passed %}
+                    <div class="mt-4">
+                        <a href="{% url 'certificates:download' attempt.test.item.slug %}"
+                            class="btn btn-warning w-100 rounded-pill fw-bold shadow-sm">
+                            <i class="bi bi-award-fill me-2"></i> Download Certificate
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
