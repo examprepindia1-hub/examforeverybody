@@ -127,16 +127,22 @@ def category_detail(request, slug):
 def dashboard_view(request):
     user = request.user
     
-    my_enrollments = UserEnrollment.objects.filter(
-        user=user, is_active=True
-    ).select_related('item').order_by('-created')[:6]
+    enrolled_qs = UserEnrollment.objects.filter(user=user, is_active=True)
+    my_enrollments = list(enrolled_qs.select_related('item').order_by('-created')[:6])
+
+    for enrollment in my_enrollments:
+        enrollment.latest_attempt = UserTestAttempt.objects.filter(
+            user=user, 
+            test__item=enrollment.item,
+            status='SUBMITTED'
+        ).order_by('-created').first()
 
     recent_attempts = UserTestAttempt.objects.filter(
         user=user
     ).select_related('test__item').order_by('-modified')[:5]
 
     stats = {
-        'enrolled_count': my_enrollments.count(),
+        'enrolled_count': enrolled_qs.count(),
         'tests_taken': UserTestAttempt.objects.filter(user=user, status='SUBMITTED').count(),
         'avg_score': UserTestAttempt.objects.filter(user=user, status='SUBMITTED').aggregate(Avg('score'))['score__avg'] or 0
     }
