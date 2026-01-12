@@ -59,13 +59,8 @@ def search(request):
     return render(request, 'core/search_results.html', context)
 
 def home(request):
-    """
-    Smart switch: Logged-in -> Dashboard, Guest -> Explore Page.
-    """
-    if request.user.is_authenticated:
-        return dashboard_view(request)
-    else:
-        return explore(request)
+   
+    return explore(request)
 
 def explore(request):
     """

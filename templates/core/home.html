@@ -21,18 +21,16 @@
                 </p>
                 <!-- Buttons optimized for mobile stacking -->
                 <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
-                    <a href="{% url 'marketplace:item_list' %}"
+                    <a href="{% url 'marketplace:item_list' %}?type=MOCK_TEST"
                         class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm hover-lift transition-all">
-                        <i class="bi bi-book me-2"></i> Browse Courses
+                        <i class="bi bi-book me-2"></i> Browse Mock Exams
                     </a>
-                    <a href="#"
+                    <a href="{% url 'marketplace:item_list' %}?type=SCHOLARSHIP_TEST"
                         class="btn btn-dark btn-lg rounded-3 px-4 py-3 fw-bold d-flex align-items-center justify-content-center">
-                        <i class="bi bi-trophy me-2"></i> Explore Scholarships
+                        <i class="bi bi-trophy me-2"></i> Explore Scholarship Exams
                     </a>
-                    <a href="{% url 'explore' %}"
-                        class="btn btn-outline-dark btn-lg rounded-3 px-4 py-3 fw-bold d-flex align-items-center justify-content-center">
-                        <i class="bi bi-book me-2"></i> Browse Courses
-                    </a>
+
+
                 </div>
             </div>
         </div>

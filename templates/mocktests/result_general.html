@@ -104,14 +104,7 @@
                         marks out of <strong>{{ attempt.test.item.questions.count|default:"--" }}</strong>
                     </p>
 
-                    {% if attempt.is_passed %}
-                    <div class="mt-4">
-                        <a href="{% url 'certificates:download' attempt.test.item.slug %}"
-                            class="btn btn-warning w-100 rounded-pill fw-bold shadow-sm">
-                            <i class="bi bi-award-fill me-2"></i> Download Certificate
-                        </a>
-                    </div>
-                    {% endif %}
+                   
                 </div>
             </div>
 
@@ -151,10 +144,10 @@
                         <div class="stat-card d-flex align-items-center justify-content-between p-4">
                             <div class="d-flex align-items-center">
                                 <div class="icon-box bg-primary bg-opacity-10 text-primary mb-0 me-3 rounded-circle">
-                                    <i class="bi bi-clock-history"></i>
+                                    <i class="bi bi-clock-history text-white"></i>
                                 </div>
                                 <div>
-                                    <small class="text-muted d-block text-uppercase fw-bold"
+                                    <small class="text-muted d-block text-uppercase fw-bold text-white"
                                         style="font-size: 0.7rem;">Time Taken</small>
                                     <span class="h4 fw-bold mb-0">{{ time_taken }}</span>
                                 </div>
@@ -204,8 +197,7 @@
                                     </div>
 
                                     <span class="badge rounded-pill border text-dark me-3 bg-light">
-                                        {% if item.status == 'CORRECT' %}+{{ item.question.marks }}{% else %}0{% endif
-                                        %}
+                                        {% if item.status == 'CORRECT' %}+{{ item.question.marks }}{% else %}0{% endif%}
                                     </span>
                                 </div>
                             </button>

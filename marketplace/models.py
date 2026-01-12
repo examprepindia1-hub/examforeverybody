@@ -14,6 +14,7 @@ class MarketplaceItem(TimeStampedModel):
     """
     class ItemType(models.TextChoices):
         MOCK_TEST = 'MOCK_TEST', _('Mock Test')
+        SCHOLARSHIP_TEST = 'SCHOLARSHIP_TEST', _('Scholarship Test')
         WORKSHOP = 'WORKSHOP', _('Workshop')
         VIDEO_COURSE = 'VIDEO_COURSE', _('Video Course')
         TEXT_COURSE = 'TEXT_COURSE', _('Text Course')

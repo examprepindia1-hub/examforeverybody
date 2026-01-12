@@ -1,5 +1,6 @@
 {% load static %}
 {% load i18n %}
+{% load socialaccount %}
 
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
@@ -58,104 +59,84 @@
         </div>
         <p class="loader-text">Processing...</p>
     </div>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top py-3 border-bottom shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-2 sticky-top">
         <div class="container-fluid px-4 px-lg-5">
-            <!-- Logo -->
-            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
-
-                <span class="fw-bold fs-4 text-dark" style="font-family: 'Source Sans Pro', sans-serif;">e4e</span>
+            <!-- Brand -->
+            <a class="navbar-brand fw-bold fs-3 text-dark mb-0 d-flex align-items-center"
+                style="font-family: 'Source Sans Pro', sans-serif;" href="{% url 'home' %}">
+                e4e
             </a>
 
+            <!-- Toggler -->
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
+            <!-- Collapsible Content -->
             <div class="collapse navbar-collapse" id="mainNav">
-                <!-- Center Links -->
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-semibold text-secondary gap-lg-4">
-                    <li class="nav-item">
-                        <a class="nav-link px-0 {% if request.path == '/' or request.path == '/dashboard/' %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
-                            href="{% url 'home' %}">
-                            <i class="bi bi-house-door me-1"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-0 {% if '/marketplace/' in request.path and 'type=MOCK_TEST' in request.get_full_path %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
-                            href="{% url 'marketplace:item_list' %}?type=MOCK_TEST">
-                            <i class="bi bi-mortarboard me-1"></i> Scholarship Tests
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-0 {% if '/marketplace/' in request.path and 'type=MOCK_TEST' not in request.get_full_path %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
-                            href="{% url 'marketplace:item_list' %}">
-                            <i class="bi bi-bag me-1"></i> Marketplace
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-0 {% if '/leaderboard/' in request.path %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
-                            href="{% url 'leaderboard' %}">
-                            <i class="bi bi-trophy me-1"></i> Leaderboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-0 {% if '/blog/' in request.path %}active text-primary border-bottom border-primary border-3{% else %}text-dark{% endif %}"
-                            href="{% url 'blog:post_list' %}">
-                            <i class="bi bi-book me-1"></i> Blogs
-                        </a>
-                    </li>
-                </ul>
+                <!-- 1. Links -->
+                <div class="d-flex flex-column flex-lg-row gap-3 gap-lg-4 ms-lg-4 mb-3 mb-lg-0 align-items-lg-center">
+                    <a href="{% url 'marketplace:item_list' %}?type=MOCK_TEST"
+                        class="text-secondary text-decoration-none fw-semibold">Browse Exams</a>
+                    <a href="{% url 'marketplace:item_list' %}?type=SCHOLARSHIP_TEST"
+                        class="text-secondary text-decoration-none fw-semibold">Scholarship Tests</a>
+                    <a href="{% url 'blog:post_list' %}" class="text-secondary text-decoration-none fw-semibold">Blog &
+                        News</a>
+                </div>
 
-                <!-- Right Auth -->
-                <ul class="navbar-nav align-items-center">
+                <!-- 2. Search Bar -->
+                <form action="{% url 'marketplace:item_list' %}" class="flex-grow-1 mx-lg-5 my-3 my-lg-0">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control bg-light border-0 py-2 ps-4"
+                            placeholder="Search for exams, skills..." aria-label="Search">
+                        <button class="btn btn-primary px-4" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 3. User Actions -->
+                <div class="d-flex align-items-center gap-3 ms-auto ms-lg-0">
                     {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link p-0" href="#" data-bs-toggle="dropdown">
-                            <div class="avatar-circle bg-light text-primary rounded-circle d-flex align-items-center justify-content-center border overflow-hidden"
-                                style="width: 40px; height: 40px;">
+                    <a href="{% url 'dashboard' %}" class="text-secondary text-decoration-none fw-semibold px-2">My
+                        Dashboard</a>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown">
+                            <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                style="width: 35px; height: 35px; font-size: 0.9rem;">
                                 {% if user.avatar_url %}
-                                <img src="{{ user.avatar_url }}" alt="Profile"
-                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                <img src="{{ user.avatar_url }}" alt="Profile" class="w-100 h-100 rounded-circle"
+                                    style="object-fit: cover;">
                                 {% elif user.first_name %}
                                 {{ user.first_name|first|upper }}
                                 {% else %}
-                                <i class="bi bi-person-fill"></i>
+                                <i class="bi bi-person"></i>
                                 {% endif %}
                             </div>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2 rounded-3"
-                            style="min-width: 200px;">
-                            <li>
-                                <div class="dropdown-header text-dark fw-bold">
-                                    {{ user.get_full_name|default:user.username }}</div>
-                            </li>
-                            <li><a class="dropdown-item rounded-2" href="{% url 'home' %}"><i
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                            <li><span class="dropdown-header">{{ user.get_full_name|default:user.username }}</span></li>
+                            <li><a class="dropdown-item" href="{% url 'home' %}"><i
                                         class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-                            <li><a class="dropdown-item rounded-2" href="{% url 'profile' %}"><i
-                                        class="bi bi-person-gear me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i
+                                        class="bi bi-person me-2"></i>Profile</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
                                 <form method="post" action="{% url 'account_logout' %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="dropdown-item text-danger rounded-2"><i
+                                    <button type="submit" class="dropdown-item text-danger"><i
                                             class="bi bi-box-arrow-right me-2"></i>Log Out</button>
                                 </form>
                             </li>
                         </ul>
-                    </li>
+                    </div>
                     {% else %}
-                    <li class="nav-item">
-                        {% load socialaccount %}
-                        <a href="{% provider_login_url 'google' %}"
-                            class="btn btn-light rounded-pill px-3 py-2 fw-bold shadow-sm border"
-                            style="color: #1f1f1f; font-size: 0.9rem;">
-                            <!-- <img src="https://www.google.com/favicon.ico" alt="Google" width="18" height="18" class="me-2"> -->
-                            Login
-                        </a>
-                    </li>
+                    <a href="{% provider_login_url 'google' %}" class="btn btn-primary rounded-pill px-4 fw-bold">Log
+                        in</a>
                     {% endif %}
-                </ul>
+                </div>
             </div>
         </div>
     </nav>
@@ -178,111 +159,98 @@
 
 
 
-    <footer class="bg-white pt-5 pb-3 border-top mt-auto">
-        <div class="container">
-            <div class="row gy-4 mb-5">
-                <!-- Brand Column -->
+    <footer class="mt-auto" style="background-color: #1e2a38;">
+        <div class="container py-5">
+            <div class="row gy-4">
+                <!-- Column 1: Brand -->
                 <div class="col-lg-3 col-md-6">
-                    <a href="{% url 'home' %}" class="d-flex align-items-center mb-3 text-decoration-none">
-
-                        <span class="fs-4 fw-bold text-dark"
-                            style="font-family: 'Source Sans Pro', sans-serif;">e4e</span>
-                    </a>
-                    <p class="text-secondary small mb-4">
-                        Your trusted partner for competitive exam preparation. Join thousands achieving
-                        their dreams.
+                    <h5 class="text-white fw-bold mb-3" style="font-family: 'Source Sans Pro', sans-serif;">e4e</h5>
+                    <p class="text-white-50 small mb-4" style="line-height: 1.7;">
+                        We are Democratizing education by providing accessible, high-quality exam preparation tools and
+                        resources for students of all levels.
                     </p>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-3">
                         <a href="https://www.facebook.com/profile.php?id=61583987616606" target="_blank"
-                            class="btn btn-light btn-sm rounded-circle text-secondary border"><i
-                                class="bi bi-facebook"></i></a>
-                        <a href="https://x.com/exam4everybody" target="_blank"
-                            class="btn btn-light btn-sm rounded-circle text-secondary border"><i
+                            class="text-white-50 fs-5"><i class="bi bi-facebook"></i></a>
+                        <a href="https://x.com/exam4everybody" target="_blank" class="text-white-50 fs-5"><i
                                 class="bi bi-twitter"></i></a>
-                        <a href="https://www.instagram.com/exam4everybody/" target="_blank"
-                            class="btn btn-light btn-sm rounded-circle text-secondary border"><i
-                                class="bi bi-instagram"></i></a>
                         <a href="https://www.linkedin.com/company/110181074/" target="_blank"
-                            class="btn btn-light btn-sm rounded-circle text-secondary border"><i
-                                class="bi bi-linkedin"></i></a>
+                            class="text-white-50 fs-5"><i class="bi bi-linkedin"></i></a>
+                        <a href="https://www.instagram.com/exam4everybody/" target="_blank"
+                            class="text-white-50 fs-5"><i class="bi bi-instagram"></i></a>
                     </div>
                 </div>
 
-                <!-- Column 2: Exams -->
-                <div class="col-lg-3 col-md-6 col-6">
-                    <h6 class="fw-bold text-dark mb-3">Exams</h6>
-                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary small">
-                        <li><a href="{% url 'marketplace:item_list' %}?search=JEE Main"
-                                class="text-secondary text-decoration-none hover-link">JEE
-                                Main</a></li>
-                        <li><a href="{% url 'marketplace:item_list' %}?search=NEET"
-                                class="text-secondary text-decoration-none hover-link">NEET</a></li>
-                        <li><a href="{% url 'marketplace:item_list' %}?search=CAT"
-                                class="text-secondary text-decoration-none hover-link">CAT</a>
-                        </li>
-                        <li><a href="{% url 'marketplace:item_list' %}?search=UPSC"
-                                class="text-secondary text-decoration-none hover-link">UPSC</a></li>
-                        <li><a href="{% url 'marketplace:item_list' %}?search=GATE"
-                                class="text-secondary text-decoration-none hover-link">GATE</a></li>
-                    </ul>
-                </div>
-
-                <!-- Column 3: Resources -->
-                <div class="col-lg-3 col-md-6 col-6">
-                    <h6 class="fw-bold text-dark mb-3">Resources</h6>
-                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary small">
+                <!-- Column 2: Platform -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="text-white fw-bold mb-3">Platform</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2">
                         <li><a href="{% url 'marketplace:item_list' %}?type=MOCK_TEST"
-                                class="text-secondary text-decoration-none hover-link">Mock
-                                Tests</a></li>
+                                class="text-white-50 text-decoration-none small">All Exams</a></li>
                         <li><a href="{% url 'marketplace:item_list' %}"
-                                class="text-secondary text-decoration-none hover-link">Courses</a></li>
-                        <li><a href="{% url 'marketplace:item_list' %}"
-                                class="text-secondary text-decoration-none hover-link">Study Materials</a>
-                        </li>
-                        <li><a href="{% url 'leaderboard' %}"
-                                class="text-secondary text-decoration-none hover-link">Leaderboard</a></li>
-                        <li><a href="{% url 'blog:post_list' %}"
-                                class="text-secondary text-decoration-none hover-link">Blog</a></li>
+                                class="text-white-50 text-decoration-none small">Study Materials</a></li>
+                        <li><a href="{% url 'marketplace:item_list' %}?type=MOCK_TEST"
+                                class="text-white-50 text-decoration-none small">Mock Tests</a></li>
+                        <li><a href="{% url 'contact_support' %}"
+                                class="text-white-50 text-decoration-none small">Contact Support</a></li>
                     </ul>
                 </div>
 
-                <!-- Column 4: Company -->
+                <!-- Column 3: Company & Support -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <h6 class="fw-bold text-dark mb-3">Company</h6>
-                    <ul class="list-unstyled d-flex flex-column gap-2 text-secondary small">
-                        <li><a href="{% url 'about_us' %}" class="text-secondary text-decoration-none hover-link">About
-                                Us</a>
+                    <h6 class="text-white fw-bold mb-3">Company & Support</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2">
+                        <li><a href="{% url 'about_us' %}" class="text-white-50 text-decoration-none small">About Us</a>
                         </li>
-                        <li><a href="{% url 'contact_support' %}"
-                                class="text-secondary text-decoration-none hover-link">Contact</a>
-                        </li>
+                        <li><a href="{% url 'careers' %}" class="text-white-50 text-decoration-none small">Careers /
+                                Hiring</a></li>
+                        <li><a href="{% url 'blog:post_list' %}" class="text-white-50 text-decoration-none small">Blog &
+                                News</a></li>
+                        <li><a href="{% url 'contact_support' %}" class="text-white-50 text-decoration-none small">Help
+                                Center / FAQs</a></li>
+                        
+                    </ul>
+                </div>
 
-                        <li><a href="{% url 'refund_policy' %}"
-                                class="text-secondary text-decoration-none hover-link">Refund Policy</a>
+                <!-- Column 4: Contact Us -->
+                <div class="col-lg-4 col-md-6">
+                    <h6 class="text-white fw-bold mb-3">Contact Us</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-3">
+                        <li class="d-flex align-items-start gap-2">
+                            <i class="bi bi-geo-alt-fill text-success mt-1"></i>
+                            <span class="text-white-50 small">20, BLOCK:H-1/A, Sector-63,<br>Noida-201301, UP,
+                                India</span>
                         </li>
-                        <li><a href="{% url 'shipping_policy' %}"
-                                class="text-secondary text-decoration-none hover-link">Delivery Policy</a>
+                        <li class="d-flex align-items-center gap-2">
+                            <i class="bi bi-envelope-fill text-success"></i>
+                            <a href="mailto:support@examforeverybody.com"
+                                class="text-white-50 text-decoration-none small">support@examforeverybody.com</a>
                         </li>
-                        <li><a href="{% url 'careers' %}"
-                                class="text-secondary text-decoration-none hover-link">Careers</a>
+                        <li class="d-flex align-items-center gap-2">
+                            <i class="bi bi-telephone-fill text-success"></i>
+                            <a href="tel:+917597832143" class="text-white-50 text-decoration-none small">+91
+                                7597832143</a>
                         </li>
                     </ul>
                 </div>
             </div>
+        </div>
 
-            <!-- Bottom Copyright -->
-            <div class="border-top pt-4 pb-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
-                <div class="text-secondary small mb-3 mb-md-0">
-
-                    &copy; 2026 ExamForEverybody. All rights reserved.
-                </div>
-                <div class="d-flex gap-4">
-                    <a href="{% url 'privacy_policy' %}"
-                        class="text-secondary text-decoration-none small fw-semibold">Privacy
-                        Policy</a>
-                    <a href="{% url 'terms_of_service' %}"
-                        class="text-secondary text-decoration-none small fw-semibold">Terms of
-                        Service</a>
+        <!-- Bottom Bar -->
+        <div class="border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+            <div class="container py-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                    <div class="text-white-50 small mb-2 mb-md-0">
+                        &copy; 2026 ExamForEverybody. All rights reserved.
+                    </div>
+                    <div class="d-flex gap-4">
+                        <a href="{% url 'privacy_policy' %}" class="text-white-50 text-decoration-none small">Privacy
+                            Policy</a>
+                        <a href="{% url 'terms_of_service' %}" class="text-white-50 text-decoration-none small">Terms of
+                            Service</a>
+                        <a href="{% url 'privacy_policy' %}" class="text-white-50 text-decoration-none small">Cookie
+                            Policy</a>
+                    </div>
                 </div>
             </div>
         </div>
