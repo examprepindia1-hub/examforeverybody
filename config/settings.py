@@ -66,8 +66,6 @@ EMAIL_USE_TLS = env('EMAIL_USE_TLS', cast=bool, default=True)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
-UPI_VERIFICATION_EMAIL_HOST_USER = env('UPI_VERIFICATION_EMAIL_HOST_USER')
-UPI_VERIFICATION_EMAIL_HOST_PASSWORD = env('UPI_VERIFICATION_EMAIL_HOST_PASSWORD')
 GEMINI_API_KEY = env('GEMINI_API_KEY')
 UPI_MERCHANT_VPA=env('UPI_MERCHANT_VPA')
 UPI_MERCHANT_NAME=env('UPI_MERCHANT_NAME')
@@ -219,7 +217,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # --- Authentication Settings (allauth) ---
-LOGIN_REDIRECT_URL = '/'         # Go home after login
+LOGIN_REDIRECT_URL = '/dashboard/'         # Go home after login
 LOGOUT_REDIRECT_URL = '/logged-out/'        # Go to success page after logout
 
 # Use Email as the primary identifier

@@ -116,7 +116,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                             <li><span class="dropdown-header">{{ user.get_full_name|default:user.username }}</span></li>
-                            <li><a class="dropdown-item" href="{% url 'home' %}"><i
+                            <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i
                                         class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
                             <li><a class="dropdown-item" href="{% url 'profile' %}"><i
                                         class="bi bi-person me-2"></i>Profile</a></li>
@@ -208,7 +208,7 @@
                                 News</a></li>
                         <li><a href="{% url 'contact_support' %}" class="text-white-50 text-decoration-none small">Help
                                 Center / FAQs</a></li>
-                        
+
                     </ul>
                 </div>
 
