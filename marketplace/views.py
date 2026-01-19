@@ -99,6 +99,18 @@ class ItemListView(ListView):
         context['min_price'] = self.request.GET.get('min_price', '')
         context['max_price'] = self.request.GET.get('max_price', '')
         
+        # Heading Logic
+        heading = "Marketplace"
+        selected_types = self.request.GET.getlist('type')
+        if len(selected_types) == 1:
+            # Find display name for the single selected type
+            # MarketplaceItem.ItemType.choices is a list of (value, label) tuples
+            type_map = dict(MarketplaceItem.ItemType.choices)
+            type_label = type_map.get(selected_types[0])
+            if type_label:
+                heading = f"{type_label}s" # Pluralize simple way
+
+        context['heading'] = heading
         return context
 
 class ItemDetailView(DetailView):
