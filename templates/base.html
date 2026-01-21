@@ -77,10 +77,14 @@
                 <!-- 1. Links -->
                 <div class="d-flex flex-column flex-lg-row gap-3 gap-lg-4 ms-lg-4 mb-3 mb-lg-0 align-items-lg-center">
                     <a href="{% url 'marketplace:item_list' %}?type=MOCK_TEST"
-                        class="text-secondary text-decoration-none fw-semibold">Browse Exams</a>
+                        class="nav-link-item text-secondary text-decoration-none fw-semibold"
+                        data-nav-section="exams">Browse Exams</a>
                     <a href="{% url 'marketplace:item_list' %}?type=SCHOLARSHIP_TEST"
-                        class="text-secondary text-decoration-none fw-semibold">Scholarship Tests</a>
-                    <a href="{% url 'blog:post_list' %}" class="text-secondary text-decoration-none fw-semibold">Blog &
+                        class="nav-link-item text-secondary text-decoration-none fw-semibold"
+                        data-nav-section="scholarship">Scholarship Tests</a>
+                    <a href="{% url 'blog:post_list' %}"
+                        class="nav-link-item text-secondary text-decoration-none fw-semibold"
+                        data-nav-section="blog">Blog &
                         News</a>
                 </div>
 
@@ -98,7 +102,9 @@
                 <!-- 3. User Actions -->
                 <div class="d-flex align-items-center gap-3 ms-auto ms-lg-0">
                     {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard' %}" class="text-secondary text-decoration-none fw-semibold px-2">My
+                    <a href="{% url 'dashboard' %}"
+                        class="nav-link-item text-secondary text-decoration-none fw-semibold px-2"
+                        data-nav-section="dashboard">My
                         Dashboard</a>
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown">
@@ -381,6 +387,37 @@
                     const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
                     bsAlert.close();
                 }, 2000); // 5 seconds
+            });
+        });
+    </script>
+    <script>
+        // Navigation Active State Detection
+        document.addEventListener('DOMContentLoaded', function () {
+            const navLinks = document.querySelectorAll('.nav-link-item');
+            const currentPath = window.location.pathname;
+            const currentSearch = window.location.search;
+
+            navLinks.forEach(link => {
+                const section = link.getAttribute('data-nav-section');
+                let isActive = false;
+
+                // Check if this link should be active based on current URL
+                if (section === 'exams' && (currentPath.includes('/marketplace') && currentSearch.includes('type=MOCK_TEST'))) {
+                    isActive = true;
+                } else if (section === 'scholarship' && (currentPath.includes('/marketplace') && currentSearch.includes('type=SCHOLARSHIP_TEST'))) {
+                    isActive = true;
+                } else if (section === 'blog' && currentPath.includes('/blog')) {
+                    isActive = true;
+                } else if (section === 'dashboard' && currentPath.includes('/dashboard')) {
+                    isActive = true;
+                } else if (section === 'exams' && currentPath.includes('/marketplace') && !currentSearch.includes('type=SCHOLARSHIP_TEST')) {
+                    // Default marketplace to exams if no specific type
+                    isActive = true;
+                }
+
+                if (isActive) {
+                    link.classList.add('active');
+                }
             });
         });
     </script>
