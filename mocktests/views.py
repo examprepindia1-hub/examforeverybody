@@ -19,6 +19,7 @@ from .services import get_exam_strategy
 def start_test(request, slug):
     """
     Initializes the test. Handles enrollment checks and resuming.
+    Directly starts the exam without showing the instruction page.
     """
     item = get_object_or_404(MarketplaceItem, slug=slug)
     
@@ -40,15 +41,8 @@ def start_test(request, slug):
         attempt.started_at = timezone.now()
         attempt.save()
 
-    has_started = attempt.answers.exists()
-
-    context = {
-        'attempt': attempt,
-        'test': test_details,
-        'item': item,
-        'has_started': has_started, 
-    }
-    return render(request, 'mocktests/test_intro.html', context)
+    # 4. Redirect directly to the exam environment
+    return redirect('take_test', attempt_id=attempt.id)
 
 
 @login_required

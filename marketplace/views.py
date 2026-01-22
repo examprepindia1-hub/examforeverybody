@@ -28,7 +28,7 @@ class ItemListView(ListView):
             qs = qs.filter(categories__slug__in=categories)
         
         # 2. Search Filter
-        query = self.request.GET.get('s')
+        query = self.request.GET.get('s') or self.request.GET.get('search')
         if query:
             qs = qs.filter(Q(title__icontains=query) | Q(description__icontains=query))
 

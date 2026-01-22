@@ -349,7 +349,7 @@
                     <h2 class="fw-bold text-success mb-2">You own this.</h2>
                     <p class="text-secondary mb-4">Ready to continue your learning?</p>
 
-                    {% if item.item_type == 'MOCK_TEST' %}
+                    {% if item.item_type == 'MOCK_TEST' or item.item_type == 'SCHOLARSHIP_TEST' %}
                     {% if is_future_test %}
                     <button class="btn btn-secondary w-100 py-3 fw-bold fs-5 rounded-3" disabled>
                         <i class="bi bi-clock me-2"></i> Starts Soon
@@ -393,7 +393,11 @@
                     <form action="{% url 'initiate_purchase' item.slug %}" method="post">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-outline-primary w-100 py-3 fw-bold rounded-pill fs-5">
+                            {% if item.price == 0 %}
+                            Enroll for Free
+                            {% else %}
                             Enroll Now - {% show_price item %}
+                            {% endif %}
                         </button>
                     </form>
                     {% else %}

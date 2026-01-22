@@ -7,11 +7,7 @@
 <div class="bg-white py-5">
     <div class="container px-4 px-lg-5">
         <!-- Main Header -->
-        <div class="mb-5">
-            <h1 class="fw-bold text-dark display-5">{{ heading }}</h1>
-            <p class="text-secondary lead mb-0">Explore our comprehensive collection of courses, test series, and study
-                materials designed to help you excel in competitive exams.</p>
-        </div>
+
 
         <div class="row g-4 d-flex flex-column-reverse flex-lg-row">
             <!-- Sidebar Filters Removed -->
@@ -19,38 +15,6 @@
             <!-- Main Content -->
             <div class="col-12">
                 <!-- Search & Sort -->
-                <div class="d-flex flex-column gap-4 mb-4">
-                    <!-- Search Bar -->
-                    <form class="position-relative w-100" action="." method="get">
-                        {% for cat in selected_categories %}
-                        <input type="hidden" name="category" value="{{ cat }}">
-                        {% endfor %}
-                        {% for type in selected_types %}
-                        <input type="hidden" name="type" value="{{ type }}">
-                        {% endfor %}
-                        <i
-                            class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary lead"></i>
-                        <input type="text" name="s"
-                            class="form-control form-control-lg ps-5 rounded-3 border bg-white py-3"
-                            placeholder="Search courses, instructors, or categories..." value="{{ search_query }}">
-                    </form>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-secondary">
-                            Showing <span class="fw-bold text-dark">{{ items|length }}</span> results
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn btn-white border rounded-3 px-3 py-2 dropdown-toggle text-dark"
-                                type="button" data-bs-toggle="dropdown">
-                                Most Popular
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow rounded-3">
-                                <li><a class="dropdown-item" href="#">Newest First</a></li>
-                                <li><a class="dropdown-item" href="#">Price: Low to High</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Items Grid -->
                 {% if items %}
