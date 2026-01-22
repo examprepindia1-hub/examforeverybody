@@ -94,12 +94,16 @@ class SATExamStrategy(BaseExamStrategy):
 class IELTSExamStrategy(BaseExamStrategy):
     pass
 
+class JEEMainExamStrategy(BaseExamStrategy):
+    pass
+
 def get_exam_strategy(exam_type):
     strategies = {
         'SAT_ADAPTIVE': SATExamStrategy(),
         'SAT_NON_ADAPTIVE': SATExamStrategy(),
         'SAT': SATExamStrategy(),
         'IELTS': IELTSExamStrategy(),
+        'JEE_MAINS': JEEMainExamStrategy(), 
         'GENERAL': BaseExamStrategy(),
     }
     return strategies.get(exam_type, BaseExamStrategy())

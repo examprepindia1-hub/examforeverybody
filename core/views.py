@@ -228,17 +228,17 @@ def robots_txt(request):
 @login_required
 def leaderboard(request, slug=None):
     """
-    Global Leaderboard:
-    - Rank users by sum of scores from their MOST RECENT attempt on unique tests.
-    - Only considers SUBMITTED attempts.
-    - SUPPORTS FILTERS: Path param <slug> OR ?slug=<slug> (legacy support)
+    Exam-Specific Leaderboard:
+    - Shows top 10 users based on latest attempt
+    - Shows current user's rank as 11th row (if not in top 10)
+    - Rank calculated from latest attempt only
     """
     selected_slug = slug or request.GET.get('slug')
     
     # 0. Fetch available tests for the Filter Dropdown
     # Only show tests that actually have submitted attempts to avoid empty pages
     available_tests = MarketplaceItem.objects.filter(
-        item_type='MOCK_TEST',
+        item_type__in=['MOCK_TEST', 'SCHOLARSHIP_TEST'],
         mock_test_details__attempts__status='SUBMITTED'
     ).distinct().order_by('title')
 
@@ -249,11 +249,9 @@ def leaderboard(request, slug=None):
     # 1. Fetch Data (Already enriched with rank, percentile, streak from utils)
     leaderboard_data = get_leaderboard_data(test_slug=selected_slug)
 
-    # 2. Partition Data: Top 20 + User
-    # The requirement is to show Top 20. If current user is not in Top 20, they should be the 21st item.
-    
-    top_20 = leaderboard_data[:20]
-    final_leaderboard = list(top_20) # Copy to allow appending
+    # 2. Get Top 10 + User
+    top_10 = leaderboard_data[:10]
+    final_leaderboard = list(top_10)
     
     current_user_stats = None
     if request.user.is_authenticated:
@@ -262,23 +260,31 @@ def leaderboard(request, slug=None):
         
         if user_entry:
             current_user_stats = user_entry
-            # Check if user is in top 20
-            is_in_top_20 = any(item['user_id'] == request.user.id for item in top_20)
-            if not is_in_top_20:
+            # Check if user is in top 10
+            is_in_top_10 = any(item['user_id'] == request.user.id for item in top_10)
+            if not is_in_top_10:
+                # Add user as 11th row
                 final_leaderboard.append(user_entry)
 
-    # For the template, we show Top 3 cards AND the full table of Top 20.
-    # We do NOT slice off the top 3 for the table anymore.
-    top_three = final_leaderboard[:3]
-    rankings = final_leaderboard # Show all (1-20 + User) in the table
+    rankings = final_leaderboard
+    
+    # 3. Get User's Latest Attempt for "View Result" button
+    user_latest_attempt = None
+    if request.user.is_authenticated and selected_slug:
+        from mocktests.models import UserTestAttempt
+        user_latest_attempt = UserTestAttempt.objects.filter(
+            user=request.user,
+            test__item__slug=selected_slug,
+            status='SUBMITTED'
+        ).order_by('-created').first()
 
     context = {
-        'top_three': top_three,
         'rankings': rankings,
         'user_stats': current_user_stats, # For the Personal Gradient Card
         'available_tests': available_tests,
         'selected_slug': selected_slug, 
         'selected_test': selected_test, # Pass the object
+        'user_latest_attempt': user_latest_attempt,
     }
     return render(request, 'core/leaderboard.html', context)
 

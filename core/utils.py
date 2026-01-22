@@ -55,18 +55,27 @@ def get_leaderboard_data(test_slug=None):
     # SCENARIO A: Test-Specific Leaderboard (Legacy Logic)
     # ---------------------------------------------------------
     if test_slug:
-        # Base Query
+        # Base Query - Include time taken for tiebreaking
+        from django.db.models import F, ExpressionWrapper, DurationField
+        
         attempts = UserTestAttempt.objects.filter(
             status='SUBMITTED', 
             score__isnull=False,
+            completed_at__isnull=False,  # Ensure we have completed_at for time calculation
             test__item__slug=test_slug
+        ).annotate(
+            time_taken=ExpressionWrapper(
+                F('completed_at') - F('started_at'),
+                output_field=DurationField()
+            )
         ).values(
             'user__id', 
             'user__username', 
             'user__first_name', 
             'user__last_name', 
             'score', 
-            'created'
+            'created',
+            'time_taken'
         )
         
         # Logic: Latest Attempt Only
@@ -86,12 +95,14 @@ def get_leaderboard_data(test_slug=None):
                     'display_name': display_name,
                     'total_score': float(attempt['score']),
                     'tests_taken': 1, # Specific test context
-                    'created': created
+                    'created': created,
+                    'time_taken': attempt['time_taken'].total_seconds() if attempt['time_taken'] else float('inf')  # Convert to seconds for sorting
                 }
         
-        # Convert to list
+        # Convert to list and sort by score (desc) then by time_taken (asc)
+        # Lower time is better, so users with same score are ranked by who took less time
         leaderboard_data = list(user_latest.values())
-        leaderboard_data.sort(key=lambda x: x['total_score'], reverse=True)
+        leaderboard_data.sort(key=lambda x: (-x['total_score'], x['time_taken']))
 
     # ---------------------------------------------------------
     # SCENARIO B: Global Leaderboard (Optimized via Signals)
@@ -116,24 +127,10 @@ def get_leaderboard_data(test_slug=None):
             })
 
     # ---------------------------------------------------------
-    # Shared: Enrich with Rank & Analytics
+    # Shared: Enrich with Rank only
     # ---------------------------------------------------------
-    total_users = len(leaderboard_data)
-    import random 
-    
     for index, entry in enumerate(leaderboard_data):
         entry['rank'] = index + 1
-        
-        # Percentile
-        if total_users > 1:
-            percentile = ((total_users - index) / total_users) * 100
-        else:
-            percentile = 100.0
-        entry['percentile'] = round(percentile, 1)
-        
-        # Mock Data (Frontend Visuals)
-        entry['streak'] = random.randint(3, 45) 
-        entry['improvement'] = random.randint(5, 25)
         
     return leaderboard_data
 

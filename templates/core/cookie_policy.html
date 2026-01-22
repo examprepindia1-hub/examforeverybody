@@ -3,46 +3,103 @@
 {% block title %}Cookie Policy - ExamForEverybody{% endblock %}
 
 {% block content %}
-<div class="bg-light-section section-pad">
-    <div class="container" style="max-width: 900px;">
+<div class="bg-white py-5">
+    <div class="container" style="max-width: 800px;">
         <div class="text-center mb-5">
-            <h1 class="fw-bold text-dark">Cookie Policy</h1>
+            <h1 class="fw-bold display-5 mb-3">Cookie Policy</h1>
+            <p class="text-secondary lead">Last updated: January 23, 2026</p>
         </div>
 
-        <div class="card border-0 shadow-sm p-5">
-            <p class="lead">ExamForEverybody uses cookies to improve your experience, secure your account, and analyze website traffic.</p>
-            
-            <h4 class="fw-bold mt-4">What are Cookies?</h4>
-            <p>Cookies are small text files stored on your device when you visit a website. They help the site remember your login status and preferences.</p>
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-body p-4 p-lg-5">
+                <p class="lead text-dark mb-4">
+                    At ExamForEverybody ("we", "us", or "our"), we use cookies and similar tracking technologies to
+                    enhance your experience, analyze our traffic, and ensure the security of our platform. This Cookie
+                    Policy explains what cookies are, how we use them, and your choices regarding their use.
+                </p>
 
-            <h4 class="fw-bold mt-4">Types of Cookies We Use</h4>
-            <div class="table-responsive mt-3">
-                <table class="table table-bordered">
-                    <thead class="bg-light">
-                        <tr>
-                            <th>Category</th>
-                            <th>Purpose</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="fw-bold">Essential Cookies</td>
-                            <td>Required for the site to work (e.g., keeping you logged in, CSRF security tokens).</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">Analytics Cookies</td>
-                            <td>Help us understand how visitors interact with the site (e.g., Google Analytics).</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">Functional Cookies</td>
-                            <td>Remember your language preferences and local settings.</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <hr class="my-5 opacity-10">
+
+                <div class="mb-5">
+                    <h3 class="fw-bold mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i>What Are Cookies?
+                    </h3>
+                    <p class="text-muted">
+                        Cookies are small text files that are placed on your computer or mobile device when you visit a
+                        website. They are widely used to make websites work more efficiently, as well as to provide
+                        reporting information to the site owners.
+                    </p>
+                </div>
+
+                <div class="mb-5">
+                    <h3 class="fw-bold mb-3"><i class="bi bi-hdd-stack-fill text-primary me-2"></i>How We Use Cookies
+                    </h3>
+                    <p class="text-muted mb-4">
+                        We use cookies for several reasons, detailed in the table below. Some cookies are required for
+                        technical reasons in order for our website to operate, and we refer to these as "essential" or
+                        "strictly necessary" cookies. Other cookies also enable us to track and target the interests of
+                        our users to enhance the experience on our platform.
+                    </p>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover border align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="py-3 px-4" style="width: 30%;">Category</th>
+                                    <th class="py-3 px-4">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="px-4 py-3 fw-bold text-dark">Essential Cookies</td>
+                                    <td class="px-4 py-3 text-secondary">These are necessary for the website to function
+                                        (e.g., logging in, accessing secure areas). They cannot be switched off.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 fw-bold text-dark">Performance & Analytics</td>
+                                    <td class="px-4 py-3 text-secondary">These allow us to count visits and traffic
+                                        sources so we can measure and improve the performance of our site.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-3 fw-bold text-dark">Functional Cookies</td>
+                                    <td class="px-4 py-3 text-secondary">These enable the website to provide enhanced
+                                        functionality and personalization (e.g., remembering your language preference).
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h3 class="fw-bold mb-3"><i class="bi bi-sliders text-primary me-2"></i>Your Choices</h3>
+                    <p class="text-muted">
+                        You have the right to decide whether to accept or reject cookies. You can exercise your cookie
+                        rights by setting your browser preferences.
+                    </p>
+                    <ul class="text-muted">
+                        <li class="mb-2">Most web browsers automatically accept cookies, but you can usually modify your
+                            browser setting to decline cookies if you prefer.</li>
+                        <li class="mb-2">If you choose to reject cookies, you may still use our website, though your
+                            access to some functionality and areas of our website may be restricted.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="fw-bold mb-3"><i class="bi bi-envelope-fill text-primary me-2"></i>Contact Us</h3>
+                    <p class="text-muted">
+                        If you have any questions about our use of cookies or other technologies, please email us at <a
+                            href="mailto:support@examforeverybody.com"
+                            class="text-decoration-none fw-bold">support@examforeverybody.com</a>.
+                    </p>
+                </div>
+
             </div>
+        </div>
 
-            <h4 class="fw-bold mt-4">Managing Cookies</h4>
-            <p>Most browsers automatically accept cookies. You can modify your browser settings to decline cookies if you prefer, but this may prevent you from taking full advantage of the website (e.g., you may not be able to stay logged in).</p>
+        <div class="text-center mt-5">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4 rounded-pill">
+                <i class="bi bi-arrow-left me-2"></i>Back to Home
+            </a>
         </div>
     </div>
 </div>

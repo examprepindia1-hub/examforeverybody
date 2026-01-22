@@ -292,6 +292,10 @@ def test_result(request, attempt_id):
         hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         time_taken = f"{hours:02}:{minutes:02}:{seconds:02}"
+    
+    # Calculate Total Max Marks
+    from django.db.models import Sum
+    total_marks = TestQuestion.objects.filter(section__test=attempt.test).aggregate(Sum('marks'))['marks__sum'] or 0
 
     # 2. Detailed Question Analysis
     all_questions = TestQuestion.objects.filter(
@@ -330,6 +334,7 @@ def test_result(request, attempt_id):
         'time_taken': time_taken,
         'analysis_list': analysis_list,
         'score_details': attempt.score, # Pass score for templates
+        'total_marks': total_marks,
     }
     
     # 3. Use Strategy Template
