@@ -25,6 +25,9 @@
                         {% for cat in selected_categories %}
                         <input type="hidden" name="category" value="{{ cat }}">
                         {% endfor %}
+                        {% for type in selected_types %}
+                        <input type="hidden" name="type" value="{{ type }}">
+                        {% endfor %}
                         <i
                             class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary lead"></i>
                         <input type="text" name="s"
@@ -149,9 +152,8 @@
                                     {% if item.has_certificate %}
                                     <span class="d-flex align-items-center gap-1"><i
                                             class="bi bi-patch-check-fill text-primary"></i> Certificate</span>
-                                    {% else %}
-                                    <span class="d-flex align-items-center gap-1"><i class="bi bi-phone"></i> Mobile
-                                        App</span>
+
+
                                     {% endif %}
                                 </div>
                             </div>

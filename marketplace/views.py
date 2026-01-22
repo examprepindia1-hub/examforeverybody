@@ -99,7 +99,7 @@ class ItemListView(ListView):
         context['min_price'] = self.request.GET.get('min_price', '')
         context['max_price'] = self.request.GET.get('max_price', '')
         
-        # Heading Logic
+        # Heading Logic - Fixed to maintain heading even with search
         heading = "Marketplace"
         selected_types = self.request.GET.getlist('type')
         if len(selected_types) == 1:
@@ -109,6 +109,9 @@ class ItemListView(ListView):
             type_label = type_map.get(selected_types[0])
             if type_label:
                 heading = f"{type_label}s" # Pluralize simple way
+        elif len(selected_types) > 1:
+            # Multiple types selected, keep generic heading
+            heading = "Marketplace"
 
         context['heading'] = heading
         return context

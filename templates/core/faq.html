@@ -6,7 +6,9 @@
 {% block content %}
 <div class="bg-white py-5 text-center">
     <div class="container py-4">
-        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3">Help Center</span>
+        <span
+            class="badge bg-primary bg-opacity-10  border border-primary-subtle px-3 py-2 rounded-pill mb-3 text-white">Help
+            Center</span>
         <h1 class="fw-bold display-5 mb-3">How can we help you?</h1>
         <p class="lead text-muted mx-auto" style="max-width: 600px;">
             Find answers to common questions about our mock tests, technical issues, and billing.
@@ -16,22 +18,25 @@
 
 <div class="bg-light py-5" style="min-height: 600px;">
     <div class="container">
-        
+
         <div class="row justify-content-center mb-5">
             <div class="col-lg-8">
                 <ul class="nav nav-pills nav-fill bg-white p-2 rounded-pill shadow-sm" id="faqTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-pill active fw-bold" id="general-tab" data-bs-toggle="pill" data-bs-target="#general" type="button" role="tab">
+                        <button class="nav-link rounded-pill active fw-bold" id="general-tab" data-bs-toggle="pill"
+                            data-bs-target="#general" type="button" role="tab">
                             <i class="bi bi-info-circle me-2"></i>General
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-pill fw-bold" id="exams-tab" data-bs-toggle="pill" data-bs-target="#exams" type="button" role="tab">
+                        <button class="nav-link rounded-pill fw-bold" id="exams-tab" data-bs-toggle="pill"
+                            data-bs-target="#exams" type="button" role="tab">
                             <i class="bi bi-laptop me-2"></i>Exams
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link rounded-pill fw-bold" id="billing-tab" data-bs-toggle="pill" data-bs-target="#billing" type="button" role="tab">
+                        <button class="nav-link rounded-pill fw-bold" id="billing-tab" data-bs-toggle="pill"
+                            data-bs-target="#billing" type="button" role="tab">
                             <i class="bi bi-credit-card me-2"></i>Billing
                         </button>
                     </li>
@@ -42,45 +47,91 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="tab-content" id="faqTabContent">
-                    
+
                     <div class="tab-pane fade show active" id="general" role="tabpanel">
                         <div class="accordion shadow-sm rounded-3 overflow-hidden" id="accordionGeneral">
-                            
+
                             <div class="accordion-item border-0 border-bottom">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#gen1">
+                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#gen1">
                                         What is ExamForEverybody?
                                     </button>
                                 </h2>
-                                <div id="gen1" class="accordion-collapse collapse show" data-bs-parent="#accordionGeneral">
+                                <div id="gen1" class="accordion-collapse collapse show"
+                                    data-bs-parent="#accordionGeneral">
                                     <div class="accordion-body text-muted small">
-                                        ExamForEverybody is a global platform designed to democratize exam preparation. We offer high-quality, AI-driven mock tests and resources for exams like SAT, GRE, NEET, and JEE at affordable prices.
+                                        ExamForEverybody is a platform that helps students prepare for competitive exams
+                                        through two main offerings: <strong>Mock Tests</strong> for practice and
+                                        preparation, and <strong>Scholarship Tests</strong> which are competitive exams
+                                        where meritorious students can win prizes to support their education.
                                     </div>
                                 </div>
                             </div>
 
                             <div class="accordion-item border-0 border-bottom">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#gen2">
-                                        Is the platform free to use?
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#gen2">
+                                        What's the difference between Mock Tests and Scholarship Tests?
                                     </button>
                                 </h2>
                                 <div id="gen2" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
                                     <div class="accordion-body text-muted small">
-                                        We offer both free and premium content. You can access select mock tests and study materials for free. Premium full-length simulations and live workshops are available for a small fee.
+                                        <strong>Mock Tests</strong> are practice exams designed to help you prepare for
+                                        your actual entrance exams. You can take them multiple times, review solutions,
+                                        and track your progress. Many are free.<br><br>
+                                        <strong>Scholarship Tests</strong> are competitive exams where students compete
+                                        against each other. Top performers receive prize money or scholarships to help
+                                        fund their education. These have specific dates and can only be attempted once.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#gen3">
+                                        Are there any free tests available?
+                                    </button>
+                                </h2>
+                                <div id="gen3" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body text-muted small">
+                                        Yes! We offer many free mock tests across various subjects and exams. These help
+                                        you practice without any cost. Scholarship tests typically have a small entry
+                                        fee, which goes toward the prize pool for winners.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#gen4">
+                                        Do I need to create an account to take tests?
+                                    </button>
+                                </h2>
+                                <div id="gen4" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
+                                    <div class="accordion-body text-muted small">
+                                        Yes, you need to create a free account to take tests. This allows us to save
+                                        your progress, track your performance over time, and send you your results. You
+                                        can sign up using Google for quick access.
                                     </div>
                                 </div>
                             </div>
 
                             <div class="accordion-item border-0">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#gen3">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#gen5">
                                         Do I need to install any software?
                                     </button>
                                 </h2>
-                                <div id="gen3" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
+                                <div id="gen5" class="accordion-collapse collapse" data-bs-parent="#accordionGeneral">
                                     <div class="accordion-body text-muted small">
-                                        No. Our platform is 100% web-based. You can take tests directly in your browser (Chrome, Safari, Firefox, or Edge) without downloading anything.
+                                        No. Our platform is 100% web-based. You can take tests directly in your browser
+                                        (Chrome, Safari, Firefox, or Edge) without downloading anything. Just make sure
+                                        your browser is updated to the latest version.
                                     </div>
                                 </div>
                             </div>
@@ -90,42 +141,101 @@
 
                     <div class="tab-pane fade" id="exams" role="tabpanel">
                         <div class="accordion shadow-sm rounded-3 overflow-hidden" id="accordionExams">
-                            
+
                             <div class="accordion-item border-0 border-bottom">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#exam1">
+                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#exam1">
                                         Can I pause a mock test?
                                     </button>
                                 </h2>
-                                <div id="exam1" class="accordion-collapse collapse show" data-bs-parent="#accordionExams">
+                                <div id="exam1" class="accordion-collapse collapse show"
+                                    data-bs-parent="#accordionExams">
                                     <div class="accordion-body text-muted small">
-                                        <strong>No.</strong> To simulate real exam conditions, our timers continue running even if you close the window. We recommend ensuring you have a stable internet connection and 2-3 hours of free time before starting a full-length test.
+                                        <strong>No.</strong> To simulate real exam conditions, our timers continue
+                                        running even if you close the window. We recommend ensuring you have a stable
+                                        internet connection and enough free time before starting a test.
                                     </div>
                                 </div>
                             </div>
 
                             <div class="accordion-item border-0 border-bottom">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#exam2">
-                                        What happens if my internet disconnects?
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#exam2">
+                                        What happens if my internet disconnects during a test?
                                     </button>
                                 </h2>
                                 <div id="exam2" class="accordion-collapse collapse" data-bs-parent="#accordionExams">
                                     <div class="accordion-body text-muted small">
-                                        Don't worry! Your answers are auto-saved every few seconds. Once your internet is restored, refresh the page, and you can resume exactly where you left off.
+                                        Don't worry! Your answers are auto-saved. Once your internet is restored,
+                                        refresh the page and you can continue from where you left off. The timer will
+                                        keep running during the disconnection, so try to reconnect quickly.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#exam3">
+                                        Can I retake a mock test?
+                                    </button>
+                                </h2>
+                                <div id="exam3" class="accordion-collapse collapse" data-bs-parent="#accordionExams">
+                                    <div class="accordion-body text-muted small">
+                                        Yes! Mock tests can be taken multiple times. This helps you practice and track
+                                        your improvement over time. However, scholarship tests can only be attempted
+                                        once, as they are competitive exams.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#exam4">
+                                        When will I receive my test results?
+                                    </button>
+                                </h2>
+                                <div id="exam4" class="accordion-collapse collapse" data-bs-parent="#accordionExams">
+                                    <div class="accordion-body text-muted small">
+                                        For mock tests, results are available immediately after submission. You can view
+                                        your score, correct answers, and explanations right away. For scholarship tests,
+                                        results are typically released within 3-5 business days after the test closes.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#exam5">
+                                        How do I participate in scholarship tests?
+                                    </button>
+                                </h2>
+                                <div id="exam5" class="accordion-collapse collapse" data-bs-parent="#accordionExams">
+                                    <div class="accordion-body text-muted small">
+                                        Browse available scholarship tests in the Scholarship Tests section. Pay the
+                                        small entry fee (if applicable), register for the test, and take it during the
+                                        scheduled time window. Winners are announced after all results are processed.
                                     </div>
                                 </div>
                             </div>
 
                             <div class="accordion-item border-0">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#exam3">
-                                        How accurate are the AI scores?
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#exam6">
+                                        Can I review my answers after the test?
                                     </button>
                                 </h2>
-                                <div id="exam3" class="accordion-collapse collapse" data-bs-parent="#accordionExams">
+                                <div id="exam6" class="accordion-collapse collapse" data-bs-parent="#accordionExams">
                                     <div class="accordion-body text-muted small">
-                                        Our scoring algorithms are trained on official grading rubrics. For objective sections (MCQ), accuracy is 100%. For subjective sections (Essays/Speaking), our AI provides an estimated score within a +/- 5% margin of human graders.
+                                        Yes! For mock tests, you can review all questions, your answers, correct
+                                        answers, and detailed explanations after submission. This helps you learn from
+                                        your mistakes. For scholarship tests, solutions are typically released after the
+                                        competition closes.
                                     </div>
                                 </div>
                             </div>
@@ -135,29 +245,87 @@
 
                     <div class="tab-pane fade" id="billing" role="tabpanel">
                         <div class="accordion shadow-sm rounded-3 overflow-hidden" id="accordionBilling">
-                            
+
                             <div class="accordion-item border-0 border-bottom">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#bill1">
+                                    <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#bill1">
                                         What payment methods do you accept?
                                     </button>
                                 </h2>
-                                <div id="bill1" class="accordion-collapse collapse show" data-bs-parent="#accordionBilling">
+                                <div id="bill1" class="accordion-collapse collapse show"
+                                    data-bs-parent="#accordionBilling">
                                     <div class="accordion-body text-muted small">
-                                        We accept all major credit/debit cards via PayPal for international students. For users in India, we support UPI (GPay, PhonePe, Paytm) via secure QR code scanning.
+                                        We accept all major credit/debit cards via PayPal for international students.
+                                        For users in India, we support UPI (GPay, PhonePe, Paytm), net banking, and
+                                        cards through our secure payment gateway.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#bill2">
+                                        How much do mock tests and scholarship tests cost?
+                                    </button>
+                                </h2>
+                                <div id="bill2" class="accordion-collapse collapse" data-bs-parent="#accordionBilling">
+                                    <div class="accordion-body text-muted small">
+                                        Many mock tests are completely free. Some premium mock tests may have a small
+                                        fee. Scholarship tests typically have an entry fee that varies by exam, which
+                                        contributes to the prize pool for winners. Check individual test pages for
+                                        specific pricing.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#bill3">
+                                        How do scholarship prizes work?
+                                    </button>
+                                </h2>
+                                <div id="bill3" class="accordion-collapse collapse" data-bs-parent="#accordionBilling">
+                                    <div class="accordion-body text-muted small">
+                                        Scholarship test winners receive prize money based on their rank. The prize
+                                        distribution is shown on each test page before you register. Winners are
+                                        contacted via email and prizes are transferred directly to their bank account or
+                                        preferred payment method within 15-30 days after results are announced.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 border-bottom">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#bill4">
+                                        What is your refund policy?
+                                    </button>
+                                </h2>
+                                <div id="bill4" class="accordion-collapse collapse" data-bs-parent="#accordionBilling">
+                                    <div class="accordion-body text-muted small">
+                                        For mock tests, we offer a <strong>7-day refund guarantee</strong> if you
+                                        haven't started the test. For scholarship tests, refunds are only available if
+                                        the test is cancelled by us. Once you've started a test, refunds are not
+                                        available. Contact support to request a refund.
                                     </div>
                                 </div>
                             </div>
 
                             <div class="accordion-item border-0">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#bill2">
-                                        What is your refund policy?
+                                    <button class="accordion-button collapsed fw-semibold" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#bill5">
+                                        Is my payment information secure?
                                     </button>
                                 </h2>
-                                <div id="bill2" class="accordion-collapse collapse" data-bs-parent="#accordionBilling">
+                                <div id="bill5" class="accordion-collapse collapse" data-bs-parent="#accordionBilling">
                                     <div class="accordion-body text-muted small">
-                                        We offer a <strong>7-day refund guarantee</strong> if you have not started the test or consumed more than 20% of the course content. Please contact support to initiate a request.
+                                        Yes! We use industry-standard encryption and work with trusted payment providers
+                                        (PayPal, Razorpay). We never store your complete card details on our servers.
+                                        All transactions are processed through secure, PCI-compliant gateways.
                                     </div>
                                 </div>
                             </div>
@@ -169,7 +337,8 @@
 
                 <div class="text-center mt-5">
                     <p class="text-muted mb-3">Still can't find what you're looking for?</p>
-                    <a href="{% url 'contact_support' %}" class="btn btn-outline-dark rounded-pill px-4 fw-bold">Contact Support</a>
+                    <a href="{% url 'contact_support' %}" class="btn btn-outline-dark rounded-pill px-4 fw-bold">Contact
+                        Support</a>
                 </div>
 
             </div>
@@ -183,25 +352,28 @@
         color: var(--text-secondary);
         transition: all 0.2s ease;
     }
+
     .nav-pills .nav-link:hover {
         background-color: #f8f9fa;
         color: var(--brand-dark);
     }
+
     .nav-pills .nav-link.active {
         background-color: var(--brand-dark) !important;
         color: #fff !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     }
-    
+
     /* Clean Accordion Styling */
     .accordion-button:not(.collapsed) {
         color: var(--brand-primary);
         background-color: #f8f9fa;
         box-shadow: none;
     }
+
     .accordion-button:focus {
         box-shadow: none;
-        border-color: rgba(0,0,0,.125);
+        border-color: rgba(0, 0, 0, .125);
     }
 </style>
 {% endblock %}

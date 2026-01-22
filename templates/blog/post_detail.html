@@ -23,25 +23,6 @@
 
                 <!-- Author Meta Row -->
                 <div class="d-flex align-items-center justify-content-between border-bottom pb-4 mb-5">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary fw-bold fs-4 overflow-hidden"
-                            style="width: 50px; height: 50px;">
-                            {% if post.author.profile.avatar %}
-                            <img src="{{ post.author.profile.avatar.url }}" class="w-100 h-100 object-fit-cover">
-                            {% else %}
-                            {{ post.author.first_name|first|upper }}
-                            {% endif %}
-                        </div>
-                        <div>
-                            <h6 class="fw-bold mb-0 text-dark">
-                                {{ post.author.get_full_name|default:post.author.username }}</h6>
-                            <div class="text-secondary small">
-                                <span>{{ post.created_at|date:"F j, Y" }}</span>
-                                <span class="mx-1">•</span>
-                                <span>{{ post.read_time|read_time }}</span>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Share Buttons -->
                     <div class="d-none d-md-flex gap-2">
@@ -64,7 +45,7 @@
 
                 <!-- Article Content -->
                 <article class="blog-content mb-5">
-                    {{ post.content|markdown }}
+                    {{ post.content|markdown|process_item_shortcodes }}
                 </article>
 
                 <!-- Tags Footer -->
@@ -77,25 +58,7 @@
                 {% endif %}
 
                 <!-- Author Bio Box -->
-                <div class="bg-light p-4 rounded-4 mb-5 d-flex gap-4 align-items-center">
-                    <div class="rounded-circle bg-white d-flex align-items-center justify-content-center text-secondary fw-bold fs-2 overflow-hidden flex-shrink-0"
-                        style="width: 80px; height: 80px;">
-                        {% if post.author.profile.avatar %}
-                        <img src="{{ post.author.profile.avatar.url }}" class="w-100 h-100 object-fit-cover">
-                        {% else %}
-                        {{ post.author.first_name|first|upper }}
-                        {% endif %}
-                    </div>
-                    <div>
-                        <h6 class="text-uppercase text-secondary small fw-bold mb-1">About the Author</h6>
-                        <h5 class="fw-bold mb-2">{{ post.author.get_full_name|default:post.author.username }}</h5>
-                        <p class="text-secondary mb-3 small">
-                            Mentored over 5,000 students. Research-backed methodology focuses on conceptual clarity.
-                            <!-- Placeholder bio since Model doesn't have Bio yet -->
-                        </p>
 
-                    </div>
-                </div>
 
                 <!-- Comments Section Skipped as per request -->
 
