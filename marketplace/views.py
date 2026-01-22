@@ -157,7 +157,7 @@ class ItemDetailView(DetailView):
         context['latest_order_status'] = latest_order_status
         
         # 4. Mock Test Specific Data
-        if item.item_type == MarketplaceItem.ItemType.MOCK_TEST and hasattr(item, 'mock_test_details'):
+        if (item.item_type == MarketplaceItem.ItemType.MOCK_TEST or item.item_type == MarketplaceItem.ItemType.SCHOLARSHIP_TEST) and hasattr(item, 'mock_test_details'):
             details = item.mock_test_details
             
             # Stats (Total Questions, Total Marks)
