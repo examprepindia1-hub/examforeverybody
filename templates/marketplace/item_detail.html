@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load currency_tags %}
 {% load socialaccount %}
+{% load blog_extras %}
 {% block title %}{{ item.title }} - ExamForEverybody{% endblock %}
 
 {% block content %}
@@ -40,16 +41,7 @@
                             </div>
                         </div>
 
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px;">
-                                <i class="bi bi-bar-chart text-warning fs-3"></i>
-                            </div>
-                            <div>
-                                <small class="text-white-50 d-block" style="font-size: 0.75rem;">Total Marks</small>
-                                <span class="fw-bold">{{ total_marks|default:"0" }}</span>
-                            </div>
-                        </div>
+
                         <div class="d-flex align-items-center gap-2">
                             <div class="d-flex align-items-center justify-content-center"
                                 style="width: 40px; height: 40px;">
@@ -241,20 +233,39 @@
                             <hr class="my-5">
                         </div>
 
-                        <!-- Eligibility Tab (Placeholder content as no model field for this) -->
+                        <!-- Eligibility Tab -->
                         <div class="tab-pane fade" id="eligibility" role="tabpanel" aria-labelledby="eligibility-tab">
                             <h5 class="fw-bold text-dark mb-4">Eligibility Criteria</h5>
+
+                            {% if item.mock_test_details.eligibility.exists %}
+                            <div class="d-flex flex-column gap-3">
+                                {% for rule in item.mock_test_details.eligibility.all %}
+                                <div class="d-flex gap-3">
+                                    <div class="text-secondary">{{ rule.content|markdown }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
                             <p class="text-muted">Please refer to the official exam guidelines for eligibility details.
                             </p>
-                            {% if item.description %}
-                            <div class="text-muted small">{{ item.description|truncatewords:50 }}</div>
                             {% endif %}
                         </div>
-
                         <!-- Syllabus Tab -->
                         <div class="tab-pane fade" id="syllabus" role="tabpanel" aria-labelledby="syllabus-tab">
                             <h5 class="fw-bold text-dark mb-4">Detailed Syllabus</h5>
-                            {% if item.mock_test_details.instructions %}
+
+                            {% if item.mock_test_details.syllabus.exists %}
+                            <div class="d-flex flex-column gap-3">
+                                {% for topic in item.mock_test_details.syllabus.all %}
+                                <div class="bg-light rounded-3 p-3">
+                                    <div class="d-flex gap-2">
+
+                                        <div class="text-dark">{{ topic.content|markdown }}</div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% elif item.mock_test_details.instructions %}
                             <div class="text-muted mb-4">{{ item.mock_test_details.instructions|safe }}</div>
                             {% else %}
                             <p class="text-muted">Syllabus details are included in the test description.</p>

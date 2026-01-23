@@ -71,6 +71,25 @@ class TestSection(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.test.item.title})"
+
+class TestSyllabus(models.Model):
+    """
+    Tests are often divided into sections (e.g., 'Verbal Ability', 'Logic').
+    """
+    test = models.ForeignKey(MockTestAttributes, on_delete=models.CASCADE, related_name='syllabus')
+    content = models.TextField("Syllabus")
+    def __str__(self):
+        return f"{self.content} ({self.test.item.title})"
+
+class TestEligibility(models.Model):
+    """
+    Tests are often divided into sections (e.g., 'Verbal Ability', 'Logic').
+    """
+    test = models.ForeignKey(MockTestAttributes, on_delete=models.CASCADE, related_name='eligibility')
+    content = models.TextField("Eligibility")
+    def __str__(self):
+        return f"{self.content} ({self.test.item.title})"
+
     
 
 class ComprehensionPassage(models.Model):

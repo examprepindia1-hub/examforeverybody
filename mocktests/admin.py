@@ -9,7 +9,8 @@ from django.http import HttpResponse
 from .models import (
     MockTestAttributes, TestSection, TestQuestion, 
     QuestionOption, UserTestAttempt, QuestionReport, 
-    QuestionAudio, QuestionMedia, UserAnswer
+    QuestionAudio, QuestionMedia, UserAnswer,
+    TestSyllabus, TestEligibility
 )
 
 # --- FORMS ---
@@ -42,6 +43,14 @@ class TestQuestionInline(admin.TabularInline):
 
 class TestSectionInline(admin.StackedInline):
     model = TestSection
+    extra = 1
+
+class TestSyllabusInline(admin.StackedInline):
+    model = TestSyllabus
+    extra = 1
+
+class TestEligibilityInline(admin.StackedInline):
+    model = TestEligibility
     extra = 1
 
 # --- 2. Model Admins ---
@@ -181,7 +190,7 @@ class TestSectionAdmin(admin.ModelAdmin):
 class MockTestAdmin(admin.ModelAdmin):
     # Added 'exam_type' so you can see which test is SAT/IELTS in the list
     list_display = ('item', 'exam_type', 'level', 'duration_minutes', 'pass_percentage')
-    inlines = [TestSectionInline]
+    inlines = [TestSectionInline, TestSyllabusInline, TestEligibilityInline]
 
 # --- 3. Student Progress & Reports ---
 
