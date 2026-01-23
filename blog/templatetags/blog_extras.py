@@ -110,36 +110,66 @@ def process_item_shortcodes(content):
                 free_badge = '<span class="badge bg-success border-0 rounded-pill px-3 py-2 fw-semibold small shadow-sm">Free</span>'
 
             # -----------------------------------------
-            # Duration
+            # Duration and Students stats row
             # -----------------------------------------
-            duration_display = '50 hours'
-            if item.item_type == 'MOCK_TEST' and hasattr(item, 'mock_test_details') and item.mock_test_details:
-                duration_display = f'{item.mock_test_details.duration_minutes}m'
+            stats_html = ''
+            if (item.item_type in ['MOCK_TEST', 'SCHOLARSHIP_TEST']) and hasattr(item, 'mock_test_details') and item.mock_test_details:
+                duration_html = f'<div class="d-flex align-items-center gap-1"><i class="bi bi-clock"></i> {item.mock_test_details.duration_minutes}m</div>'
+            else:
+                duration_html = ''
 
-            # -----------------------------------------  
-            # Lessons/Tests
-            # -----------------------------------------
-            lessons_display = '75 lessons'
-            if item.item_type == 'MOCK_TEST':
-                lessons_display = '1 Test'
+            students_html = f'<div class="d-flex align-items-center gap-1"><i class="bi bi-people"></i> {int(item.total_enrollment_count):,} students</div>'
 
+            stats_html = f'''
+                                <hr class="text-muted opacity-25 my-1">
+                                <div class="d-flex align-items-center gap-3 text-secondary small py-2">
+                                    {duration_html}
+                                    {students_html}
+                                </div>
+            '''
+
+            # Student count removed from here, moved to stats_html block
             # -----------------------------------------
-            # Student count
-            # -----------------------------------------
-            students_display = '18,920 students'
-            enrollment_count = getattr(item, 'base_enrollment_count', 0)
-            if enrollment_count > 0:
-                total_enrollments = getattr(item, 'get_total_enrollments', lambda: enrollment_count)
-                if callable(total_enrollments):
-                    total_enrollments = total_enrollments()
-                students_display = f'{int(total_enrollments):,} students'
 
             # -----------------------------------------
+            # Rating and Reviews
+            # -----------------------------------------
+            rating_html = ''
+            
+            # Check for annotated fields (high performance)
+            avg_rating = getattr(item, 'avg_rating', None)
+            review_count = getattr(item, 'review_count_annotated', None)
+            
+            # Fallback if not annotated (prevent crash)
+            if avg_rating is None:
+                reviews = item.testimonials.all()
+                review_count = reviews.count()
+                if review_count > 0:
+                    from django.db.models import Avg
+                    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+            
+            if review_count and review_count > 0:
+                plural = 's' if review_count != 1 else ''
+                rating_html = f'''
+                        <div class="d-flex align-items-center gap-1 mb-2">
+                            <i class="bi bi-star-fill text-warning" style="font-size: 0.8rem;"></i>
+                            <span class="fw-bold text-dark small">{avg_rating:.1f}</span>
+                            <span class="text-muted small">({review_count:,} review{plural})</span>
+                        </div>
+                '''
+            else:
+                rating_html = '<div class="d-flex align-items-center gap-1 mb-2"><span class="text-muted small">New</span></div>'
+
             # Certificate
             # -----------------------------------------
             certificate_html = ''
             if getattr(item, 'has_certificate', False):
                 certificate_html = '<span class="d-flex align-items-center gap-1"><i class="bi bi-patch-check-fill text-primary"></i> Certificate</span>'
+            
+            # Beginner/Level label
+            level_label = '<span class="text-success">Beginner</span>'
+            if (item.item_type in ['MOCK_TEST', 'SCHOLARSHIP_TEST']) and hasattr(item, 'mock_test_details') and item.mock_test_details:
+                level_label = f'<span class="text-success">{item.mock_test_details.get_level_display()}</span>'
 
             # -----------------------------------------
             # Final card HTML
@@ -174,14 +204,15 @@ def process_item_shortcodes(content):
                             </h5>
 
                             <!-- Rating -->
-                            <div class="d-flex align-items-center gap-1 mb-2">
-                                <i class="bi bi-star-fill text-warning" style="font-size: 0.8rem;"></i>
-                                <span class="fw-bold text-dark small">4.9</span>
-                                <span class="text-muted small">(2,134 reviews)</span>
+                            {rating_html}
+
+                            {stats_html}
+
+                            <!-- Footer -->
+                            <div class="d-flex align-items-center gap-3 text-secondary small fw-semibold mt-auto">
+                                {level_label}
+                                {certificate_html}
                             </div>
-
-
-                           
                         </div>
                     </div>
                 </div>

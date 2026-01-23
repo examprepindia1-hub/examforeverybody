@@ -25,10 +25,22 @@ class MarketplaceItem(TimeStampedModel):
         help_text="Starting number to show for social proof (e.g. 1500)"
     )
 
-    def get_total_enrollments(self):
-        # Real enrollments + Base padding
-        real_count = self.enrollments.count() # Assuming related_name='enrollments' in UserEnrollment
-        return self.base_enrollment_count + real_count
+    @property
+    def total_enrollment_count(self):
+        """Returns the base count + actual database enrollments."""
+        # Note: In ItemListView we will annotate this for performance
+        if hasattr(self, 'annotated_enrollment_count'):
+            return self.annotated_enrollment_count
+        return self.base_enrollment_count + self.enrollments.count()
+
+    @property
+    def review_display(self):
+        """Returns a string like '(12 reviews)' or '(1 review)' or 'New'."""
+        count = self.review_count_annotated if hasattr(self, 'review_count_annotated') else self.testimonials.count()
+        if count == 0:
+            return "New"
+        plural = 's' if count != 1 else ''
+        return f"({count} review{plural})"
     
     # Translatable Fields (Will be handled by translation.py)
     title = models.CharField(_("Title"), max_length=255)

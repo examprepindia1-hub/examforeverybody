@@ -19,8 +19,17 @@ class ItemListView(ListView):
     paginate_by = 9  # 3x3 Grid
 
     def get_queryset(self):
-        qs = MarketplaceItem.objects.filter(is_active=True)
-        qs = qs.prefetch_related('categories', 'testimonials', 'mock_test_details')
+        from django.db.models import Avg, Count, F
+        
+        qs = MarketplaceItem.objects.filter(is_active=True).annotate(
+            avg_rating=Avg('testimonials__rating'),
+            review_count_annotated=Count('testimonials', distinct=True),
+            real_enrollment_count=Count('enrollments', distinct=True)
+        ).annotate(
+            annotated_enrollment_count=F('base_enrollment_count') + F('real_enrollment_count')
+        )
+        
+        qs = qs.prefetch_related('categories', 'mock_test_details')
         
         # 1. Category Filter (Multi-select)
         categories = self.request.GET.getlist('category')

@@ -58,13 +58,7 @@
                             <!-- Body -->
                             <div class="card-body p-3 d-flex flex-column gap-2">
                                 <!-- Category Tag (Orange) -->
-                                <div class="text-primary-orange fw-bold small text-uppercase" style="color: #fd7e14;">
-                                    {% if item.categories.all %}
-                                    {{ item.categories.first.display_name }}
-                                    {% else %}
-                                    {{ item.get_item_type_display }}
-                                    {% endif %}
-                                </div>
+
 
                                 <!-- Title -->
                                 <h5 class="card-title fw-bold text-dark lh-sm text-truncate-2 mb-1"
@@ -75,38 +69,31 @@
 
                                 <!-- Rating -->
                                 <div class="d-flex align-items-center gap-1 mb-2">
+                                    {% if item.review_count_annotated > 0 %}
                                     <i class="bi bi-star-fill text-warning" style="font-size: 0.8rem;"></i>
-                                    <span class="fw-bold text-dark small">4.9</span>
-                                    <span class="text-muted small">(2,134 reviews)</span>
+                                    <span class="fw-bold text-dark small">{{ item.avg_rating|floatformat:1 }}</span>
+                                    {% endif %}
+                                    <span class="text-muted small">{{ item.review_display }}</span>
                                 </div>
 
                                 <hr class="text-muted opacity-25 my-1">
 
-                                <!-- Meta Stats -->
                                 <div class="d-flex align-items-center gap-3 text-secondary small py-2">
+                                    {% if item.mock_test_details %}
                                     <div class="d-flex align-items-center gap-1">
                                         <i class="bi bi-clock"></i>
-                                        {% if item.item_type == 'MOCK_TEST' and item.mock_test_details %}
                                         {{ item.mock_test_details.duration_minutes }}m
-                                        {% else %}
-                                        50 hours
-                                        {% endif %}
                                     </div>
+                                    {% endif %}
+                                    {% if false %}
                                     <div class="d-flex align-items-center gap-1">
                                         <i class="bi bi-journal-text"></i>
-                                        {% if item.item_type == 'MOCK_TEST' %}
-                                        1 Test
-                                        {% else %}
                                         75 lessons
-                                        {% endif %}
                                     </div>
+                                    {% endif %}
                                     <div class="d-flex align-items-center gap-1">
                                         <i class="bi bi-people"></i>
-                                        {% if item.base_enrollment_count > 0 %}
-                                        {{ item.get_total_enrollments|floatformat:0 }} students
-                                        {% else %}
-                                        18,920 students
-                                        {% endif %}
+                                        {{ item.total_enrollment_count|floatformat:0 }} students
                                     </div>
                                 </div>
 

@@ -16,7 +16,7 @@
                 <div>
                     <h1 class="fw-bold display-5 mb-3 text-white">{{ item.title }}</h1>
                     <div class="d-flex align-items-center gap-3 mb-4">
-                        {% if item.item_type == 'MOCK_TEST' or item.item_type == 'SCHOLARSHIP_TEST' and item.mock_test_details %}
+                        {% if item.mock_test_details %}
                         <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
                             <i class="bi bi-bar-chart-fill me-1"></i> {{ item.mock_test_details.get_level_display }}
                         </span>
@@ -27,7 +27,7 @@
                     </div>
 
                     <!-- Moved Stats Row -->
-                    {% if item.item_type == 'MOCK_TEST' or item.item_type == 'SCHOLARSHIP_TEST' and item.mock_test_details %}
+                    {% if item.mock_test_details %}
                     <div class="d-flex flex-wrap gap-4 gap-lg-5 pt-2">
                         <div class="d-flex align-items-center gap-2">
                             <div class="d-flex align-items-center justify-content-center"
@@ -39,16 +39,7 @@
                                 <span class="fw-bold">{{ item.mock_test_details.duration_minutes }} mins</span>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px;">
-                                <i class="bi bi-file-text text-warning fs-3"></i>
-                            </div>
-                            <div>
-                                <small class="text-white-50 d-block" style="font-size: 0.75rem;">Questions</small>
-                                <span class="fw-bold">{{ item.mock_test_details.total_questions|default:"0" }}</span>
-                            </div>
-                        </div>
+
                         <div class="d-flex align-items-center gap-2">
                             <div class="d-flex align-items-center justify-content-center"
                                 style="width: 40px; height: 40px;">
@@ -88,7 +79,7 @@
         <!-- Left Column -->
         <div class="col-lg-8">
 
-            {% if item.item_type == 'MOCK_TEST' or item.item_type == 'SCHOLARSHIP_TEST' and item.mock_test_details %}
+            {% if item.mock_test_details %}
             {% with details=item.mock_test_details %}
             {% now "U" as current_timestamp %}
             <!-- Logic to determine timer state -->
@@ -263,7 +254,7 @@
                         <!-- Syllabus Tab -->
                         <div class="tab-pane fade" id="syllabus" role="tabpanel" aria-labelledby="syllabus-tab">
                             <h5 class="fw-bold text-dark mb-4">Detailed Syllabus</h5>
-                            {% if item.item_type == 'MOCK_TEST' or item.item_type == 'SCHOLARSHIP_TEST' and item.mock_test_details.instructions %}
+                            {% if item.mock_test_details.instructions %}
                             <div class="text-muted mb-4">{{ item.mock_test_details.instructions|safe }}</div>
                             {% else %}
                             <p class="text-muted">Syllabus details are included in the test description.</p>
@@ -272,7 +263,7 @@
 
                         <!-- Sections Tab -->
                         <div class="tab-pane fade" id="sections" role="tabpanel" aria-labelledby="sections-tab">
-                            {% if item.item_type == 'MOCK_TEST' or item.item_type == 'SCHOLARSHIP_TEST' and item.mock_test_details.sections.exists %}
+                            {% if item.mock_test_details.sections.exists %}
                             <h5 class="fw-bold text-dark mb-4">Section-wise Breakdown</h5>
                             <div class="d-flex flex-column gap-3 mb-5">
                                 {% for section in item.mock_test_details.sections.all %}
