@@ -555,13 +555,13 @@
     </div>
 
     <div id="fullscreen-overlay">
-        <div class="text-center">
+        <div class="text-center px-4">
             <div class="spinner-grow text-primary mb-4" role="status" style="width: 3rem; height: 3rem;">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <h2 class="fw-bold mb-3">Exam Environment Ready</h2>
-            <p class="text-muted mb-4">Click below to enter full-screen mode and start the timer.</p>
-            <button class="btn btn-primary btn-lg rounded-pill px-5 shadow" onclick="enableFullScreen()">
+            <h2 class="fw-bold mb-3 fs-4 fs-md-2">Exam Environment Ready</h2>
+            <p class="text-muted mb-4 small px-2">Click below to enter full-screen mode and start the timer.</p>
+            <button class="btn btn-primary btn-lg rounded-pill px-4 px-md-5 shadow" onclick="enableFullScreen()">
                 <i class="bi bi-arrows-fullscreen me-2"></i> Begin Assessment
             </button>
         </div>
@@ -796,6 +796,13 @@
                     <div class="col-6"><span class="badge rounded-circle p-1 me-1" style="background:#6610f2;"> </span>
                         Review</div>
                 </div>
+            </div>
+
+            <!-- Mobile Finish Button -->
+            <div class="d-lg-none p-3 border-top">
+                <button type="button" class="btn btn-danger w-100 fw-bold py-2" onclick="confirmSubmit()">
+                    <i class="bi bi-check-circle-fill me-2"></i>Finish Test
+                </button>
             </div>
         </div>
     </div>
