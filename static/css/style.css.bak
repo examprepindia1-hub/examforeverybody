@@ -446,8 +446,8 @@ footer span {
 
 .footer-address p {
     margin: 5px 0;
+    padding: 0;
 }
-
 .footer-address i {
     margin-right: 10px;
     color: #4CAF50;
@@ -704,60 +704,4 @@ footer span {
 
 .ls-1 {
     letter-spacing: 1px;
-}
-
-/* --- RESPONSIVE ADJUSTMENTS --- */
-@media (max-width: 768px) {
-
-    /* Typography Scaling */
-    h1,
-    .display-3,
-    .display-5 {
-        font-size: 2.25rem !important;
-    }
-
-    h2,
-    .display-6 {
-        font-size: 1.75rem !important;
-    }
-
-    h3 {
-        font-size: 1.5rem;
-    }
-
-    /* Navbar */
-    .navbar-collapse {
-        margin-top: 1rem;
-        background: #fff;
-        padding: 1rem;
-        border-radius: 8px;
-        box-shadow: var(--shadow-soft);
-    }
-
-    /* Hero Section */
-    .hero-banner-ud {
-        height: auto;
-        min-height: 400px;
-        padding: 4rem 1rem;
-    }
-
-    .hero-card-floating {
-        margin: 0 auto;
-        width: 100%;
-        max-width: 100%;
-        padding: 24px;
-    }
-
-    /* Sections Padding */
-    .section-pad {
-        padding-top: 40px;
-        padding-bottom: 40px;
-    }
-}
-
-@media (max-width: 576px) {
-    .container {
-        padding-left: 20px;
-        padding-right: 20px;
-    }
 }
